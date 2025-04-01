@@ -59,7 +59,7 @@ const SupplierForm = (): JSX.Element => {
     getAllSuppliers(page, searchTerm);
     // Fetch user ID
     axiosInstance
-      .get<User>("/users/me/")
+      .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
   }, []);
