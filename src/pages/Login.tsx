@@ -10,6 +10,13 @@ import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
 import axiosInstance from "../utils/axiosConfig";
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  full_name: string;
+}
+
 export default function Login(): JSX.Element {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
