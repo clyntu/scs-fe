@@ -5,13 +5,13 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input } from "@mui/joy";
+import { Input, Select, Option } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { User } from "../Login";
 import type { AxiosError } from "axios";
-import type { Item, PaginatedItems } from "../../interface";
+import type { Brand, Category, Item, PaginatedItems } from "../../interface";
 import {
   convertToQueryParams,
   addCommaToNumberWithFourPlaces,
@@ -33,8 +33,13 @@ const ItemForm = (): JSX.Element => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
 
-  const getAllStocks = (page: number, search_term: string) => {
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const getAllStocks = (page: number, searchTerm: string): void => {
     axiosInstance
       .get<PaginatedItems>(
         `/api/items/?${convertToQueryParams({
@@ -42,7 +47,9 @@ const ItemForm = (): JSX.Element => {
           limit: PAGE_LIMIT,
           sort_by: "id",
           sort_order: "desc",
-          search_term,
+          search_term: searchTerm,
+          brand: selectedBrand,
+          category: selectedCategory,
         })}`,
       )
       .then((response) => setItems(response.data))
@@ -60,6 +67,24 @@ const ItemForm = (): JSX.Element => {
   useEffect(() => {
     // Fetch items
     getAllStocks(page, searchTerm);
+
+    // Fetch categories
+    axiosInstance
+      .get<Category[]>(`/api/categories`)
+      .then((response) => {
+        setCategories(
+          response.data.map((category) => category.normalized_name),
+        );
+      })
+      .catch((error) => console.error("Error:", error));
+
+    // Fetch brands
+    axiosInstance
+      .get<Brand[]>(`/api/brands`)
+      .then((response) => {
+        setBrands(response.data.map((brand) => brand.normalized_name));
+      })
+      .catch((error) => console.error("Error:", error));
   }, []);
 
   const handleSaveItem = async (newItem: Item): Promise<void> => {
@@ -156,6 +181,9 @@ const ItemForm = (): JSX.Element => {
         `/api/items/?${convertToQueryParams({
           sort_by: "stock_code",
           sort_order: "asc",
+          search_term: searchTerm,
+          brand: selectedBrand,
+          category: selectedCategory,
         })}`,
       )
       .then((response) => {
@@ -208,6 +236,40 @@ const ItemForm = (): JSX.Element => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <Select
+            className="ml-4 w-[130px]"
+            onChange={(event, value) => {
+              if (value !== null) setSelectedCategory(value);
+            }}
+            size="sm"
+            value={selectedCategory}
+          >
+            <Option value="">All</Option>
+            {categories.map((category) => {
+              return (
+                <Option key={category} value={category}>
+                  {category.toUpperCase()}
+                </Option>
+              );
+            })}
+          </Select>
+          <Select
+            className="ml-4 w-[130px]"
+            onChange={(event, value) => {
+              if (value !== null) setSelectedBrand(value);
+            }}
+            size="sm"
+            value={selectedBrand}
+          >
+            <Option value="">All</Option>
+            {brands.map((brand) => {
+              return (
+                <Option key={brand} value={brand}>
+                  {brand.toUpperCase()}
+                </Option>
+              );
+            })}
+          </Select>
           <Button
             onClick={() => getAllStocks(1, searchTerm)}
             className="ml-4 w-[80px] bg-button-primary"

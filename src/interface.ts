@@ -45,6 +45,16 @@ export interface Item {
   p_type?: string;
 }
 
+export interface Category {
+  normalized_name: string;
+  count: number;
+}
+
+export interface Brand {
+  normalized_name: string;
+  count: number;
+}
+
 export interface ViewStockHistory {
   open: boolean;
   setOpen: (isOpen: boolean) => void;
