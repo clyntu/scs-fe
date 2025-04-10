@@ -3,7 +3,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CR } from "../../interface";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { addCommaToNumberWithFourPlaces } from "../../helper";
 
 const formatDate = (date: Date): string => {
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -94,10 +94,11 @@ export const generateCRPDF = (selectedRow: CR): void => {
   doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
 
   // 3. Customer and Date
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
   doc.text(`Customer: ${selectedRow.customer.name}`, 40, 110);
-  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 130);
+  doc.text(`Ref No.: ${selectedRow.reference_number}`, 40, 130);
+  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 150);
   doc.text(
     `Date: ${new Date(selectedRow.transaction_date).toLocaleDateString(
       "en-US",
@@ -113,7 +114,7 @@ export const generateCRPDF = (selectedRow: CR): void => {
 
   // 4. Draw a horizontal line below header if you like (optional)
   doc.setLineWidth(0.5);
-  doc.line(40, 140, pageWidth - 40, 140);
+  doc.line(40, 160, pageWidth - 40, 160);
 
   // 5. Table columns and data
   const columns = ["QTY", "Stock", "Description", "Unit Cost", "Amount"];
@@ -121,8 +122,8 @@ export const generateCRPDF = (selectedRow: CR): void => {
     item.return_qty,
     item.item.stock_code,
     item.item.name,
-    addCommaToNumberWithTwoPlaces(Number(item.price)),
-    addCommaToNumberWithTwoPlaces(
+    addCommaToNumberWithFourPlaces(Number(item.price)),
+    addCommaToNumberWithFourPlaces(
       calculateNetForRow(
         Number(item.return_qty),
         Number(item.price),
@@ -134,7 +135,7 @@ export const generateCRPDF = (selectedRow: CR): void => {
 
   // 6. Render the table
   autoTable(doc, {
-    startY: 150,
+    startY: 170,
     head: [columns],
     body: bodyData,
     theme: "plain",

@@ -15,7 +15,6 @@ import type { Item, PaginatedItems } from "../../interface";
 import {
   convertToQueryParams,
   addCommaToNumberWithFourPlaces,
-  addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 import { Pagination } from "@mui/material";
 import { generatePDF } from "../../components/Items/generatePDF";
@@ -166,7 +165,7 @@ const ItemForm = (): JSX.Element => {
             availableQty: item.total_on_stock,
             stockCode: item.stock_code,
             stock: item.name,
-            netCostTotal: addCommaToNumberWithTwoPlaces(
+            netCostTotal: addCommaToNumberWithFourPlaces(
               Number(item?.total_on_stock ?? 0) * Number(item.acquisition_cost),
             ),
           };

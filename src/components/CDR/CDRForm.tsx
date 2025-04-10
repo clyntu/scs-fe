@@ -21,7 +21,6 @@ import type {
   AllocItem,
 } from "../../interface";
 import { generateDeliveryReceiptPDF } from "./generatePDF";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 const CDRForm = ({
   setOpen,

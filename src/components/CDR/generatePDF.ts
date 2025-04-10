@@ -3,7 +3,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CDR } from "../../interface";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { addCommaToNumberWithFourPlaces } from "../../helper";
 
 const calculateNetForRow = (
   newValue: number,
@@ -79,8 +79,8 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
 
   // 3. Customer and Date
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
   doc.text(`Customer: ${selectedRow.customer.name}`, 40, 110);
   doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 130);
   doc.text(
@@ -130,9 +130,9 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
       item.delivery_plan_item.planned_qty,
       allocItem.item.stock_code,
       allocItem.item.name,
-      addCommaToNumberWithTwoPlaces(itemObj?.price) ?? 0.0,
+      addCommaToNumberWithFourPlaces(itemObj?.price) ?? 0.0,
       discString,
-      addCommaToNumberWithTwoPlaces(
+      addCommaToNumberWithFourPlaces(
         calculateNetForRow(
           Number(item.delivery_plan_item.planned_qty),
           allocItem.customer_purchase_order,
@@ -157,7 +157,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
       5: { halign: "right", cellWidth: 60 }, // Amount
     },
     styles: {
-      fontSize: 10,
+      fontSize: 9,
       cellPadding: { top: 2, right: 8, bottom: 2, left: 8 },
     },
     didParseCell: (hookData) => {
@@ -179,7 +179,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   //   doc.line(40, finalY + 10, pageWidth - 40, finalY + 10);
 
   // Draw LESS label and value
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("Fixed Discount:", pageWidth - 180, finalY + 30);
   doc.setFont("helvetica", "normal");
@@ -192,7 +192,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   doc.text("NET Total:", pageWidth - 180, finalY + 60);
   doc.setFont("helvetica", "normal");
   doc.text(
-    addCommaToNumberWithTwoPlaces(Number(selectedRow.total_net)) ?? "",
+    addCommaToNumberWithFourPlaces(Number(selectedRow.total_net)) ?? "",
     pageWidth - 45,
     finalY + 60,
     {

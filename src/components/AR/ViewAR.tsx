@@ -8,10 +8,12 @@ import type {
   PaginatedAR,
   PaginationQueryParams,
 } from "../../interface";
+import { generatePDF } from "./generatePDF";
 
 import { Pagination } from "@mui/material";
 
 import { convertToQueryParams } from "../../helper";
+import { CustomerReceivableResponse } from "./interface";
 
 const PAGE_LIMIT = 10;
 
@@ -107,20 +109,59 @@ const ViewAR = ({
     }
   };
 
+  const handleGeneratePDF = () => {
+    // Fetch data
+    axiosInstance
+      .get<CustomerReceivableResponse>(
+        `/customer-financial/receivables?${convertToQueryParams({
+          sort_by: "customer_name",
+          sort_order: "asc",
+        })}`,
+      )
+      .then((response) => {
+        const res = response.data;
+        const total = {
+          total_receivable: res.total_receivable,
+          total_uncleared: res.total_uncleared,
+          total_bounced: res.total_bounced,
+        };
+        const customers = res.items;
+        const data = customers.map((customer) => {
+          return {
+            customer_name: customer.customer_name,
+            amount_receivable: customer.amount_receivable,
+            uncleared_payment: customer.uncleared_payment,
+            bounced_payment: customer.bounced_payment,
+          };
+        });
+        generatePDF(data, total, "Peterson Parts Trading Inc.");
+      })
+      .catch((error) => console.error("Error:", error));
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
         <Box className="flex justify-between mb-6">
           <h2>AR Receipts</h2>
-          <Button
-            className="mt-2 mb-4 bg-button-primary"
-            color="primary"
-            onClick={() => {
-              setOpenCreate(true);
-            }}
-          >
-            Add AR Receipt
-          </Button>
+          <div>
+            <Button
+              variant="soft"
+              className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              onClick={handleGeneratePDF}
+            >
+              Print Summary
+            </Button>
+            <Button
+              className="ml-3 mt-2 mb-4 bg-button-primary"
+              color="primary"
+              onClick={() => {
+                setOpenCreate(true);
+              }}
+            >
+              Add AR Receipt
+            </Button>
+          </div>
         </Box>
         <Box className="flex items-center mb-6">
           <Input
