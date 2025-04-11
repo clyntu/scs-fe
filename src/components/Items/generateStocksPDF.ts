@@ -1,5 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { type PrintInventoryItem } from "../../interface";
+import { addCommaToNumberWithFourPlaces } from "../../helper";
 
 // Helper function to format the date
 const formatDate = (date: Date): string => {
@@ -36,18 +38,21 @@ const addCustomHeader = (doc: jsPDF, title: string): void => {
   // "PRICELIST" aligned to the right
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("PRICELIST", pageWidth - 110, 40); // Adjust 80 as needed
+  doc.text("STOCKS", pageWidth - 100, 40); // Adjust 80 as needed
 
   // Bottom border line
   doc.setLineWidth(0.5);
   doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
 };
 
-export const generatePDF = (data: any[], title: string): void => {
+export const generateStocksPDF = (
+  items: PrintInventoryItem[],
+  title: string,
+): void => {
   // 1. Initialize jsPDF
   // eslint-disable-next-line new-cap
   const doc = new jsPDF({
-    orientation: "portrait",
+    orientation: "landscape",
     unit: "pt",
     format: "A4",
   });
@@ -56,21 +61,29 @@ export const generatePDF = (data: any[], title: string): void => {
 
   // 2. Define columns and rows
   const tableColumnHeaders = [
-    "Stock Qty",
     "Stock Code",
-    "Stock",
-    "Net Cost Total",
+    "Stock Name",
+    "Avail. Qty.",
+    "Sell. Price",
+    "Alloc. Qty.",
+    "Location",
+    "Category",
+    "Brand",
   ];
-  const tableRows = data.map((item) => [
-    item.availableQty,
-    item.stockCode,
-    item.stock,
-    item.netCostTotal,
+  const tableRows = items.map((item) => [
+    item.stock_code,
+    item.name,
+    item.avail_qty,
+    addCommaToNumberWithFourPlaces(item.selling_price),
+    item.alloc_qty,
+    item.location,
+    item.category,
+    item.brand,
   ]);
 
   // 3. Table setup
   const pageWidth = doc.internal.pageSize.getWidth();
-  const tableWidth = 460; // sum of your column widths
+  const tableWidth = 750; // sum of your column widths
   const marginX = (pageWidth - tableWidth) / 2; // center horizontally
 
   autoTable(doc, {
@@ -80,10 +93,14 @@ export const generatePDF = (data: any[], title: string): void => {
     margin: { top: 50, left: marginX },
     theme: "plain",
     columnStyles: {
-      0: { cellWidth: 70, halign: "right" },
-      1: { cellWidth: 100 },
-      2: { cellWidth: 200 },
-      3: { cellWidth: 90, halign: "right" },
+      0: { cellWidth: 120 },
+      1: { cellWidth: 170 },
+      2: { cellWidth: 60, halign: "right" },
+      3: { cellWidth: 60, halign: "right" },
+      4: { cellWidth: 60, halign: "right" },
+      5: { cellWidth: 100 },
+      6: { cellWidth: 90 },
+      7: { cellWidth: 90 },
     },
     styles: {
       fontSize: 9,
@@ -92,7 +109,9 @@ export const generatePDF = (data: any[], title: string): void => {
     didParseCell: (hookData) => {
       if (
         hookData.section === "head" &&
-        (hookData.column.index === 0 || hookData.column.index === 3)
+        (hookData.column.index === 2 ||
+          hookData.column.index === 3 ||
+          hookData.column.index === 4)
       ) {
         hookData.cell.styles.halign = "right";
       }
@@ -126,5 +145,5 @@ export const generatePDF = (data: any[], title: string): void => {
   });
 
   // 5. Save or download the PDF
-  doc.save("pricelist.pdf");
+  doc.save("stocks.pdf");
 };

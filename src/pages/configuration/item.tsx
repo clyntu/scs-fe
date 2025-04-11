@@ -11,13 +11,20 @@ import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { User } from "../Login";
 import type { AxiosError } from "axios";
-import type { Brand, Category, Item, PaginatedItems } from "../../interface";
+import type {
+  Brand,
+  Category,
+  Item,
+  PaginatedItems,
+  PrintInventoryResponse,
+} from "../../interface";
 import {
   convertToQueryParams,
   addCommaToNumberWithFourPlaces,
 } from "../../helper";
 import { Pagination } from "@mui/material";
-import { generatePDF } from "../../components/Items/generatePDF";
+import { generatePricelistPDF } from "../../components/Items/generatePricelistPDF";
+import { generateStocksPDF } from "../../components/Items/generateStocksPDF";
 
 const PAGE_LIMIT = 10;
 
@@ -174,7 +181,27 @@ const ItemForm = (): JSX.Element => {
     return error.isAxiosError !== undefined;
   }
 
-  const handlePDFCreate = (): void => {
+  const handleStocksPDFCreate = (): void => {
+    // Fetch data
+    axiosInstance
+      .get<PrintInventoryResponse>(
+        `/api/inventory/?${convertToQueryParams({
+          sort_by: "stock_code",
+          sort_order: "asc",
+          search_term: searchTerm,
+          brand: selectedBrand,
+          category: selectedCategory,
+        })}`,
+      )
+      .then((response) => {
+        console.log(response.data);
+        const items = response.data.items;
+        generateStocksPDF(items, "Peterson Parts Trading Inc.");
+      })
+      .catch((error) => console.error("Error:", error));
+  };
+
+  const handlePricelistPDFCreate = (): void => {
     // Fetch data
     axiosInstance
       .get<PaginatedItems>(
@@ -198,7 +225,7 @@ const ItemForm = (): JSX.Element => {
             ),
           };
         });
-        generatePDF(data, "Peterson Parts Trading Inc.");
+        generatePricelistPDF(data, "Peterson Parts Trading Inc.");
       })
       .catch((error) => console.error("Error:", error));
   };
@@ -213,7 +240,14 @@ const ItemForm = (): JSX.Element => {
             <Button
               variant="soft"
               className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
-              onClick={handlePDFCreate}
+              onClick={handleStocksPDFCreate}
+            >
+              Print Stocks
+            </Button>
+            <Button
+              variant="soft"
+              className="ml-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              onClick={handlePricelistPDFCreate}
             >
               Print Pricelist
             </Button>

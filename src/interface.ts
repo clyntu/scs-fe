@@ -1035,3 +1035,22 @@ export interface AR {
     date_modified: string;
   }>;
 }
+
+export interface PrintInventoryItem {
+  alloc_qty: number;
+  avail_qty: number;
+  brand: string;
+  category: string;
+  location: string;
+  name: string;
+  selling_price: number;
+  stock_code: string;
+  unit: string;
+}
+
+export interface PrintInventoryResponse {
+  total: number;
+  items: PrintInventoryItem[];
+  next_page: string;
+  previous_page: string;
+}
