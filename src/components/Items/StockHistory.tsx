@@ -5,15 +5,14 @@ import { Card, Box, Table } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 
-import { IStockHistory } from "../../interface";
-import type { ViewStockHistory } from "../../interface";
+import { type IStockHistory, type ViewStockHistory } from "../../interface";
 
 const StockHistory = ({
   open,
   setOpen,
   row,
 }: ViewStockHistory): JSX.Element => {
-  const [stockHistory, setStockHistory] = useState<StockHistory[]>([]);
+  const [stockHistory, setStockHistory] = useState<IStockHistory[]>([]);
 
   useEffect(() => {
     axiosInstance

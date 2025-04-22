@@ -61,7 +61,7 @@ export interface ViewStockHistory {
   row?: Item;
 }
 
-export interface StockHistory {
+export interface IStockHistory {
   transaction_type: string;
   stock_code: string;
   stock_description: string;
