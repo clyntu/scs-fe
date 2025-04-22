@@ -25,6 +25,24 @@ export default function Login(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Check if already logged in
+  useEffect(() => {
+    const checkUser = async (): Promise<void> => {
+      try {
+        const response = await axiosInstance.get<User>("/api/users/me/");
+
+        if (response.status === 200) {
+          void router.push("/configuration/item");
+        }
+      } catch (err) {
+        // Not logged in — do nothing, let them stay on login page
+      }
+    };
+
+    // "void" tells TS/ESLint that you purposely are ignoring the Promise
+    void checkUser();
+  }, []);
+
   // Check for registration success message
   useEffect(() => {
     if (router.query.registered === "success") {
@@ -62,7 +80,7 @@ export default function Login(): JSX.Element {
       axiosInstance.defaults.headers.common.Authorization = `Bearer ${response.data.access_token}`;
 
       // Redirect to dashboard
-      await router.push("/configuration/warehouse");
+      await router.push("/configuration/item");
     } catch (error: any) {
       console.error("Login error:", error);
 
