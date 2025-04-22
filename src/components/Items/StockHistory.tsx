@@ -5,7 +5,7 @@ import { Card, Box, Table } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 
-import { StockHistory } from "../../interface";
+import { IStockHistory } from "../../interface";
 import type { ViewStockHistory } from "../../interface";
 
 const StockHistory = ({
@@ -107,7 +107,7 @@ const StockHistory = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {stockHistory.map((history: StockHistory) => (
+                  {stockHistory.map((history: IStockHistory) => (
                     <tr
                       key={`${history.transaction_number}-${history.stock_code}`}
                     >
