@@ -71,6 +71,8 @@ export interface StockHistory {
   quantity_out: number;
   price: number;
   amount: number;
+  supplier_name: string;
+  customer_name: string;
 }
 
 export interface DeleteModalProps {
