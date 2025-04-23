@@ -52,6 +52,7 @@ export default function Sidebar(): JSX.Element {
     try {
       await axiosInstance.post("/api/logout");
       localStorage.removeItem("accessToken");
+      delete axiosInstance.defaults.headers.common.Authorization;
       await router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
