@@ -48,15 +48,15 @@ export default function Sidebar(): JSX.Element {
     }));
   };
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     try {
       await axiosInstance.post("/api/logout");
       localStorage.removeItem("accessToken");
-      router.push("/");
+      await router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
       localStorage.removeItem("accessToken");
-      router.push("/");
+      await router.push("/");
     }
   };
 
