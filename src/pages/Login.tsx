@@ -72,10 +72,14 @@ export default function Login(): JSX.Element {
     setSuccessMessage("");
 
     try {
+      // Always store company ID in localStorage as backup
+      localStorage.setItem("companyId", companyId);
+      console.log("Company ID saved to localStorage:", companyId);
+
       // Set company ID header for the login request
       const response = await axiosInstance.post(
         "/api/token",
-        `username=${email}&password=${password}`,
+        `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
         {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -86,6 +90,10 @@ export default function Login(): JSX.Element {
       );
 
       console.log("Login successful:", response.data);
+
+      // Manually set a JavaScript-readable cookie as backup
+      document.cookie = `company_id_js=${companyId}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=None; Secure`;
+      console.log("Also set JS-readable company ID cookie");
 
       // Redirect to dashboard
       await router.push("/configuration/item");
@@ -105,7 +113,6 @@ export default function Login(): JSX.Element {
       setIsLoading(false);
     }
   };
-
   const handleRegisterRedirect = async (): Promise<void> => {
     // Pass selected company ID to registration page
     await router.push({
