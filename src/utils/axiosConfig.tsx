@@ -31,8 +31,16 @@ if (typeof window !== "undefined") {
         window.location.pathname !== "/" &&
         window.location.pathname !== "/register"
       ) {
-        window.location.href = "/";
+        // window.location.href = "/";
         throw new Error("Company ID not found");
+      }
+
+      // Check for access token cookie
+      const accessToken = getCookie("access_token");
+      if (accessToken) {
+        // Even though the cookie should be sent automatically with withCredentials,
+        // let's also set the Authorization header as a fallback
+        config.headers["Authorization"] = `Bearer ${accessToken}`;
       }
 
       return config;
@@ -48,7 +56,7 @@ if (typeof window !== "undefined") {
       const path = window.location.pathname;
 
       if (status === 401 && path !== "/") {
-        window.location.href = "/";
+        // window.location.href = "/";
       } else if (status === 403) {
         const msg =
           error.response.data.detail ||
@@ -59,7 +67,7 @@ if (typeof window !== "undefined") {
         error.response.data?.detail?.includes("X-Company-ID") &&
         path !== "/"
       ) {
-        window.location.href = "/";
+        // window.location.href = "/";
       }
 
       return Promise.reject(error);
