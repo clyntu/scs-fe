@@ -31,6 +31,7 @@ export default function Login(): JSX.Element {
   // Check if already logged in
   useEffect(() => {
     const stored = localStorage.getItem("companyId");
+    if (stored != null) setCompanyId(stored);
 
     const company = getCookie("company_id");
     if (!company) {
@@ -50,7 +51,6 @@ export default function Login(): JSX.Element {
     };
 
     // "void" tells TS/ESLint that you purposely are ignoring the Promise
-    if (stored != null) setCompanyId(stored);
     void checkUser();
   }, []);
 
