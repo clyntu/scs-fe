@@ -6,14 +6,15 @@ import { useRouter } from "next/router";
 
 const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
   const router = useRouter();
+  const hideSidebar =
+    router.pathname === "/" || router.pathname === "/register";
+
   return (
     <div className="font-inter">
-      {router.pathname !== "/" && <Sidebar />}
+      {!hideSidebar && <Sidebar />}
 
       <main
-        className={`ml-[18%] py-8 px-20 ${
-          router.pathname !== "/" ? "w-[82%]" : "w-[63%]"
-        }`}
+        className={`${!hideSidebar ? "ml-[18%] w-[82%]" : "w-full"} py-8 px-20`}
       >
         {children}
       </main>

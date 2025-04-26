@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Sheet from "@mui/joy/Sheet";
 import Typography from "@mui/joy/Typography";
@@ -8,17 +8,42 @@ import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
 import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
-import axiosInstance from "../utils/axiosConfig";
+import Select from "@mui/joy/Select";
+import Option from "@mui/joy/Option";
+import axiosInstance, { getCookie } from "../utils/axiosConfig";
 
 export default function Register(): JSX.Element {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [companyId, setCompanyId] = useState("company-a");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [generalError, setGeneralError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Initialize company ID from query param or localStorage
+  useEffect(() => {
+    // Check if there's a company ID in the query parameters
+    const queryCompanyId = router.query.companyId as string;
+
+    // Check if there's a company ID in localStorage or cookie
+    const storedCompanyId = localStorage.getItem("companyId");
+    const cookieCompanyId =
+      getCookie("company_id") || getCookie("company_id_js");
+
+    // Use query param first, then cookie, then localStorage, then default
+    const initialCompanyId =
+      queryCompanyId || cookieCompanyId || storedCompanyId || "company-a";
+
+    setCompanyId(initialCompanyId);
+
+    // Also store it in localStorage for persistence
+    if (initialCompanyId) {
+      localStorage.setItem("companyId", initialCompanyId);
+    }
+  }, [router.query]);
 
   const handleRegister = async (
     event: React.FormEvent<HTMLFormElement>,
@@ -29,18 +54,31 @@ export default function Register(): JSX.Element {
     setGeneralError("");
 
     try {
-      // Send registration data to backend
-      const response = await axiosInstance.post("/api/register", {
-        username,
-        email,
-        full_name: fullName,
-        password,
-      });
+      // Store company ID in localStorage for later use
+      localStorage.setItem("companyId", companyId);
 
-      // Instead of auto-login, redirect to login page with success message
+      // Send registration data to backend with company ID header
+      const response = await axiosInstance.post(
+        "/api/register",
+        {
+          username,
+          email,
+          full_name: fullName,
+          password,
+        },
+        {
+          headers: {
+            "X-Company-ID": companyId,
+          },
+        },
+      );
+
+      console.log("Registration successful:", response.data);
+
+      // Redirect to login page with success message and company ID
       await router.push({
         pathname: "/",
-        query: { registered: "success" },
+        query: { registered: "success", companyId },
       });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -83,7 +121,11 @@ export default function Register(): JSX.Element {
   };
 
   const handleLoginRedirect = async (): Promise<void> => {
-    await router.push("/");
+    // Pass company ID when redirecting to login
+    await router.push({
+      pathname: "/",
+      query: { companyId },
+    });
   };
 
   return (
@@ -117,7 +159,20 @@ export default function Register(): JSX.Element {
         )}
 
         <form onSubmit={handleRegister}>
-          <FormControl error={!!errors.username}>
+          <FormControl>
+            <FormLabel>Company</FormLabel>
+            <Select
+              value={companyId}
+              onChange={(_, newValue) => setCompanyId(newValue as string)}
+              disabled={isLoading}
+              sx={{ width: "100%" }}
+            >
+              <Option value="company-a">Peterson Parts Trading</Option>
+              <Option value="company-b">Company B</Option>
+            </Select>
+          </FormControl>
+
+          <FormControl error={!!errors.username} sx={{ mt: 2 }}>
             <FormLabel>Username</FormLabel>
             <Input
               type="text"
