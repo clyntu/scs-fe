@@ -22,6 +22,9 @@ if (typeof window !== "undefined") {
       // Ensure headers object exists
       config.headers = config.headers || {};
 
+      // Always send with credentials
+      config.withCredentials = true;
+
       if (companyId) {
         config.headers["X-Company-ID"] = companyId;
       } else if (
