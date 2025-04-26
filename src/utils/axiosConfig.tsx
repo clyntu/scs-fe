@@ -19,13 +19,6 @@ export function getCompanyId(): string {
   const fromCookie = getCookie("company_id");
   const fromLocalStorage = localStorage.getItem("companyId");
 
-  // Log for debugging
-  console.log("Company ID sources:", {
-    fromCookie,
-    fromLocalStorage,
-    allCookies: typeof document !== "undefined" ? document.cookie : "N/A",
-  });
-
   return fromCookie || fromLocalStorage || "company-a"; // Fallback to default
 }
 

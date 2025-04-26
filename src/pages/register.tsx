@@ -37,8 +37,6 @@ export default function Register(): JSX.Element {
         password,
       });
 
-      console.log("Registration successful:", response.data);
-
       // Instead of auto-login, redirect to login page with success message
       await router.push({
         pathname: "/",

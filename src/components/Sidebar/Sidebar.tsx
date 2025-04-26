@@ -67,14 +67,6 @@ export default function Sidebar(): JSX.Element {
 
     // Set company name based on ID
     setCompanyName(COMPANY_CONFIGS[id] ?? id);
-
-    // Log for debugging
-    console.log(
-      "Sidebar using company ID:",
-      id,
-      "company name:",
-      COMPANY_CONFIGS[id] ?? id,
-    );
   }, []);
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
