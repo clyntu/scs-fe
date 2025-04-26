@@ -51,12 +51,31 @@ export default function Sidebar(): JSX.Element {
   // store the final display name
   const [companyName, setCompanyName] = useState("");
 
+  const getCompanyId = () => {
+    // Try multiple sources in order of preference
+    const fromCookie = getCookie("company_id");
+    const fromJsCookie = getCookie("company_id_js");
+    const fromLocalStorage = localStorage.getItem("companyId");
+
+    return fromCookie || fromJsCookie || fromLocalStorage || "company-a";
+  };
+
   useEffect(() => {
     setMounted(true);
-    const id = getCookie("company_id") ?? "";
-    setCompanyName(COMPANY_CONFIGS[id] ?? id);
-  }, []);
+    // Get company ID using our helper
+    const id = getCompanyId();
 
+    // Set company name based on ID
+    setCompanyName(COMPANY_CONFIGS[id] ?? id);
+
+    // Log for debugging
+    console.log(
+      "Sidebar using company ID:",
+      id,
+      "company name:",
+      COMPANY_CONFIGS[id] ?? id,
+    );
+  }, []);
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
       ...prev,
