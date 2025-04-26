@@ -8,6 +8,8 @@ import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
 import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
+import Select from "@mui/joy/Select";
+import Option from "@mui/joy/Option";
 import axiosInstance from "../utils/axiosConfig";
 
 export interface User {
@@ -20,6 +22,7 @@ export interface User {
 export default function Login(): JSX.Element {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [companyId, setCompanyId] = useState("company-a");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -28,6 +31,12 @@ export default function Login(): JSX.Element {
   // Check if already logged in
   useEffect(() => {
     const checkUser = async (): Promise<void> => {
+      // Get stored company ID
+      const storedCompanyId = localStorage.getItem("companyId");
+      if (storedCompanyId) {
+        setCompanyId(storedCompanyId);
+      }
+
       try {
         const response = await axiosInstance.get<User>("/api/users/me/");
 
@@ -61,23 +70,20 @@ export default function Login(): JSX.Element {
     setSuccessMessage("");
 
     try {
+      // Set company ID header for the login request
       const response = await axiosInstance.post(
         "/api/token",
         `username=${email}&password=${password}`,
         {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
+            "X-Company-ID": companyId,
           },
+          withCredentials: true,
         },
       );
 
       console.log("Login successful:", response.data);
-
-      // Store the access token
-      localStorage.setItem("accessToken", response.data.access_token);
-
-      // Set authorization header for future requests
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${response.data.access_token}`;
 
       // Redirect to dashboard
       await router.push("/configuration/item");
@@ -99,7 +105,11 @@ export default function Login(): JSX.Element {
   };
 
   const handleRegisterRedirect = async (): Promise<void> => {
-    await router.push("/register");
+    // Pass selected company ID to registration page
+    await router.push({
+      pathname: "/register",
+      query: { companyId },
+    });
   };
 
   return (
@@ -140,6 +150,18 @@ export default function Login(): JSX.Element {
 
         <form onSubmit={handleSubmit}>
           <FormControl>
+            <FormLabel>Company</FormLabel>
+            <Select
+              value={companyId}
+              onChange={(_, newValue) => setCompanyId(newValue as string)}
+              disabled={isLoading}
+              sx={{ width: "100%" }}
+            >
+              <Option value="company-a">Peterson Parts Trading</Option>
+              <Option value="company-b">Company B</Option>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ mt: 2 }}>
             <FormLabel>Email</FormLabel>
             <Input
               type="email"

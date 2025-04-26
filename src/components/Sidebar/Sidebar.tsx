@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Box from "@mui/joy/Box";
 import { Divider, Typography } from "@mui/joy";
@@ -20,8 +20,13 @@ import SwapHorizontalCircleRoundedIcon from "@mui/icons-material/SwapHorizontalC
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import axiosInstance from "../../utils/axiosConfig";
+import axiosInstance, { getCookie } from "../../utils/axiosConfig";
 import SidebarLink from "./SidebarLink";
+
+export const COMPANY_CONFIGS = {
+  "company-a": "Peterson Parts Trading",
+  "company-b": "CompanyB",
+};
 
 export default function Sidebar(): JSX.Element {
   const router = useRouter();
@@ -41,6 +46,17 @@ export default function Sidebar(): JSX.Element {
     sales: true,
   });
 
+  // track when we’re client-side
+  const [mounted, setMounted] = useState(false);
+  // store the final display name
+  const [companyName, setCompanyName] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+    const id = getCookie("company_id") ?? "";
+    setCompanyName(COMPANY_CONFIGS[id] ?? id);
+  }, []);
+
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -51,15 +67,15 @@ export default function Sidebar(): JSX.Element {
   const handleLogout = async (): Promise<void> => {
     try {
       await axiosInstance.post("/api/logout");
-      localStorage.removeItem("accessToken");
       delete axiosInstance.defaults.headers.common.Authorization;
       await router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
-      localStorage.removeItem("accessToken");
       await router.push("/");
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <Box
@@ -84,7 +100,7 @@ export default function Sidebar(): JSX.Element {
         level="h4"
         sx={{ py: 1, px: 2, fontSize: "1.2rem", fontWeight: "bold" }}
       >
-        Peterson Parts Trading
+        {companyName}
       </Typography>
       <Divider />
 

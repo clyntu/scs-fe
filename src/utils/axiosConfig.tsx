@@ -6,72 +6,61 @@ const axiosInstance = axios.create({
   withCredentials: true, // Important for cookies
 });
 
-// Add a request interceptor to set the Authorization header
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// Helper function to get cookie value (for client-side readable cookies)
+export function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : null;
+}
 
-// Add a response interceptor to handle token refresh
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+// Only register these in the browser
+if (typeof window !== "undefined") {
+  // Request interceptor
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      const companyId = getCookie("company_id");
+      // Ensure headers object exists
+      config.headers = config.headers || {};
 
-    // If error is 401 and we haven't already tried to refresh
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      window.location.pathname !== "/"
-    ) {
-      originalRequest._retry = true;
-
-      try {
-        // Call your refresh token endpoint
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/refresh`,
-          {},
-          { withCredentials: true }, // Important to include cookies
-        );
-
-        const { access_token } = response.data;
-
-        // Update stored token
-        localStorage.setItem("accessToken", access_token);
-
-        // Update Authorization header and retry
-        axios.defaults.headers.common["Authorization"] =
-          `Bearer ${access_token}`;
-        originalRequest.headers["Authorization"] = `Bearer ${access_token}`;
-
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, redirect to login
-        localStorage.removeItem("accessToken");
+      if (companyId) {
+        config.headers["X-Company-ID"] = companyId;
+      } else if (
+        window.location.pathname !== "/" &&
+        window.location.pathname !== "/register"
+      ) {
         window.location.href = "/";
-        return Promise.reject(refreshError);
+        throw new Error("Company ID not found");
       }
-    }
 
-    // Handle 403 Forbidden - Insufficient permissions
-    if (error.response?.status === 403) {
-      // Get the error message from the response
-      const errorMessage =
-        error.response.data.detail ||
-        "You don't have permission to access this resource";
+      return config;
+    },
+    (error) => Promise.reject(error),
+  );
 
-      // Redirect to forbidden page with error message
-      window.location.href = `/forbidden?message=${encodeURIComponent(errorMessage)}`;
-    }
+  // Response interceptor
+  axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      const status = error.response?.status;
+      const path = window.location.pathname;
 
-    return Promise.reject(error);
-  },
-);
+      if (status === 401 && path !== "/") {
+        window.location.href = "/";
+      } else if (status === 403) {
+        const msg =
+          error.response.data.detail ||
+          "You don't have permission to access this resource";
+        window.location.href = `/forbidden?message=${encodeURIComponent(msg)}`;
+      } else if (
+        status === 400 &&
+        error.response.data?.detail?.includes("X-Company-ID")
+      ) {
+        window.location.href = "/";
+      }
+
+      return Promise.reject(error);
+    },
+  );
+}
 
 export default axiosInstance;
