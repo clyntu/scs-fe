@@ -53,7 +53,8 @@ if (typeof window !== "undefined") {
         window.location.href = `/forbidden?message=${encodeURIComponent(msg)}`;
       } else if (
         status === 400 &&
-        error.response.data?.detail?.includes("X-Company-ID")
+        error.response.data?.detail?.includes("X-Company-ID") &&
+        path !== "/"
       ) {
         window.location.href = "/";
       }

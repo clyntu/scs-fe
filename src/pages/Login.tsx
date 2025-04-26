@@ -10,7 +10,7 @@ import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
-import axiosInstance from "../utils/axiosConfig";
+import axiosInstance, { getCookie } from "../utils/axiosConfig";
 
 export interface User {
   id: number;
@@ -30,13 +30,14 @@ export default function Login(): JSX.Element {
 
   // Check if already logged in
   useEffect(() => {
-    const checkUser = async (): Promise<void> => {
-      // Get stored company ID
-      const storedCompanyId = localStorage.getItem("companyId");
-      if (storedCompanyId) {
-        setCompanyId(storedCompanyId);
-      }
+    const stored = localStorage.getItem("companyId");
 
+    const company = getCookie("company_id");
+    if (!company) {
+      return;
+    }
+
+    const checkUser = async (): Promise<void> => {
       try {
         const response = await axiosInstance.get<User>("/api/users/me/");
 
@@ -49,6 +50,7 @@ export default function Login(): JSX.Element {
     };
 
     // "void" tells TS/ESLint that you purposely are ignoring the Promise
+    if (stored != null) setCompanyId(stored);
     void checkUser();
   }, []);
 

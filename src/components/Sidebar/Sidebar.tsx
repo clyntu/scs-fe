@@ -65,6 +65,8 @@ export default function Sidebar(): JSX.Element {
   };
 
   const handleLogout = async (): Promise<void> => {
+    const id = getCookie("company_id");
+    localStorage.setItem("companyId", id ?? "company-a");
     try {
       await axiosInstance.post("/api/logout");
       delete axiosInstance.defaults.headers.common.Authorization;
