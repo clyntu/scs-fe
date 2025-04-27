@@ -17,25 +17,39 @@ const ViewWHModal = ({
   row,
   type,
 }: ViewWHModalProps): JSX.Element => {
+  const [isLoading, setIsLoading] = useState(false);
   const [warehouseItems, setWarehouseItems] = useState<
     AggregatedWarehouseItem[]
   >([]);
 
   useEffect(() => {
+    setIsLoading(true);
     if (type === "warehouse") {
       axiosInstance
         .get<PaginatedAggregatedWarehouseItems>(
           `/api/warehouse_items/aggregated?warehouse_id=${row?.id}`,
         )
-        .then((response) => setWarehouseItems(response.data.items))
-        .catch((error) => console.error("Error:", error));
+        .then((response) => {
+          setWarehouseItems(response.data.items);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoading(false);
+        });
     } else if (type === "item") {
       axiosInstance
         .get<PaginatedAggregatedWarehouseItems>(
           `/api/warehouse_items/aggregated?stock_code=${row?.stock_code}`,
         )
-        .then((response) => setWarehouseItems(response.data.items))
-        .catch((error) => console.error("Error:", error));
+        .then((response) => {
+          setWarehouseItems(response.data.items);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoading(false);
+        });
     }
   }, [row]);
 
@@ -106,7 +120,11 @@ const ViewWHModal = ({
                 }}
                 borderAxis="both"
               >
-                {warehouseItems.length > 0 ? (
+                {isLoading ? (
+                  <div className="w-[100%] items-center">
+                    <h5>Loading...</h5>
+                  </div>
+                ) : warehouseItems.length > 0 ? (
                   <>
                     <thead>
                       <tr>

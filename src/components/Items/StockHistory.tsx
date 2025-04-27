@@ -13,12 +13,20 @@ const StockHistory = ({
   row,
 }: ViewStockHistory): JSX.Element => {
   const [stockHistory, setStockHistory] = useState<IStockHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
     axiosInstance
       .get(`/api/items/stock-history/?stock_code=${row?.stock_code}`)
-      .then((response) => setStockHistory(response.data))
-      .catch((error) => console.error("Error:", error));
+      .then((response) => {
+        setStockHistory(response.data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   }, [row]);
 
   return (
@@ -88,7 +96,11 @@ const StockHistory = ({
                 }}
                 borderAxis="both"
               >
-                {stockHistory.length > 0 ? (
+                {isLoading ? (
+                  <div className="w-[100%] items-center">
+                    <h5>Loading...</h5>
+                  </div>
+                ) : stockHistory.length > 0 ? (
                   <>
                     <thead>
                       <tr>
