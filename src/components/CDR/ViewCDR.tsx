@@ -103,7 +103,12 @@ const ViewCDR = ({
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
+        <Box
+          sx={{
+            mb: 4,
+          }}
+          className="flex justify-between"
+        >
           <h2>Customer Delivery Receipt</h2>
           <Button
             className="mt-2 mb-4 bg-button-primary"

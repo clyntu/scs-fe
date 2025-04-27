@@ -134,7 +134,12 @@ const WarehouseForm = (): JSX.Element => {
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
+        <Box
+          sx={{
+            mb: 4,
+          }}
+          className="flex justify-between"
+        >
           <h2>Warehouses</h2>
           <Button
             className="mt-2 mb-4 bg-button-primary"

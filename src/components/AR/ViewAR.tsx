@@ -148,7 +148,12 @@ const ViewAR = ({
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
+        <Box
+          sx={{
+            mb: 4,
+          }}
+          className="flex justify-between"
+        >
           <h2>AR Receipts</h2>
           <div>
             <Button

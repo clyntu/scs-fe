@@ -247,7 +247,7 @@ const ItemForm = (): JSX.Element => {
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
+        <Box className="flex justify-between">
           <h2>Stocks</h2>
 
           <div>
