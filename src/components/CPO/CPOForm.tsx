@@ -13,6 +13,7 @@ import {
   calculateTotalWithDiscounts,
 } from "./CPOForm/helpers";
 import type {
+  CPO,
   CPOFormProps,
   Customer,
   Item,
@@ -20,6 +21,7 @@ import type {
   PaginatedItems,
 } from "../../interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -60,6 +62,9 @@ const CPOForm = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [indexOfModal, setIndexOfModal] = useState(0);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+
   useEffect(() => {
     // Fetch customers
     axiosInstance
@@ -84,7 +89,7 @@ const CPOForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    if (selectedRow !== null && selectedRow?.customer_id !== undefined) {
+    const fetchValues = (selectedRow: CPO) => {
       setDiscounts({
         customer: [
           selectedRow?.customer_discount_1 ?? 0,
@@ -102,14 +107,23 @@ const CPOForm = ({
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
+    };
 
+    if (selectedRow !== null && selectedRow?.customer_id !== undefined) {
       // Get Customer for Edit
       axiosInstance
         .get<Customer>(`/api/customers/${selectedRow?.customer_id}`)
         .then((response) => {
           setSelectedCustomer(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -227,7 +241,9 @@ const CPOForm = ({
 
     const payload = createPayload(itemPayload, false);
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/customer_purchase_orders/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -236,6 +252,7 @@ const CPOForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -265,10 +282,12 @@ const CPOForm = ({
 
     const payload = createPayload(itemPayload, true);
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/customer_purchase_orders/${selectedRow?.id}`,
         payload,
       );
+      setIsSaving(false);
       setOpen(false);
       toast.success("Save successful!");
       // Handle the response, update state, etc.
@@ -276,6 +295,7 @@ const CPOForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -309,75 +329,85 @@ const CPOForm = ({
     >
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
-        <Button
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <CPOFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        customers={customers}
-        // Fields
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        setSelectedItems={setSelectedItems}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        discounts={discounts}
-        setDiscounts={setDiscounts}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        priceLevel={priceLevel}
-        setPriceLevel={setPriceLevel}
-        // Summary Amounts
-        netTotal={netTotal}
-        grossTotal={grossTotal}
-      />
-      <CPOFormTable
-        items={items}
-        status={status}
-        selectedRow={selectedRow}
-        selectedItems={selectedItems}
-        setSelectedItems={setSelectedItems}
-        indexOfModal={indexOfModal}
-        setIndexOfModal={setIndexOfModal}
-        isConfirmOpen={isConfirmOpen}
-        setIsConfirmOpen={setIsConfirmOpen}
-        selectedCustomer={selectedCustomer}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <CPOFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            customers={customers}
+            // Fields
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            setSelectedItems={setSelectedItems}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            discounts={discounts}
+            setDiscounts={setDiscounts}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            priceLevel={priceLevel}
+            setPriceLevel={setPriceLevel}
+            // Summary Amounts
+            netTotal={netTotal}
+            grossTotal={grossTotal}
+          />
+          <CPOFormTable
+            items={items}
+            status={status}
+            selectedRow={selectedRow}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            indexOfModal={indexOfModal}
+            setIndexOfModal={setIndexOfModal}
+            isConfirmOpen={isConfirmOpen}
+            setIsConfirmOpen={setIsConfirmOpen}
+            selectedCustomer={selectedCustomer}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };
