@@ -8,6 +8,8 @@ import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { POPayload, POItemValues, NewPriceInstance } from "./interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import CircularProgress from "@mui/joy/CircularProgress";
+
 import type { User } from "../../pages/Login";
 import {
   areDiscountsValid,
@@ -19,6 +21,7 @@ import type {
   Item,
   PaginatedSuppliers,
   PaginatedItems,
+  PurchaseOrder,
 } from "../../interface";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
@@ -60,6 +63,10 @@ const PurchaseOrderForm = ({
   const [indexOfModal, setIndexOfModal] = useState(0);
   const [newPrices, setNewPrices] = useState<NewPriceInstance[]>([]);
 
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [isFetching, setIsFetching] = useState(true);
+
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
@@ -84,7 +91,7 @@ const PurchaseOrderForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    if (selectedRow !== null && selectedRow?.supplier_id !== undefined) {
+    const fetchValues = (selectedRow: PurchaseOrder) => {
       setCurrencyUsed(selectedRow?.currency_used ?? "USD");
       setDiscounts({
         supplier: [
@@ -103,14 +110,26 @@ const PurchaseOrderForm = ({
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
+    };
 
-      // Get Supplier for Edit
+    if (selectedRow !== null && selectedRow?.supplier_id !== undefined) {
+      setIsFetching(true);
+
+      // Run Fetch values for edit
       axiosInstance
         .get<Supplier>(`/api/suppliers/${selectedRow?.supplier_id}`)
         .then((response) => {
           setSelectedSupplier(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -294,7 +313,9 @@ const PurchaseOrderForm = ({
 
     const payload = createPayload(itemPayload, false);
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/purchase_orders/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -303,6 +324,7 @@ const PurchaseOrderForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -340,17 +362,20 @@ const PurchaseOrderForm = ({
 
     const payload = createPayload(itemPayload, true);
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/purchase_orders/${selectedRow?.id}`,
         payload,
       );
       setOpen(false);
+      setIsSaving(false);
       toast.success("Save successful!");
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -385,80 +410,89 @@ const PurchaseOrderForm = ({
     >
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
-        <Button
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <POFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        suppliers={suppliers}
-        // Fields
-        selectedSupplier={selectedSupplier}
-        setSelectedSupplier={setSelectedSupplier}
-        setSelectedItems={setSelectedItems}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        discounts={discounts}
-        setDiscounts={setDiscounts}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        currencyUsed={currencyUsed}
-        setCurrencyUsed={setCurrencyUsed}
-        pesoRate={pesoRate}
-        setPesoRate={setPesoRate}
-        // Summary Amounts
-        fobTotal={fobTotal}
-        netAmount={netAmount}
-        landedTotal={landedTotal}
-      />
-      <POFormTable
-        items={items}
-        status={status}
-        selectedRow={selectedRow}
-        selectedItems={selectedItems}
-        setSelectedItems={setSelectedItems}
-        indexOfModal={indexOfModal}
-        setIndexOfModal={setIndexOfModal}
-        newPrices={newPrices}
-        setNewPrices={setNewPrices}
-        isConfirmOpen={isConfirmOpen}
-        setIsConfirmOpen={setIsConfirmOpen}
-        selectedSupplier={selectedSupplier}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <POFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            suppliers={suppliers}
+            // Fields
+            selectedSupplier={selectedSupplier}
+            setSelectedSupplier={setSelectedSupplier}
+            setSelectedItems={setSelectedItems}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            discounts={discounts}
+            setDiscounts={setDiscounts}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            currencyUsed={currencyUsed}
+            setCurrencyUsed={setCurrencyUsed}
+            pesoRate={pesoRate}
+            setPesoRate={setPesoRate}
+            // Summary Amounts
+            fobTotal={fobTotal}
+            netAmount={netAmount}
+            landedTotal={landedTotal}
+          />
+          <POFormTable
+            items={items}
+            status={status}
+            selectedRow={selectedRow}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            indexOfModal={indexOfModal}
+            setIndexOfModal={setIndexOfModal}
+            newPrices={newPrices}
+            setNewPrices={setNewPrices}
+            isConfirmOpen={isConfirmOpen}
+            setIsConfirmOpen={setIsConfirmOpen}
+            selectedSupplier={selectedSupplier}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };
