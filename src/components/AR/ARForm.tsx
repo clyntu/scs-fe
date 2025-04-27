@@ -15,6 +15,7 @@ import type {
   AR,
 } from "../../interface";
 import ReverseARModal from "./ReverseARModal";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const ARForm = ({
   setOpen,
@@ -53,6 +54,10 @@ const ARForm = ({
   const [reversalReason, setReversalReason] = useState("");
   const [openReverse, setOpenReverse] = useState(false);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
+
   const totalApplied = outstandingTrans.reduce(
     (total, trans) => total + Number(trans.payment),
     0,
@@ -75,14 +80,7 @@ const ARForm = ({
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
 
-    if (selectedRow !== null && selectedRow !== undefined) {
-      // Get Customer for Edit
-      axiosInstance
-        .get<Customer>(`/api/customers/${customerID}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
+    const fetchValues = (selectedRow: AR) => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setPaymentMode(selectedRow.payment_method);
@@ -96,8 +94,21 @@ const ARForm = ({
       setAddAmount1(String(parseFloat(selectedRow.add_amount)));
       setRemarks(selectedRow?.remarks ?? "");
       setPaymentStatus(selectedRow.payment_status);
+    };
 
-      axiosInstance
+    if (selectedRow !== null && selectedRow !== undefined) {
+      const promises: Promise<any>[] = [];
+      // Get Customer for Edit
+      const customerPromise = axiosInstance
+        .get<Customer>(`/api/customers/${customerID}`)
+        .then((response) => {
+          setSelectedCustomer(response.data);
+        })
+        .catch((error) => console.error("Error:", error));
+
+      promises.push(customerPromise);
+
+      const arPromise = axiosInstance
         .get<AR>(`/api/ar-receipts/${selectedRow.id}`)
         .then((response) => {
           const ARItems = response.data.receipt_items;
@@ -123,23 +134,37 @@ const ARForm = ({
           setOutstandingTrans(formattedARItems);
         })
         .catch((error) => console.error("Error:", error));
+
+      promises.push(arPromise);
+
+      Promise.all(promises).finally(() => {
+        fetchValues(selectedRow);
+        setIsFetching(false);
+      });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
   const fetchARByCustomer = (customerId: number | null) => {
+    setIsLoadingItems(true);
     // Fetch ARs
     axiosInstance
       .get<OutstandingTrans[]>(
         `/api/ar-receipts/customer/${customerId}/outstanding-transactions`,
       )
-      .then((response) =>
+      .then((response) => {
         setOutstandingTrans(
           response.data.map((trans) => {
             return { ...trans, payment: "" };
           }),
-        ),
-      )
-      .catch((error) => console.error("Error:", error));
+        );
+        setIsLoadingItems(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingItems(false);
+      });
   };
 
   const resetForm = (): void => {
@@ -195,7 +220,9 @@ const ARForm = ({
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/ar-receipts/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -204,6 +231,7 @@ const ARForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -240,6 +268,7 @@ const ARForm = ({
     };
 
     try {
+      setIsSaving(true);
       // First unposted PUT request to edit fields
       await axiosInstance.put(`/api/ar-receipts/${selectedRow?.id}`, payload);
 
@@ -252,10 +281,12 @@ const ARForm = ({
           toast.error(
             `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
           );
+          setIsSaving(false);
           return; // Prevent form reset and closing if post fails
         }
       }
 
+      setIsSaving(false);
       // Reset form and close modal only if everything succeeded
       resetForm();
       setOpen(false);
@@ -263,6 +294,7 @@ const ARForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -306,83 +338,93 @@ const ARForm = ({
               Bounce Check
             </Button>
           )}
-          <Button
+          {/* <Button
             className="w-[130px] h-[35px] bg-button-neutral ml-3"
             size="sm"
             color="neutral"
           >
             <LocalPrintshopIcon className="mr-2" />
             Print
-          </Button>
+          </Button> */}
         </div>
       </div>
-      <ARFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        customers={customers}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        fetchARByCustomer={fetchARByCustomer}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        isEditDisabled={isEditDisabled}
-        paymentMode={paymentMode}
-        setPaymentMode={setPaymentMode}
-        checkDate={checkDate}
-        setCheckDate={setCheckDate}
-        checkNumber={checkNumber}
-        setCheckNumber={setCheckNumber}
-        amountPaid={amountPaid}
-        setAmountPaid={setAmountPaid}
-        addAmount1={addAmount1}
-        addAmount2={addAmount2}
-        addAmount3={addAmount3}
-        setAddAmount1={setAddAmount1}
-        setAddAmount2={setAddAmount2}
-        setAddAmount3={setAddAmount3}
-        lessAmount={lessAmount}
-        setLessAmount={setLessAmount}
-        totalApplied={totalApplied}
-        paymentAmount={paymentAmount}
-        refNo={refNo}
-        setRefNo={setRefNo}
-        paymentStatus={paymentStatus}
-      />
-      <ARFormTable
-        outstandingTrans={outstandingTrans}
-        setOutstandingTrans={setOutstandingTrans}
-        selectedRow={selectedRow}
-        openEdit={openEdit}
-        isEditDisabled={isEditDisabled}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <ARFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            fetchARByCustomer={fetchARByCustomer}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            isEditDisabled={isEditDisabled}
+            paymentMode={paymentMode}
+            setPaymentMode={setPaymentMode}
+            checkDate={checkDate}
+            setCheckDate={setCheckDate}
+            checkNumber={checkNumber}
+            setCheckNumber={setCheckNumber}
+            amountPaid={amountPaid}
+            setAmountPaid={setAmountPaid}
+            addAmount1={addAmount1}
+            addAmount2={addAmount2}
+            addAmount3={addAmount3}
+            setAddAmount1={setAddAmount1}
+            setAddAmount2={setAddAmount2}
+            setAddAmount3={setAddAmount3}
+            lessAmount={lessAmount}
+            setLessAmount={setLessAmount}
+            totalApplied={totalApplied}
+            paymentAmount={paymentAmount}
+            refNo={refNo}
+            setRefNo={setRefNo}
+            paymentStatus={paymentStatus}
+          />
+          <ARFormTable
+            outstandingTrans={outstandingTrans}
+            setOutstandingTrans={setOutstandingTrans}
+            selectedRow={selectedRow}
+            openEdit={openEdit}
+            isLoadingItems={isLoadingItems}
+            isEditDisabled={isEditDisabled}
+          />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
+
       <ReverseARModal
         open={openReverse}
         setOpen={setOpenReverse}

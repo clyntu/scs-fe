@@ -51,6 +51,7 @@ export interface ARFormTableProps {
   selectedRow: AR | undefined;
   openEdit: boolean;
   isEditDisabled: boolean;
+  isLoadingItems: boolean;
 }
 
 export interface DRItemsFE {

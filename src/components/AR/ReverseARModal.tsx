@@ -2,6 +2,7 @@ import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box, Input } from "@mui/joy";
+import { useState } from "react";
 
 const ReverseARModal = ({
   open,
@@ -18,6 +19,7 @@ const ReverseARModal = ({
   reverseReason: string;
   setReverseReason: (reason: string) => void;
 }): JSX.Element => {
+  const [isBouncing, setIsBouncing] = useState(false);
   return (
     <Modal
       aria-labelledby="modal-title"
@@ -70,9 +72,12 @@ const ReverseARModal = ({
                 className="ml-4 w-[130px] bg-button-warning"
                 color="danger"
                 size="sm"
+                loading={isBouncing}
                 onClick={async () => {
+                  setIsBouncing(true);
                   await onDelete(); // Call the onDelete function when the button is clicked
                   setOpen(false);
+                  setIsBouncing(false);
                 }}
               >
                 Confirm

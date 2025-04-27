@@ -32,6 +32,7 @@ const ViewAR = ({
   const [status, setStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
   const [page, setPage] = useState(1);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const getAllAR = (): void => {
     const payload: PaginationQueryParams = {
@@ -111,6 +112,7 @@ const ViewAR = ({
 
   const handleGeneratePDF = () => {
     // Fetch data
+    setIsPrinting(true);
     axiosInstance
       .get<CustomerReceivableResponse>(
         `/customer-financial/receivables?${convertToQueryParams({
@@ -134,9 +136,13 @@ const ViewAR = ({
             bounced_payment: customer.bounced_payment,
           };
         });
+        setIsPrinting(false);
         generatePDF(data, total, "Peterson Parts Trading Inc.");
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsPrinting(false);
+      });
   };
 
   return (
@@ -149,6 +155,7 @@ const ViewAR = ({
               variant="soft"
               className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
               onClick={handleGeneratePDF}
+              loading={isPrinting}
             >
               Print Summary
             </Button>
