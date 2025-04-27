@@ -230,7 +230,7 @@ const RRFormDetails = ({
       </Card>
       <Card className="w-[40%]">
         <div>
-          <div className="ml-5 grid grid-cols-2">
+          <div className="grid grid-cols-2 place-items-center">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Invoice Amount</FormLabel>
               <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>

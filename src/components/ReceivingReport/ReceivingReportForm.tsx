@@ -14,9 +14,11 @@ import type {
   PaginatedSuppliers,
   RRFormProps,
   DeliveryReceipt,
+  ReceivingReport,
 } from "../../interface";
 import { Expense } from "./interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const ReceivingReportForm = ({
   setOpen,
@@ -54,6 +56,9 @@ const ReceivingReportForm = ({
   const [expenses, setExpenses] = useState([initialExpense]);
   const [totalExpense, setTotalExpense] = useState(0);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+
   const fobTotal = totalGross;
   const netAmount = totalNet - amountDiscount;
   const landedTotal = netAmount * Number(pesoRate);
@@ -83,39 +88,49 @@ const ReceivingReportForm = ({
     const supplierID = selectedRow?.supplier_id;
 
     if (selectedRow !== null && selectedRow !== undefined) {
-      setStatus(selectedRow?.status ?? "unposted");
-      setTransactionDate(selectedRow?.transaction_date ?? currentDate);
-      setReferenceNumber(selectedRow?.reference_number ?? "");
-      setRemarks(selectedRow?.remarks ?? "");
-      setSelectedSDRs(selectedRow?.sdrs);
-      setPesoRate(selectedRow?.rate ?? 56);
+      const fetchValues = (selectedRow: ReceivingReport) => {
+        setStatus(selectedRow?.status ?? "unposted");
+        setTransactionDate(selectedRow?.transaction_date ?? currentDate);
+        setReferenceNumber(selectedRow?.reference_number ?? "");
+        setRemarks(selectedRow?.remarks ?? "");
+        setSelectedSDRs(selectedRow?.sdrs);
+        setPesoRate(selectedRow?.rate ?? 56);
 
-      // Get Fixed Discounts and sum them
-      let totalDiscount = 0;
-      selectedRow.sdrs.forEach((sdr) => {
-        totalDiscount += sdr.discount_amount;
-      });
-      setAmountDiscount(totalDiscount);
+        // Get Fixed Discounts and sum them
+        let totalDiscount = 0;
+        selectedRow.sdrs.forEach((sdr) => {
+          totalDiscount += sdr.discount_amount;
+        });
+        setAmountDiscount(totalDiscount);
 
-      // Set expenses
-      setExpenses(
-        selectedRow.expenses.map((expense) => {
-          return {
-            id: expense.id,
-            expense: expense.expense,
-            amount: expense.amount,
-            comments: expense.comments,
-          };
-        }),
-      );
+        // Set expenses
+        setExpenses(
+          selectedRow.expenses.map((expense) => {
+            return {
+              id: expense.id,
+              expense: expense.expense,
+              amount: expense.amount,
+              comments: expense.comments,
+            };
+          }),
+        );
+      };
 
       // Get Supplier for Edit
       axiosInstance
         .get<Supplier>(`/api/suppliers/${supplierID}`)
         .then((response) => {
           setSelectedSupplier(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -160,7 +175,9 @@ const ReceivingReportForm = ({
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/receiving-reports/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -169,6 +186,7 @@ const ReceivingReportForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -201,21 +219,21 @@ const ReceivingReportForm = ({
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/receiving-reports/${selectedRow?.id}`,
         payload,
       );
       toast.success("Save successful!");
       resetForm();
+      setIsSaving(false);
       setOpen(false);
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
-      console.log(
-        error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail,
-      );
+      setIsSaving(false);
     }
   };
 
@@ -229,90 +247,99 @@ const ReceivingReportForm = ({
     >
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
-        <Button
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <RRFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        suppliers={suppliers}
-        // Fields
-        selectedSupplier={selectedSupplier}
-        setSelectedSupplier={setSelectedSupplier}
-        selectedSDRs={selectedSDRs}
-        setSelectedSDRs={setSelectedSDRs}
-        status={status}
-        setStatus={setStatus}
-        pesoRate={pesoRate}
-        setPesoRate={setPesoRate}
-        currencyUsed={currencyUsed}
-        setCurrencyUsed={setCurrencyUsed}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        amountDiscount={amountDiscount}
-        setAmountDiscount={setAmountDiscount}
-        // Summary Amounts
-        fobTotal={fobTotal}
-        netAmount={netAmount}
-        landedTotal={landedTotal}
-        totalExpense={totalExpense}
-        percentNetCost={percentNetCost}
-        isEditDisabled={isEditDisabled}
-      />
-      <RRFormTable
-        selectedRow={selectedRow}
-        selectedSDRs={selectedSDRs}
-        setSelectedSDRs={setSelectedSDRs}
-        totalNet={totalNet}
-        servedAmt={servedAmt}
-        setServedAmt={setServedAmt}
-        setTotalNet={setTotalNet}
-        setTotalGross={setTotalGross}
-        openEdit={openEdit}
-        pesoRate={pesoRate}
-        percentNetCost={percentNetCost}
-      />
-      <Divider />
-      <RRFormExpenses
-        selectedSDRs={selectedSDRs}
-        expenses={expenses}
-        setExpenses={setExpenses}
-        setTotalExpense={setTotalExpense}
-        isEditDisabled={isEditDisabled}
-      />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <RRFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            suppliers={suppliers}
+            // Fields
+            selectedSupplier={selectedSupplier}
+            setSelectedSupplier={setSelectedSupplier}
+            selectedSDRs={selectedSDRs}
+            setSelectedSDRs={setSelectedSDRs}
+            status={status}
+            setStatus={setStatus}
+            pesoRate={pesoRate}
+            setPesoRate={setPesoRate}
+            currencyUsed={currencyUsed}
+            setCurrencyUsed={setCurrencyUsed}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            amountDiscount={amountDiscount}
+            setAmountDiscount={setAmountDiscount}
+            // Summary Amounts
+            fobTotal={fobTotal}
+            netAmount={netAmount}
+            landedTotal={landedTotal}
+            totalExpense={totalExpense}
+            percentNetCost={percentNetCost}
+            isEditDisabled={isEditDisabled}
+          />
+          <RRFormTable
+            selectedRow={selectedRow}
+            selectedSDRs={selectedSDRs}
+            setSelectedSDRs={setSelectedSDRs}
+            totalNet={totalNet}
+            servedAmt={servedAmt}
+            setServedAmt={setServedAmt}
+            setTotalNet={setTotalNet}
+            setTotalGross={setTotalGross}
+            openEdit={openEdit}
+            pesoRate={pesoRate}
+            percentNetCost={percentNetCost}
+          />
+          <Divider />
+          <RRFormExpenses
+            selectedSDRs={selectedSDRs}
+            expenses={expenses}
+            setExpenses={setExpenses}
+            setTotalExpense={setTotalExpense}
+            isEditDisabled={isEditDisabled}
+          />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

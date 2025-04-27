@@ -147,7 +147,9 @@ const DeliveryReceiptForm = ({
     };
 
     try {
+      setIsSaving(true)
       await axiosInstance.post("/api/supplier-delivery-receipts/", payload);
+      setIsSaving(false)
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -156,6 +158,7 @@ const DeliveryReceiptForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false)
     }
   };
 
