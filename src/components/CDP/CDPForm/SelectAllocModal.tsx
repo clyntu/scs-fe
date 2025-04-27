@@ -4,17 +4,20 @@ import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box, ListItem, List, Checkbox, Table } from "@mui/joy";
 import { type AllocItemsFE, type UnplannedAlloc } from "../interface";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const SelectAllocModal = ({
   open,
   setOpen,
   unservedAllocs,
   setFormattedAllocs,
+  isLoadingUnserved,
 }: {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
   unservedAllocs: UnplannedAlloc[];
   setFormattedAllocs: Dispatch<SetStateAction<AllocItemsFE[]>>;
+  isLoadingUnserved: boolean;
 }): JSX.Element => {
   const [checkedAllocs, setCheckedAllocs] = useState<Record<string, boolean>>(
     {},
@@ -116,38 +119,51 @@ const SelectAllocModal = ({
             <div>
               <List size="sm" className="h-[250px] w-100 overflow-y-scroll">
                 <Table>
-                  <thead>
-                    <tr>
-                      <th>Check</th>
-                      <th>Alloc No.</th>
-                      <th>Trans. Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {unservedAllocs !== undefined &&
-                      unservedAllocs.length > 0 &&
-                      unservedAllocs.map((alloc) => (
-                        <tr key={alloc.id}>
-                          <td>
-                            <ListItem>
-                              <Checkbox
-                                checked={!!checkedAllocs[alloc.id]}
-                                onChange={() =>
-                                  handleCheckboxChange(String(alloc.id))
-                                }
-                              />
-                            </ListItem>
-                          </td>
-                          <td>{alloc.id}</td>
-                          <td>{alloc.transaction_date}</td>
+                  {isLoadingUnserved ? (
+                    <div className="w-full flex justify-center mt-[70px]">
+                      <CircularProgress size="md" variant="soft" />
+                    </div>
+                  ) : (
+                    <>
+                      <thead>
+                        <tr>
+                          <th>Check</th>
+                          <th>Alloc No.</th>
+                          <th>Trans. Date</th>
                         </tr>
-                      ))}
-                  </tbody>
+                      </thead>
+                      <tbody>
+                        {!isLoadingUnserved && (
+                          <>
+                            {unservedAllocs.length === 0 && (
+                              <p className="mt-5 text-sm">
+                                No Allocations to Plan
+                              </p>
+                            )}
+                            {unservedAllocs !== undefined &&
+                              unservedAllocs.length > 0 &&
+                              unservedAllocs.map((alloc) => (
+                                <tr key={alloc.id}>
+                                  <td>
+                                    <ListItem>
+                                      <Checkbox
+                                        checked={!!checkedAllocs[alloc.id]}
+                                        onChange={() =>
+                                          handleCheckboxChange(String(alloc.id))
+                                        }
+                                      />
+                                    </ListItem>
+                                  </td>
+                                  <td>{alloc.id}</td>
+                                  <td>{alloc.transaction_date}</td>
+                                </tr>
+                              ))}
+                          </>
+                        )}
+                      </tbody>
+                    </>
+                  )}
                 </Table>
-                {(unservedAllocs === undefined ||
-                  unservedAllocs.length === 0) && (
-                  <p className="mt-5 text-sm">No Allocations to Plan</p>
-                )}
               </List>
             </div>
             <div className="flex justify-end mt-5">

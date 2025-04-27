@@ -8,6 +8,7 @@ import axiosInstance from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { UnplannedAlloc, type AllocItemsFE } from "./interface";
+import CircularProgress from "@mui/joy/CircularProgress";
 import type {
   CDPFormProps,
   PaginatedCustomers,
@@ -15,6 +16,7 @@ import type {
   Alloc,
   DeliveryPlanItem,
   CPO,
+  CDP,
 } from "../../interface";
 
 const CDPForm = ({
@@ -39,6 +41,9 @@ const CDPForm = ({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [amountDiscount, setAmountDiscount] = useState(0);
   const [remarks, setRemarks] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   const totalItems = formattedAllocs.reduce(
     (sum, item) => sum + (Number(item.dp_qty) > 0 ? 1 : 0),
@@ -68,21 +73,12 @@ const CDPForm = ({
   useEffect(() => {
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
-
-    if (selectedRow !== null && selectedRow !== undefined) {
+    const fetchValues = (selectedRow: CDP) => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
       setAmountDiscount(Number(selectedRow?.discount_amount));
-
-      // Get Customer for Edit
-      axiosInstance
-        .get<Customer>(`/api/customers/${customerID}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
 
       // Fill in formatted allocs for table
       const formattedAllocs = selectedRow.delivery_plan_items.map((DPItem) => {
@@ -131,6 +127,24 @@ const CDPForm = ({
       });
 
       setFormattedAllocs(formattedAllocs);
+    };
+
+    if (selectedRow !== null && selectedRow !== undefined) {
+      // Get Customer for Edit
+      axiosInstance
+        .get<Customer>(`/api/customers/${customerID}`)
+        .then((response) => {
+          setSelectedCustomer(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -212,7 +226,9 @@ const CDPForm = ({
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
     const payload = createPayload();
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/delivery-plans/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -221,6 +237,7 @@ const CDPForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -228,10 +245,12 @@ const CDPForm = ({
     const payload = createPayload();
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/delivery-plans/${selectedRow?.id}`,
         payload,
       );
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -240,6 +259,7 @@ const CDPForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -253,72 +273,82 @@ const CDPForm = ({
     >
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
-        <Button
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <CDPFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        customers={customers}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        formattedAllocs={formattedAllocs}
-        setFormattedAllocs={setFormattedAllocs}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        isEditDisabled={isEditDisabled}
-        totalNet={totalNet}
-        totalGross={totalGross}
-        totalItems={totalItems}
-        amountDiscount={amountDiscount}
-        setAmountDiscount={setAmountDiscount}
-      />
-      <CDPFormTable
-        selectedRow={selectedRow}
-        formattedAllocs={formattedAllocs}
-        setFormattedAllocs={setFormattedAllocs}
-        totalGross={totalGross}
-        totalNet={totalNet}
-        totalItems={totalItems}
-        openEdit={openEdit}
-        isEditDisabled={isEditDisabled}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <CDPFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            formattedAllocs={formattedAllocs}
+            setFormattedAllocs={setFormattedAllocs}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            isEditDisabled={isEditDisabled}
+            totalNet={totalNet}
+            totalGross={totalGross}
+            totalItems={totalItems}
+            amountDiscount={amountDiscount}
+            setAmountDiscount={setAmountDiscount}
+          />
+          <CDPFormTable
+            selectedRow={selectedRow}
+            formattedAllocs={formattedAllocs}
+            setFormattedAllocs={setFormattedAllocs}
+            totalGross={totalGross}
+            totalNet={totalNet}
+            totalItems={totalItems}
+            openEdit={openEdit}
+            isEditDisabled={isEditDisabled}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

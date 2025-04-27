@@ -48,23 +48,29 @@ const CDPFormDetails = ({
   amountDiscount,
   setAmountDiscount,
 }: CDPFormDetailsProps): JSX.Element => {
+  const [isLoadingUnserved, setIsLoadingUnserved] = useState(false);
   const [unservedAllocs, setUnservedAllocs] = useState<UnplannedAlloc[]>([]);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedCustomer !== null && selectedCustomer !== undefined) {
+      setIsLoadingUnserved(true);
       axiosInstance
         .get<UnplannedAlloc[]>(
           `/api/allocations/unplanned/${selectedCustomer.customer_id}`,
         )
-        .then((response) =>
+        .then((response) => {
           setUnservedAllocs(
             response.data
               .filter((alloc) => alloc.status === "posted")
               .sort((a, b) => b.id - a.id),
-          ),
-        )
-        .catch((error) => console.error("Error:", error));
+          );
+          setIsLoadingUnserved(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoadingUnserved(false);
+        });
     }
   }, [selectedCustomer]);
 
@@ -120,6 +126,7 @@ const CDPFormDetails = ({
         setOpen={setIsSelectModalOpen}
         unservedAllocs={unservedAllocs}
         setFormattedAllocs={setFormattedAllocs}
+        isLoadingUnserved={isLoadingUnserved}
       />
       <Card className="w-[60%] mr-7">
         <div>
