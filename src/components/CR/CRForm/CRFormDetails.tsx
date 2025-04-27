@@ -43,11 +43,13 @@ const CRFormDetails = ({
   totalGross,
   totalItems,
 }: CRFormDetailsProps): JSX.Element => {
+  const [isFetchingCDRs, setIsFetchingCDRs] = useState(false);
   const [CDRs, setCDRs] = useState<CDR[]>([]);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedCustomer !== null && selectedCustomer !== undefined) {
+      setIsFetchingCDRs(true);
       const params = {
         customer_id: selectedCustomer.customer_id,
         status: "posted",
@@ -57,8 +59,14 @@ const CRFormDetails = ({
         .get<PaginatedCDR>(
           `/api/delivery-receipts/?${convertToQueryParams(params)}`,
         )
-        .then((response) => setCDRs(response.data.items))
-        .catch((error) => console.error("Error:", error));
+        .then((response) => {
+          setCDRs(response.data.items);
+          setIsFetchingCDRs(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsFetchingCDRs(false);
+        });
     }
   }, [selectedCustomer]);
 
@@ -69,6 +77,7 @@ const CRFormDetails = ({
         setOpen={setIsSelectModalOpen}
         CDRs={CDRs}
         setFormattedDRs={setFormattedDRs}
+        isFetchingCDRs={isFetchingCDRs}
       />
       <Card className="w-[60%] mr-7">
         <div>

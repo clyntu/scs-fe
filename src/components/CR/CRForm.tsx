@@ -17,8 +17,10 @@ import type {
   CPO,
   PaginatedWarehouse,
   Warehouse,
+  CR,
 } from "../../interface";
 import { generateCRPDF } from "./generatePDF";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const CRForm = ({
   setOpen,
@@ -45,6 +47,9 @@ const CRForm = ({
   const [transactionDate, setTransactionDate] = useState(currentDate);
   const [referenceNumber, setReferenceNumber] = useState("");
   const [remarks, setRemarks] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   const totalItems = formattedDRs.reduce(
     (sum, item) => sum + Number(item.return_qty),
@@ -77,19 +82,11 @@ const CRForm = ({
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
 
-    if (selectedRow !== null && selectedRow !== undefined) {
+    const fetchValues = (selectedRow: CR) => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
-
-      // Get Customer for Edit
-      axiosInstance
-        .get<Customer>(`/api/customers/${customerID}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
 
       // Fill in formatted DRs for table
       const formattedDRs = selectedRow.items.map((CRItem) => {
@@ -130,8 +127,25 @@ const CRForm = ({
             allocatedItem.customer_purchase_order.transaction_discount_3,
         };
       });
-
       setFormattedDRs(formattedDRs);
+    };
+
+    if (selectedRow !== null && selectedRow !== undefined) {
+      // Get Customer for Edit
+      axiosInstance
+        .get<Customer>(`/api/customers/${customerID}`)
+        .then((response) => {
+          setSelectedCustomer(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -211,7 +225,9 @@ const CRForm = ({
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
     const payload = createPayload();
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/customer-returns/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -220,6 +236,7 @@ const CRForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -227,10 +244,12 @@ const CRForm = ({
     const payload = createPayload();
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/customer-returns/${selectedRow?.id}`,
         payload,
       );
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -239,6 +258,7 @@ const CRForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -258,70 +278,82 @@ const CRForm = ({
     >
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
-        <Button
-          onClick={handlePDFCreate}
-          className="w-[130px] h-[35px] bg-button-neutral"
-          size="sm"
-          color="neutral"
-        >
-          <LocalPrintshopIcon className="mr-2" />
-          Print
-        </Button>
-      </div>
-      <CRFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        customers={customers}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        formattedDRs={formattedDRs}
-        setFormattedDRs={setFormattedDRs}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        isEditDisabled={isEditDisabled}
-        totalGross={totalGross}
-        totalItems={totalItems}
-      />
-      <CRFormTable
-        selectedRow={selectedRow}
-        warehouses={warehouses}
-        formattedDRs={formattedDRs}
-        setFormattedDRs={setFormattedDRs}
-        totalGross={totalGross}
-        totalItems={totalItems}
-        openEdit={openEdit}
-        isEditDisabled={isEditDisabled}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
+        {isEditDisabled && !isFetching && (
           <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
+            onClick={handlePDFCreate}
+            className="w-[130px] h-[35px] bg-button-neutral"
             size="sm"
+            color="neutral"
           >
-            <SaveIcon className="mr-2" />
-            Save
+            <LocalPrintshopIcon className="mr-2" />
+            Print
           </Button>
         )}
       </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <CRFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            formattedDRs={formattedDRs}
+            setFormattedDRs={setFormattedDRs}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            isEditDisabled={isEditDisabled}
+            totalGross={totalGross}
+            totalItems={totalItems}
+          />
+          <CRFormTable
+            selectedRow={selectedRow}
+            warehouses={warehouses}
+            formattedDRs={formattedDRs}
+            setFormattedDRs={setFormattedDRs}
+            totalGross={totalGross}
+            totalItems={totalItems}
+            openEdit={openEdit}
+            isEditDisabled={isEditDisabled}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

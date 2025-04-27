@@ -135,11 +135,6 @@ const SelectAllocModal = ({
                       <tbody>
                         {!isLoadingUnserved && (
                           <>
-                            {unservedAllocs.length === 0 && (
-                              <p className="mt-5 text-sm">
-                                No Allocations to Plan
-                              </p>
-                            )}
                             {unservedAllocs !== undefined &&
                               unservedAllocs.length > 0 &&
                               unservedAllocs.map((alloc) => (
@@ -164,6 +159,9 @@ const SelectAllocModal = ({
                     </>
                   )}
                 </Table>
+                {!isLoadingUnserved && unservedAllocs.length === 0 && (
+                  <p className="mt-5 text-sm">No Allocations to Plan</p>
+                )}
               </List>
             </div>
             <div className="flex justify-end mt-5">

@@ -5,17 +5,20 @@ import Sheet from "@mui/joy/Sheet";
 import { Button, Box, ListItem, List, Checkbox, Table } from "@mui/joy";
 import { type DRItemsFE } from "../interface";
 import { type CDR } from "../../../interface";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const SelectCDRModal = ({
   open,
   setOpen,
   CDRs,
   setFormattedDRs,
+  isFetchingCDRs,
 }: {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
   CDRs: CDR[];
   setFormattedDRs: Dispatch<SetStateAction<DRItemsFE[]>>;
+  isFetchingCDRs: boolean;
 }): JSX.Element => {
   const [checkedCDRs, setCheckedCDRs] = useState<Record<string, boolean>>({});
 
@@ -112,37 +115,45 @@ const SelectCDRModal = ({
             <div>
               <List size="sm" className="h-[250px] w-100 overflow-y-scroll">
                 <Table>
-                  <thead>
-                    <tr>
-                      <th>Check</th>
-                      <th>CDR No.</th>
-                      <th>Ref No.</th>
-                      <th>Trans. Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {CDRs !== undefined &&
-                      CDRs.length > 0 &&
-                      CDRs.map((cdr) => (
-                        <tr key={cdr.id}>
-                          <td>
-                            <ListItem>
-                              <Checkbox
-                                checked={!!checkedCDRs[cdr.id]}
-                                onChange={() =>
-                                  handleCheckboxChange(String(cdr.id))
-                                }
-                              />
-                            </ListItem>
-                          </td>
-                          <td>{cdr.id}</td>
-                          <td>{cdr.reference_number}</td>
-                          <td>{cdr.transaction_date}</td>
+                  {isFetchingCDRs ? (
+                    <div className="w-full flex justify-center mt-[70px]">
+                      <CircularProgress size="md" variant="soft" />
+                    </div>
+                  ) : (
+                    <>
+                      <thead>
+                        <tr>
+                          <th>Check</th>
+                          <th>CDR No.</th>
+                          <th>Ref No.</th>
+                          <th>Trans. Date</th>
                         </tr>
-                      ))}
-                  </tbody>
+                      </thead>
+                      <tbody>
+                        {!isFetchingCDRs &&
+                          CDRs.length > 0 &&
+                          CDRs.map((cdr) => (
+                            <tr key={cdr.id}>
+                              <td>
+                                <ListItem>
+                                  <Checkbox
+                                    checked={!!checkedCDRs[cdr.id]}
+                                    onChange={() =>
+                                      handleCheckboxChange(String(cdr.id))
+                                    }
+                                  />
+                                </ListItem>
+                              </td>
+                              <td>{cdr.id}</td>
+                              <td>{cdr.reference_number}</td>
+                              <td>{cdr.transaction_date}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </>
+                  )}
                 </Table>
-                {(CDRs === undefined || CDRs.length === 0) && (
+                {!isFetchingCDRs && CDRs.length === 0 && (
                   <p className="mt-5 text-sm">No CDRs to Plan</p>
                 )}
               </List>
