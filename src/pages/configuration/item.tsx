@@ -253,7 +253,13 @@ const ItemForm = (): JSX.Element => {
           <div>
             <Button
               variant="soft"
-              className="mr-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              sx={{
+                mr: 2,
+                mt: 2,
+                mb: 4,
+                width: "140px",
+              }}
+              className="bg-button-soft-primary"
               onClick={handleStocksPDFCreate}
               loading={isPrintingStocks}
             >
@@ -261,14 +267,25 @@ const ItemForm = (): JSX.Element => {
             </Button>
             <Button
               variant="soft"
-              className="mr-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              sx={{
+                mr: 2,
+                mt: 2,
+                mb: 4,
+                width: "140px",
+              }}
+              className="bg-button-soft-primary"
               onClick={handlePricelistPDFCreate}
               loading={isPrintingPricelist}
             >
               Print Pricelist
             </Button>
             <Button
-              className="mt-2 mb-4 bg-button-primary"
+              sx={{
+                mt: 2,
+                mb: 4,
+                width: "140px",
+              }}
+              className="bg-button-primary"
               color="primary"
               onClick={() => {
                 setOpenAdd(true);
@@ -324,7 +341,11 @@ const ItemForm = (): JSX.Element => {
             onClick={() => {
               getAllStocks(1, searchTerm);
             }}
-            className="ml-4 w-[80px] bg-button-primary"
+            sx={{
+              ml: 4,
+              width: "80px",
+            }}
+            className="bg-button-primary"
             size="sm"
           >
             Search
