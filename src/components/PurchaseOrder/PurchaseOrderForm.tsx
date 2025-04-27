@@ -64,7 +64,6 @@ const PurchaseOrderForm = ({
   const [newPrices, setNewPrices] = useState<NewPriceInstance[]>([]);
 
   const [isSaving, setIsSaving] = useState(false);
-
   const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
