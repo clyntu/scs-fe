@@ -57,6 +57,7 @@ export interface STFormTableProps {
   warehouses: PaginatedWarehouse;
   warehouseItems: WarehouseItemsFE[];
   setWarehouseItems: (warehouseItems: WarehouseItemsFE[]) => void;
+  isLoadingItems: boolean;
 }
 
 interface Destinations {

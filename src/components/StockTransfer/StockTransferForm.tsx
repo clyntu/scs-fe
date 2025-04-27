@@ -60,6 +60,7 @@ const StockTransferForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
 
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -116,7 +117,6 @@ const StockTransferForm = ({
 
     if (selectedRow !== null && selectedRow !== undefined) {
       if (warehouses?.items?.length) {
-        setIsFetching(true);
         fetchValues(selectedRow);
         const promises: Promise<any>[] = [];
 
@@ -210,6 +210,7 @@ const StockTransferForm = ({
     warehouse_id: number,
     rr: ReceivingReport | null = null,
   ) => {
+    setIsLoadingItems(true);
     const params: {
       warehouse_id: number;
     } = {
@@ -247,8 +248,12 @@ const StockTransferForm = ({
         }
 
         setWarehouseItems(formattedItems);
+        setIsLoadingItems(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingItems(false);
+      });
   };
 
   const getWarehouseItemsOnView = () => {
@@ -479,8 +484,8 @@ const StockTransferForm = ({
             warehouses={warehouses}
             warehouseItems={warehouseItems}
             setWarehouseItems={setWarehouseItems}
+            isLoadingItems={isLoadingItems}
           />
-          <Divider />
           <div className="flex justify-end mt-4">
             <Button
               className="ml-4 w-[130px]"

@@ -110,29 +110,27 @@ const CPOForm = ({
     };
 
     if (selectedRow !== null && selectedRow?.customer_id !== undefined) {
-      // Get Customer for Edit
-      axiosInstance
-        .get<Customer>(`/api/customers/${selectedRow?.customer_id}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-          fetchValues(selectedRow);
-          setIsFetching(false);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          setIsFetching(false);
-        });
+      if (items.length > 0) {
+        getAllCPOItems();
+        
+        // Get Customer for Edit
+        axiosInstance
+          .get<Customer>(`/api/customers/${selectedRow?.customer_id}`)
+          .then((response) => {
+            setSelectedCustomer(response.data);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          });
+      }
     } else {
       setIsFetching(false);
     }
-  }, [selectedRow]);
-
-  useEffect(() => {
-    // Set CPOItems only after items exist for edit
-    if (selectedRow !== undefined && items.length > 0) {
-      getAllCPOItems();
-    }
-  }, [items]);
+  }, [selectedRow, items]);
 
   const createPayload = (
     itemPayload: CPOItemValues[],

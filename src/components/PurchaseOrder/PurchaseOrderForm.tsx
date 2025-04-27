@@ -112,32 +112,27 @@ const PurchaseOrderForm = ({
     };
 
     if (selectedRow !== null && selectedRow?.supplier_id !== undefined) {
-      setIsFetching(true);
+      if (items.length > 0) {
+        getAllPOItems();
 
-      // Run Fetch values for edit
-      axiosInstance
-        .get<Supplier>(`/api/suppliers/${selectedRow?.supplier_id}`)
-        .then((response) => {
-          setSelectedSupplier(response.data);
-          fetchValues(selectedRow);
-          setIsFetching(false);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          fetchValues(selectedRow);
-          setIsFetching(false);
-        });
+        // Run Fetch values for edit
+        axiosInstance
+          .get<Supplier>(`/api/suppliers/${selectedRow?.supplier_id}`)
+          .then((response) => {
+            setSelectedSupplier(response.data);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          });
+      }
     } else {
       setIsFetching(false);
     }
-  }, [selectedRow]);
-
-  useEffect(() => {
-    // Set POItems only after items exist for edit
-    if (selectedRow !== undefined && items.length > 0) {
-      getAllPOItems();
-    }
-  }, [items]);
+  }, [selectedRow, items]);
 
   const createPayload = (
     itemPayload: POItemValues[],

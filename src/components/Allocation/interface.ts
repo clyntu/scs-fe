@@ -1,14 +1,9 @@
 import type {
-  PaginatedRR,
   PaginatedWarehouse,
-  ReceivingReport,
   Warehouse,
-  WarehouseItem,
-  StockTransfer,
   Customer,
   PaginatedCustomers,
   Alloc,
-  PaginatedCPO,
 } from "../../interface";
 import type { Dispatch, SetStateAction } from "react";
 
@@ -53,6 +48,7 @@ export interface AllocFormTableProps {
   CPOItems: CPOItemFE[];
   setCPOItems: Dispatch<SetStateAction<CPOItemFE[]>>;
   openCreate: boolean;
+  isLoadingItems: boolean;
 }
 
 interface Destinations {

@@ -14,11 +14,13 @@ import {
   type AllocFormProps,
   PaginatedCPO,
   AllocItem,
+  Alloc,
 } from "../../interface";
 import { convertToQueryParams } from "../../helper";
 import { AllocFormPayload, CPOItemFE } from "./interface";
 import AllocFormDetails from "./AllocForm/AllocFormDetails";
 import AllocFormTable from "./AllocForm/AllocFormTable";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const AllocForm = ({
   setOpen,
@@ -49,6 +51,10 @@ const AllocForm = ({
 
   const [CPOItems, setCPOItems] = useState<CPOItemFE[]>([]);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
+
   useEffect(() => {
     // Fetch warehouses
     axiosInstance
@@ -73,14 +79,7 @@ const AllocForm = ({
 
   useEffect(() => {
     // Fill in fields for Edit
-    if (selectedRow) {
-      axiosInstance
-        .get<Customer>(`/api/customers/${selectedRow.customer.customer_id}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
-
+    const fetchValues = (selectedRow: Alloc) => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setRemarks(selectedRow?.remarks ?? "");
@@ -160,10 +159,30 @@ const AllocForm = ({
       );
 
       setCPOItems(formattedItems);
+    };
+
+    if (selectedRow) {
+      if (warehouses?.items?.length) {
+        axiosInstance
+          .get<Customer>(`/api/customers/${selectedRow.customer.customer_id}`)
+          .then((response) => {
+            fetchValues(selectedRow);
+            setSelectedCustomer(response.data);
+            setIsFetching(false);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          });
+      }
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow, warehouses]);
 
   const getCPOsByCustomer = (customer_id: number | undefined) => {
+    setIsLoadingItems(true);
     if (customer_id) {
       const params = {
         customer_id,
@@ -198,8 +217,12 @@ const AllocForm = ({
             .flat();
 
           setCPOItems(CPOItems);
+          setIsLoadingItems(false);
         })
-        .catch((error) => console.error("Error", error));
+        .catch((error) => {
+          console.error("Error", error);
+          setIsLoadingItems(false);
+        });
     }
   };
 
@@ -252,16 +275,18 @@ const AllocForm = ({
     const payload = createPayload();
 
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/allocations/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
       // Handle the response, update state, etc.
     } catch (error: any) {
-      console.log(error);
       toast.error(
         `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -269,7 +294,9 @@ const AllocForm = ({
     const payload = createPayload();
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(`api/allocations/${selectedRow?.id}`, payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -279,6 +306,7 @@ const AllocForm = ({
       toast.error(
         `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -299,54 +327,64 @@ const AllocForm = ({
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
       </div>
-      <AllocFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        warehouses={warehouses}
-        customers={customers}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        getCPOsByCustomer={getCPOsByCustomer}
-        setCPOItems={setCPOItems}
-      />
-      <AllocFormTable
-        selectedRow={selectedRow}
-        warehouses={warehouses}
-        selectedCustomer={selectedCustomer}
-        CPOItems={CPOItems}
-        setCPOItems={setCPOItems}
-        openCreate={openCreate}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <AllocFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            warehouses={warehouses}
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            getCPOsByCustomer={getCPOsByCustomer}
+            setCPOItems={setCPOItems}
+          />
+          <AllocFormTable
+            selectedRow={selectedRow}
+            warehouses={warehouses}
+            selectedCustomer={selectedCustomer}
+            CPOItems={CPOItems}
+            setCPOItems={setCPOItems}
+            openCreate={openCreate}
+            isLoadingItems={isLoadingItems}
+          />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };
