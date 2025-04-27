@@ -464,7 +464,7 @@ const PurchaseOrderForm = ({
           <div className="flex justify-end mt-4">
             <Button
               sx={{
-                ml: 4,
+                ml: 2,
                 width: "130px",
               }}
               className="w-[130px]"
@@ -481,7 +481,7 @@ const PurchaseOrderForm = ({
               <Button
                 type="submit"
                 sx={{
-                  ml: 4,
+                  ml: 2,
                   width: "130px",
                 }}
                 className="bg-button-primary"
