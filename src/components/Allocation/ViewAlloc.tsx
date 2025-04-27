@@ -80,13 +80,13 @@ const ViewAlloc = ({
     if (selectedRow !== undefined) {
       const url = `/api/allocations/${selectedRow.id}`;
       try {
-        await axiosInstance.delete(url);
-        toast.success("Delete successful!");
         setAllocs((prevAlloc) => ({
           ...prevAlloc,
           items: prevAlloc.items.filter((Alloc) => Alloc.id !== selectedRow.id),
           total: prevAlloc.total - 1,
         }));
+        await axiosInstance.delete(url);
+        toast.success("Delete successful!");
       } catch (error) {
         console.error("Error:", error);
       }

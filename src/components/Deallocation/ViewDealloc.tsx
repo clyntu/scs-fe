@@ -82,15 +82,14 @@ const ViewDealloc = ({
     if (selectedRow !== undefined) {
       const url = `/api/deallocations/${selectedRow.id}`;
       try {
+        setDeallocs({
+          items: deallocs.items.filter(
+            (dealloc) => dealloc.id !== selectedRow.id,
+          ),
+          total: deallocs.total - 1,
+        });
         await axiosInstance.delete(url);
         toast.success("Delete successful!");
-        setDeallocs((prevDealloc) => ({
-          ...prevDealloc,
-          items: prevDealloc.items.filter(
-            (Dealloc) => Dealloc.id !== selectedRow.id,
-          ),
-          total: prevDealloc.total - 1,
-        }));
       } catch (error) {
         console.error("Error:", error);
       }
