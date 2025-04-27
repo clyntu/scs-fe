@@ -129,7 +129,6 @@ const ViewCPO = ({
             value={status}
           >
             <Option value="all">All</Option>
-            <Option value="completed">Completed</Option>
             <Option value="posted">Posted</Option>
             <Option value="unposted">Unposted</Option>
             <Option value="archived">Archived</Option>
