@@ -342,7 +342,7 @@ const ItemForm = (): JSX.Element => {
               getAllStocks(1, searchTerm);
             }}
             sx={{
-              ml: 4,
+              ml: 2,
               width: "80px",
             }}
             className="bg-button-primary"

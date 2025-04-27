@@ -384,7 +384,11 @@ const ItemsModal = ({
                   <Button
                     size="sm"
                     variant="soft"
-                    className="ml-4 w-[100px] bg-button-soft-primary"
+                    className="bg-button-soft-primary"
+                    sx={{
+                      ml: 4,
+                      width: "100px",
+                    }}
                     onClick={() => {
                       setOpenWH(true);
                     }}
@@ -392,12 +396,17 @@ const ItemsModal = ({
                     Locations
                   </Button>
                 )}
+
                 {title === "Edit Stock" && (
                   <Button
                     onClick={() => setOpenStockHistory(true)}
-                    className="ml-4 w-[130px] bg-button-soft-primary"
+                    className="bg-button-soft-primary"
                     size="sm"
                     variant="soft"
+                    sx={{
+                      ml: 4,
+                      width: "130px",
+                    }}
                   >
                     Stock History
                   </Button>
@@ -405,9 +414,13 @@ const ItemsModal = ({
 
                 <Button
                   type="submit"
-                  className="ml-4 w-[130px] bg-button-primary"
+                  className="bg-button-primary"
                   size="sm"
                   loading={isSaving}
+                  sx={{
+                    ml: 4,
+                    width: "130px",
+                  }}
                 >
                   Save
                 </Button>
