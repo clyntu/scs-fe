@@ -3,6 +3,7 @@ import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box } from "@mui/joy";
 import type { DeleteModalProps } from "../../interface";
+import { useState } from "react";
 
 const DeleteSuppliersModal = ({
   open,
@@ -10,6 +11,7 @@ const DeleteSuppliersModal = ({
   setOpen,
   onDelete,
 }: DeleteModalProps): JSX.Element => {
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <Modal
       aria-labelledby="modal-title"
@@ -52,9 +54,12 @@ const DeleteSuppliersModal = ({
                 className="ml-4 w-[130px] bg-button-warning"
                 color="danger"
                 size="sm"
+                loading={isLoading}
                 onClick={async () => {
+                  setIsLoading(true);
                   await onDelete(); // Call the onDelete function when the button is clicked
                   setOpen(false);
+                  setIsLoading(false);
                 }}
               >
                 Delete

@@ -26,6 +26,7 @@ const SuppliersModal = ({
   row,
   onSave,
 }: SuppliersModalProps): JSX.Element => {
+  const [isSaving, setIsSaving] = useState(false);
   const generateSupplier = (): Supplier => {
     return {
       supplier_id: row?.supplier_id ?? 0,
@@ -71,15 +72,17 @@ const SuppliersModal = ({
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-
+    setIsSaving(true);
     try {
       await onSave(supplier);
       setSupplier(generateSupplier());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -324,6 +327,7 @@ const SuppliersModal = ({
                 type="submit"
                 className="ml-4 w-[130px] bg-button-primary"
                 size="sm"
+                loading={isSaving}
               >
                 Save
               </Button>
