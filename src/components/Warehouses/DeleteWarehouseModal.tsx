@@ -4,6 +4,7 @@ import Sheet from "@mui/joy/Sheet";
 import { Button, Box } from "@mui/joy";
 
 import type { DeleteModalProps } from "../../interface";
+import { useState } from "react";
 
 const DeleteWarehouseModal = ({
   open,
@@ -11,6 +12,7 @@ const DeleteWarehouseModal = ({
   setOpen,
   onDelete,
 }: DeleteModalProps): JSX.Element => {
+  const [isDeleting, setIsDeleting] = useState(false);
   return (
     <Modal
       aria-labelledby="modal-title"
@@ -53,9 +55,12 @@ const DeleteWarehouseModal = ({
                 className="ml-4 w-[130px] bg-button-warning"
                 color="danger"
                 size="sm"
+                loading={isDeleting}
                 onClick={async () => {
+                  setIsDeleting(true);
                   await onDelete(); // Call the onDelete function when the button is clicked
                   setOpen(false);
+                  setIsDeleting(false);
                 }}
               >
                 Delete

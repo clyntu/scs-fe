@@ -23,6 +23,7 @@ const WarehousesModal = ({
   row,
   onSave,
 }: WarehousesModalProps): JSX.Element => {
+  const [isSaving, setIsSaving] = useState(false);
   const generateWarehouse = (): Warehouse => {
     return {
       id: row?.id ?? 0,
@@ -66,15 +67,17 @@ const WarehousesModal = ({
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-
+    setIsSaving(true);
     try {
       await onSave(warehouse);
       setWarehouse(generateWarehouse());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -152,6 +155,7 @@ const WarehousesModal = ({
                 type="submit"
                 className="ml-4 w-[130px] bg-button-primary"
                 size="sm"
+                loading={isSaving}
               >
                 Save
               </Button>
