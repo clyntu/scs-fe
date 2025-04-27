@@ -26,6 +26,7 @@ const CustomersModal = ({
   row,
   onSave,
 }: CustomersModalProps): JSX.Element => {
+  const [isSaving, setIsSaving] = useState(false);
   const generateCustomer = (): Customer => {
     return {
       customer_id: row?.customer_id ?? 0,
@@ -71,15 +72,17 @@ const CustomersModal = ({
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-
+    setIsSaving(true);
     try {
       await onSave(customer);
       setCustomer(generateCustomer());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -324,6 +327,7 @@ const CustomersModal = ({
                 type="submit"
                 className="ml-4 w-[130px] bg-button-primary"
                 size="sm"
+                loading={isSaving}
               >
                 Save
               </Button>
