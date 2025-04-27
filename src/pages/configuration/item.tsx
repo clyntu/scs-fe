@@ -253,7 +253,7 @@ const ItemForm = (): JSX.Element => {
           <div>
             <Button
               variant="soft"
-              className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              className="mr-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
               onClick={handleStocksPDFCreate}
               loading={isPrintingStocks}
             >
@@ -261,14 +261,14 @@ const ItemForm = (): JSX.Element => {
             </Button>
             <Button
               variant="soft"
-              className="ml-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              className="mr-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
               onClick={handlePricelistPDFCreate}
               loading={isPrintingPricelist}
             >
               Print Pricelist
             </Button>
             <Button
-              className="ml-4 mt-2 mb-4 bg-button-primary"
+              className="mt-2 mb-4 bg-button-primary"
               color="primary"
               onClick={() => {
                 setOpenAdd(true);
