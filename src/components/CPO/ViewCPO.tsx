@@ -11,8 +11,10 @@ import type {
 
 import { Pagination } from "@mui/material";
 
-import { convertToQueryParams } from "../../helper";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
+import {
+  convertToQueryParams,
+  addCommaToNumberWithFourPlaces,
+} from "../../helper";
 
 const PAGE_LIMIT = 10;
 
@@ -140,7 +142,11 @@ const ViewCPO = ({
           </Select>
           <Button
             onClick={getAllPO}
-            className="ml-4 w-[80px] bg-button-primary"
+            sx={{
+              ml: 2,
+              width: "80px",
+            }}
+            className="bg-button-primary"
             size="sm"
           >
             Search

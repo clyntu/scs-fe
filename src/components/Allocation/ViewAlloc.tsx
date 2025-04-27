@@ -135,7 +135,11 @@ const ViewAlloc = ({
           </Select>
           <Button
             onClick={getAllAlloc}
-            className="ml-4 w-[80px] bg-button-primary"
+            sx={{
+              ml: 2,
+              width: "80px",
+            }}
+            className="bg-button-primary"
             size="sm"
           >
             Search

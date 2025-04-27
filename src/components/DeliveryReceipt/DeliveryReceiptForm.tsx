@@ -147,9 +147,9 @@ const DeliveryReceiptForm = ({
     };
 
     try {
-      setIsSaving(true)
+      setIsSaving(true);
       await axiosInstance.post("/api/supplier-delivery-receipts/", payload);
-      setIsSaving(false)
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -158,7 +158,7 @@ const DeliveryReceiptForm = ({
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
-      setIsSaving(false)
+      setIsSaving(false);
     }
   };
 
@@ -280,7 +280,11 @@ const DeliveryReceiptForm = ({
           <Divider />
           <div className="flex justify-end mt-4">
             <Button
-              className="ml-4 w-[130px]"
+              sx={{
+                ml: 4,
+                width: "130px",
+              }}
+              className="w-[130px]"
               size="sm"
               variant="outlined"
               onClick={() => {
@@ -293,7 +297,11 @@ const DeliveryReceiptForm = ({
             {!isEditDisabled && (
               <Button
                 type="submit"
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{
+                  ml: 4,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
                 size="sm"
                 loading={isSaving}
               >

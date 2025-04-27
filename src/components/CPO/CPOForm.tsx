@@ -385,7 +385,11 @@ const CPOForm = ({
           <Divider />
           <div className="flex justify-end mt-4">
             <Button
-              className="ml-4 w-[130px]"
+              sx={{
+                ml: 4,
+                width: "130px",
+              }}
+              className="w-[130px]"
               size="sm"
               variant="outlined"
               onClick={() => {
@@ -398,7 +402,11 @@ const CPOForm = ({
             {!isEditDisabled && (
               <Button
                 type="submit"
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{
+                  ml: 4,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
                 size="sm"
                 loading={isSaving}
               >
