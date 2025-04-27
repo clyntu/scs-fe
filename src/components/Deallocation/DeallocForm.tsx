@@ -21,6 +21,7 @@ import { convertToQueryParams } from "../../helper";
 import { AllocItemFE } from "./interface";
 import DeallocFormDetails from "./DeallocForm/DeallocFormDetails";
 import DeallocFormTable from "./DeallocForm/DeallocFormTable";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const DeallocForm = ({
   setOpen,
@@ -57,6 +58,10 @@ const DeallocForm = ({
 
   const [allocItems, setAllocItems] = useState<AllocItemFE[]>([]);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
+
   useEffect(() => {
     // Fetch warehouses
     axiosInstance
@@ -82,6 +87,7 @@ const DeallocForm = ({
   useEffect(() => {
     // Fill in fields for Edit
     if (selectedRow) {
+      setIsFetching(true);
       setSelectedCustomer(selectedRow.customer);
       setSelectedAlloc(selectedRow?.allocation);
       setStatus(selectedRow?.status ?? "unposted");
@@ -155,6 +161,9 @@ const DeallocForm = ({
       );
 
       setAllocItems(formattedItems);
+      setIsFetching(false);
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow, warehouses]);
 
@@ -256,7 +265,9 @@ const DeallocForm = ({
     const payload = createPayload();
 
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/deallocations/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -266,6 +277,7 @@ const DeallocForm = ({
       toast.error(
         `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -273,7 +285,9 @@ const DeallocForm = ({
     const payload = createPayload();
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(`api/deallocations/${selectedRow?.id}`, payload);
+      setIsSaving(false);
       toast.success("Save successful!");
       resetForm();
       setOpen(false);
@@ -283,6 +297,7 @@ const DeallocForm = ({
       toast.error(
         `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -303,58 +318,68 @@ const DeallocForm = ({
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
       </div>
-      <DeallocFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        warehouses={warehouses}
-        allocs={allocs}
-        selectedAlloc={selectedAlloc}
-        setSelectedAlloc={setSelectedAlloc}
-        customers={customers}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        getAllocsByCustomer={getAllocsByCustomer}
-        getAllocItemsByAlloc={getAllocItemsByAlloc}
-        setAllocItems={setAllocItems}
-      />
-      <DeallocFormTable
-        selectedRow={selectedRow}
-        selectedAlloc={selectedAlloc}
-        allocItems={allocItems}
-        setAllocItems={setAllocItems}
-        openCreate={openCreate}
-        warehouses={warehouses}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <DeallocFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            warehouses={warehouses}
+            allocs={allocs}
+            selectedAlloc={selectedAlloc}
+            setSelectedAlloc={setSelectedAlloc}
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            getAllocsByCustomer={getAllocsByCustomer}
+            getAllocItemsByAlloc={getAllocItemsByAlloc}
+            setAllocItems={setAllocItems}
+          />
+          <DeallocFormTable
+            selectedRow={selectedRow}
+            selectedAlloc={selectedAlloc}
+            allocItems={allocItems}
+            setAllocItems={setAllocItems}
+            openCreate={openCreate}
+            warehouses={warehouses}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };
