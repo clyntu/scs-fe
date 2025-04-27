@@ -65,6 +65,7 @@ const ItemsModal = ({
   };
 
   const [item, setItem] = useState<Item>(generateItem());
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setItem(generateItem());
@@ -109,15 +110,18 @@ const ItemsModal = ({
   const handleSave = async (
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
+    setIsSaving(true);
     e.preventDefault();
     try {
       await onSave(item);
       setItem(generateItem());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -376,16 +380,18 @@ const ItemsModal = ({
                 </div>
               </Card>
               <div className="flex justify-end mt-5">
-                <Button
-                  size="sm"
-                  variant="soft"
-                  className="ml-4 w-[100px] bg-button-soft-primary"
-                  onClick={() => {
-                    setOpenWH(true);
-                  }}
-                >
-                  Locations
-                </Button>
+                {title === "Edit Stock" && (
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    className="ml-4 w-[100px] bg-button-soft-primary"
+                    onClick={() => {
+                      setOpenWH(true);
+                    }}
+                  >
+                    Locations
+                  </Button>
+                )}
                 {title === "Edit Stock" && (
                   <Button
                     onClick={() => setOpenStockHistory(true)}
@@ -401,6 +407,7 @@ const ItemsModal = ({
                   type="submit"
                   className="ml-4 w-[130px] bg-button-primary"
                   size="sm"
+                  loading={isSaving}
                 >
                   Save
                 </Button>

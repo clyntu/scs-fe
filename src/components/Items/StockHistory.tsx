@@ -88,42 +88,49 @@ const StockHistory = ({
                 }}
                 borderAxis="both"
               >
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Tx Type
-                    </th>
-                    <th style={{ width: 170 }}>Supplier</th>
-                    <th style={{ width: 170 }}>Customer</th>
-                    <th style={{ width: 120 }}>Code</th>
-                    <th style={{ width: 170 }}>Name</th>
-                    <th style={{ width: 120 }}>Tx Date</th>
-                    <th style={{ width: 100 }}>Tx No.</th>
-                    <th style={{ width: 100 }}>In</th>
-                    <th style={{ width: 100 }}>Out</th>
-                    <th style={{ width: 150 }}>Price</th>
-                    <th style={{ width: 100 }}>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stockHistory.map((history: IStockHistory) => (
-                    <tr
-                      key={`${history.transaction_number}-${history.stock_code}`}
-                    >
-                      <td>{history.transaction_type}</td>
-                      <td>{history?.supplier_name ?? "-"}</td>
-                      <td>{history?.customer_name ?? "-"}</td>
-                      <td>{history.stock_code}</td>
-                      <td>{history.stock_description}</td>
-                      <td>{history.transaction_date}</td>
-                      <td>{history.transaction_number}</td>
-                      <td>{history.quantity_in}</td>
-                      <td>{history.quantity_out}</td>
-                      <td>{history.price}</td>
-                      <td>{history.amount}</td>
-                    </tr>
-                  ))}
-                </tbody>
+                {stockHistory.length > 0 ? (
+                  <>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                          Tx Type
+                        </th>
+                        <th style={{ width: 170 }}>Supplier</th>
+                        <th style={{ width: 170 }}>Customer</th>
+                        <th style={{ width: 120 }}>Code</th>
+                        <th style={{ width: 170 }}>Name</th>
+                        <th style={{ width: 120 }}>Tx Date</th>
+                        <th style={{ width: 100 }}>Tx No.</th>
+                        <th style={{ width: 100 }}>In</th>
+                        <th style={{ width: 100 }}>Out</th>
+                        <th style={{ width: 150 }}>Price</th>
+                        <th style={{ width: 100 }}>Amount</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {stockHistory.map((history: IStockHistory) => (
+                        <tr
+                          key={`${history.transaction_number}-${history.stock_code}`}
+                        >
+                          <td>{history.transaction_type}</td>
+                          <td>{history?.supplier_name ?? "-"}</td>
+                          <td>{history?.customer_name ?? "-"}</td>
+                          <td>{history.stock_code}</td>
+                          <td>{history.stock_description}</td>
+                          <td>{history.transaction_date}</td>
+                          <td>{history.transaction_number}</td>
+                          <td>{history.quantity_in}</td>
+                          <td>{history.quantity_out}</td>
+                          <td>{history.price}</td>
+                          <td>{history.amount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </>
+                ) : (
+                  "No Stock History Available"
+                )}
               </Table>
             </Sheet>
           </Card>

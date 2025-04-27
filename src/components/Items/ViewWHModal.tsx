@@ -106,36 +106,44 @@ const ViewWHModal = ({
                 }}
                 borderAxis="both"
               >
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      {type === "warehouse" ? "Stock Name" : "Warehouse Name"}
-                    </th>
-                    <th style={{ width: 100 }}>On Stock</th>
-                    <th style={{ width: 100 }}>Allocated</th>
-                    <th style={{ width: 100 }}>Purchased</th>
-                    <th style={{ width: 100 }}>Sold</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {warehouseItems.map(
-                    (warehouseItem: AggregatedWarehouseItem) => (
-                      <tr
-                        key={`${warehouseItem.warehouse_id}-${warehouseItem.stock_code}`}
-                      >
-                        <td>
+                {warehouseItems.length > 0 ? (
+                  <>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                           {type === "warehouse"
-                            ? warehouseItem.item_name
-                            : warehouseItem.warehouse_name}
-                        </td>
-                        <td>{warehouseItem.total_on_stock}</td>
-                        <td>{warehouseItem.total_allocated}</td>
-                        <td>{warehouseItem.total_purchased}</td>
-                        <td>{warehouseItem.total_sold}</td>
+                            ? "Stock Name"
+                            : "Warehouse Name"}
+                        </th>
+                        <th style={{ width: 100 }}>On Stock</th>
+                        <th style={{ width: 100 }}>Allocated</th>
+                        <th style={{ width: 100 }}>Purchased</th>
+                        <th style={{ width: 100 }}>Sold</th>
                       </tr>
-                    ),
-                  )}
-                </tbody>
+                    </thead>
+                    <tbody>
+                      {warehouseItems.map(
+                        (warehouseItem: AggregatedWarehouseItem) => (
+                          <tr
+                            key={`${warehouseItem.warehouse_id}-${warehouseItem.stock_code}`}
+                          >
+                            <td>
+                              {type === "warehouse"
+                                ? warehouseItem.item_name
+                                : warehouseItem.warehouse_name}
+                            </td>
+                            <td>{warehouseItem.total_on_stock}</td>
+                            <td>{warehouseItem.total_allocated}</td>
+                            <td>{warehouseItem.total_purchased}</td>
+                            <td>{warehouseItem.total_sold}</td>
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </>
+                ) : (
+                  "No Stock Location Available"
+                )}
               </Table>
             </Sheet>
           </Card>

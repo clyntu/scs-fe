@@ -46,6 +46,10 @@ const ItemForm = (): JSX.Element => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
+  const [isPrintingStocks, setIsPrintingStocks] = useState(false);
+  const [isPrintingPricelist, setIsPrintingPricelist] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
   const getAllStocks = (page: number, searchTerm: string): void => {
     axiosInstance
       .get<PaginatedItems>(
@@ -183,6 +187,7 @@ const ItemForm = (): JSX.Element => {
 
   const handleStocksPDFCreate = (): void => {
     // Fetch data
+    setIsPrintingStocks(true);
     axiosInstance
       .get<PrintInventoryResponse>(
         `/api/inventory/?${convertToQueryParams({
@@ -197,12 +202,17 @@ const ItemForm = (): JSX.Element => {
         console.log(response.data);
         const items = response.data.items;
         generateStocksPDF(items, "Peterson Parts Trading Inc.");
+        setIsPrintingStocks(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsPrintingStocks(false);
+      });
   };
 
   const handlePricelistPDFCreate = (): void => {
     // Fetch data
+    setIsPrintingPricelist(true);
     axiosInstance
       .get<PaginatedItems>(
         `/api/items/?${convertToQueryParams({
@@ -226,8 +236,12 @@ const ItemForm = (): JSX.Element => {
           };
         });
         generatePricelistPDF(data, "Peterson Parts Trading Inc.");
+        setIsPrintingPricelist(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsPrintingPricelist(true);
+      });
   };
 
   return (
@@ -241,6 +255,7 @@ const ItemForm = (): JSX.Element => {
               variant="soft"
               className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
               onClick={handleStocksPDFCreate}
+              loading={isPrintingStocks}
             >
               Print Stocks
             </Button>
@@ -248,6 +263,7 @@ const ItemForm = (): JSX.Element => {
               variant="soft"
               className="ml-4 mt-2 mb-4 w-[140px] bg-button-soft-primary"
               onClick={handlePricelistPDFCreate}
+              loading={isPrintingPricelist}
             >
               Print Pricelist
             </Button>
@@ -305,7 +321,9 @@ const ItemForm = (): JSX.Element => {
             })}
           </Select>
           <Button
-            onClick={() => getAllStocks(1, searchTerm)}
+            onClick={() => {
+              getAllStocks(1, searchTerm);
+            }}
             className="ml-4 w-[80px] bg-button-primary"
             size="sm"
           >
