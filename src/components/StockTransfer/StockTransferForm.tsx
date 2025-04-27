@@ -18,9 +18,11 @@ import type {
   Supplier,
   PaginatedSuppliers,
   FetchedWarehouseItems,
+  StockTransfer,
 } from "../../interface";
 import { convertToQueryParams } from "../../helper";
 import { STFormPayload, WarehouseItemsFE } from "./interface";
+import CircularProgress from "@mui/joy/CircularProgress";
 
 const StockTransferForm = ({
   setOpen,
@@ -55,6 +57,9 @@ const StockTransferForm = ({
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
     null,
   );
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -101,42 +106,57 @@ const StockTransferForm = ({
 
   useEffect(() => {
     // Fill in fields for Edit
-    if (
-      selectedRow !== null &&
-      selectedRow !== undefined &&
-      warehouses?.items?.length
-    ) {
+    const fetchValues = (selectedRow: StockTransfer) => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setRemarks(selectedRow?.remarks ?? "");
       setRRTransfer(selectedRow.rr_transfer ? "yes" : "no");
-
-      if (selectedRow?.supplier_id) {
-        axiosInstance
-          .get<Supplier>(`/api/suppliers/${selectedRow.supplier_id}`)
-          .then((response) => {
-            setSelectedSupplier(response.data);
-          })
-          .catch((error) => console.error("Error:", error));
-      }
-
-      axiosInstance
-        .get<Warehouse>(`/api/warehouses/${selectedRow.from_warehouse_id}`)
-        .then((response) => {
-          setSelectedWarehouse(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
-
-      if (selectedRow.rr_transfer) {
-        axiosInstance
-          .get<ReceivingReport>(`/api/receiving-reports/${selectedRow.rr_id}`)
-          .then((response) => {
-            setSelectedRR(response.data);
-          })
-          .catch((error) => console.error("Error:", error));
-      }
-
       getWarehouseItemsOnView();
+    };
+
+    if (selectedRow !== null && selectedRow !== undefined) {
+      if (warehouses?.items?.length) {
+        setIsFetching(true);
+        fetchValues(selectedRow);
+        const promises: Promise<any>[] = [];
+
+        if (selectedRow?.supplier_id) {
+          const supplierPromise = axiosInstance
+            .get<Supplier>(`/api/suppliers/${selectedRow.supplier_id}`)
+            .then((response) => {
+              setSelectedSupplier(response.data);
+            })
+            .catch((error) => console.error("Error:", error));
+
+          promises.push(supplierPromise);
+        }
+
+        const warehousePromise = axiosInstance
+          .get<Warehouse>(`/api/warehouses/${selectedRow.from_warehouse_id}`)
+          .then((response) => {
+            setSelectedWarehouse(response.data);
+          })
+          .catch((error) => console.error("Error:", error));
+
+        promises.push(warehousePromise);
+
+        if (selectedRow.rr_transfer) {
+          const rrPromise = axiosInstance
+            .get<ReceivingReport>(`/api/receiving-reports/${selectedRow.rr_id}`)
+            .then((response) => {
+              setSelectedRR(response.data);
+            })
+            .catch((error) => console.error("Error:", error));
+
+          promises.push(rrPromise);
+        }
+
+        Promise.all(promises).finally(() => {
+          setIsFetching(false);
+        });
+      }
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow, warehouses]);
 
@@ -333,10 +353,11 @@ const StockTransferForm = ({
 
   const handleCreateStockTransfer = async () => {
     if (selectedWarehouse !== null) {
-
       const stock_transfer_details = createStockTransferDetails();
       if (stock_transfer_details.length === 0) {
-        toast.error("Error: At least one warehouse and quantity input is required.")
+        toast.error(
+          "Error: At least one warehouse and quantity input is required.",
+        );
       }
 
       const payload = {
@@ -351,26 +372,29 @@ const StockTransferForm = ({
       };
 
       try {
+        setIsSaving(true);
         await axiosInstance.post("/api/stock-transfers/", payload);
+        setIsSaving(false);
         toast.success("Save successful!");
         resetForm();
         setOpen(false);
         // Handle the response, update state, etc.
       } catch (error: any) {
-        console.log(error);
         toast.error(
           `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
         );
+        setIsSaving(false);
       }
     }
   };
 
   const handleEditStockTransfer = async () => {
     if (selectedWarehouse !== null) {
-
       const stock_transfer_details = createStockTransferDetails();
       if (stock_transfer_details.length === 0) {
-        toast.error("Error: At least one warehouse and quantity input is required.")
+        toast.error(
+          "Error: At least one warehouse and quantity input is required.",
+        );
       }
 
       const payload = {
@@ -385,19 +409,21 @@ const StockTransferForm = ({
       };
 
       try {
+        setIsSaving(true);
         await axiosInstance.put(
           `api/stock-transfers/${selectedRow?.id}`,
           payload,
         );
+        setIsSaving(false);
         toast.success("Save successful!");
         resetForm();
         setOpen(false);
         // Handle the response, update state, etc.
       } catch (error: any) {
-        console.log(error);
         toast.error(
           `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
         );
+        setIsSaving(false);
       }
     }
   };
@@ -419,59 +445,68 @@ const StockTransferForm = ({
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
       </div>
-      <STFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        rrTransfer={rrTransfer}
-        setRRTransfer={setRRTransfer}
-        warehouses={warehouses}
-        selectedWarehouse={selectedWarehouse}
-        setSelectedWarehouse={setSelectedWarehouse}
-        receivingReports={filteredReceivingReports}
-        selectedRR={selectedRR}
-        setSelectedRR={setSelectedRR}
-        suppliers={suppliers}
-        selectedSupplier={selectedSupplier}
-        setSelectedSupplier={setSelectedSupplier}
-        fetchWarehouseItems={fetchWarehouseItems}
-        setWarehouseItems={setWarehouseItems}
-      />
-      <STFormTable
-        selectedRow={selectedRow}
-        warehouses={warehouses}
-        warehouseItems={warehouseItems}
-        setWarehouseItems={setWarehouseItems}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <STFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            rrTransfer={rrTransfer}
+            setRRTransfer={setRRTransfer}
+            warehouses={warehouses}
+            selectedWarehouse={selectedWarehouse}
+            setSelectedWarehouse={setSelectedWarehouse}
+            receivingReports={filteredReceivingReports}
+            selectedRR={selectedRR}
+            setSelectedRR={setSelectedRR}
+            suppliers={suppliers}
+            selectedSupplier={selectedSupplier}
+            setSelectedSupplier={setSelectedSupplier}
+            fetchWarehouseItems={fetchWarehouseItems}
+            setWarehouseItems={setWarehouseItems}
+          />
+          <STFormTable
+            selectedRow={selectedRow}
+            warehouses={warehouses}
+            warehouseItems={warehouseItems}
+            setWarehouseItems={setWarehouseItems}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              className="ml-4 w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!isEditDisabled && (
+              <Button
+                type="submit"
+                className="ml-4 w-[130px] bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };
