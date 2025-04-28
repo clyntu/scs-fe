@@ -1,4 +1,4 @@
-// src/supabase/SupabaseProvider.tsx   (replace old file)
+// src/supabase/SupabaseProvider.tsx
 
 import {
   createContext,
@@ -6,62 +6,87 @@ import {
   useEffect,
   useState,
   useCallback,
+  type ReactNode,
 } from "react";
 import type { SupabaseClient, Session } from "@supabase/supabase-js";
-import { getSupabase } from "./supabaseClient";
-import { getCompanyId } from "../utils/axiosConfig";
+import { getSupabase } from "../supabase/supabaseClient";
+import axiosInstance, { getCompanyId } from "../utils/axiosConfig";
 
 type CompanyId = "company-a" | "company-b";
 
-interface Ctx {
+interface SupabaseContext {
   supabase: SupabaseClient;
   session: Session | null;
-  /** change active company (re-creates the client) */
+  ready: boolean;
   setCompany: (id: CompanyId) => void;
 }
 
-const AuthCtx = createContext<Ctx | null>(null);
-export const useSupabase = () => useContext(AuthCtx)!;
+const Ctx = createContext<SupabaseContext | null>(null);
 
-export function SupabaseProvider({ children }: { children: React.ReactNode }) {
-  const [company, setCompany] = useState<CompanyId | null>(null);
-  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+export function useSupabase(): SupabaseContext {
+  const ctx = useContext(Ctx);
+  if (ctx == null)
+    throw new Error("useSupabase must be used inside <SupabaseProvider>");
+  return ctx;
+}
+
+export function SupabaseProvider({
+  children,
+}: {
+  children: ReactNode;
+}): JSX.Element {
+  const [company, setCompany] = useState<CompanyId>(
+    () => getCompanyId() as CompanyId,
+  );
+  const [supabase, setSupabase] = useState<SupabaseClient>(() =>
+    getSupabase(company),
+  );
   const [session, setSession] = useState<Session | null>(null);
+  const [ready, setReady] = useState(false);
 
-  /* ── initialise from cookie / localStorage once ── */
-  useEffect(() => {
-    setCompany(getCompanyId() as CompanyId);
-  }, []);
-
-  /* ── whenever company changes → build new client & re-attach listener ── */
-  useEffect(() => {
-    if (!company) return;
-
-    const sb = getSupabase(company);
-    setSupabase(sb);
-
-    // initial session
-    sb.auth.getSession().then(({ data }) => setSession(data.session));
-
-    // listener
-    const {
-      data: { subscription },
-    } = sb.auth.onAuthStateChange((_e, s) => setSession(s));
-
-    return () => subscription.unsubscribe();
-  }, [company]);
-
-  /* expose a stable setter so children can switch company */
+  /* rebuild client when user switches company */
   const switchCompany = useCallback((id: CompanyId) => {
-    localStorage.setItem("companyId", id); // keep behaviour
+    localStorage.setItem("companyId", id);
     setCompany(id);
+    setSupabase(getSupabase(id));
+    setReady(false); // will re-hydrate below
   }, []);
 
-  if (!supabase) return null; // SSR pass
+  /* hydrate session + attach token listener */
+  useEffect(() => {
+    let unsub: () => void;
+
+    const bootstrap = async (): Promise<void> => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setReady(true);
+
+      unsub = supabase.auth.onAuthStateChange((_e, s) => {
+        setSession(s);
+      }).data.subscription.unsubscribe;
+    };
+
+    void bootstrap(); // purposely ignore the Promise here
+
+    return () => {
+      unsub?.();
+    };
+  }, [supabase]);
+
+  /* push / clear Authorization header whenever session changes */
+  useEffect(() => {
+    if (session?.access_token != null) {
+      axiosInstance.defaults.headers.common.Authorization = `Bearer ${session.access_token}`;
+    } else {
+      delete axiosInstance.defaults.headers.common.Authorization;
+    }
+  }, [session]);
 
   return (
-    <AuthCtx.Provider value={{ supabase, session, setCompany: switchCompany }}>
+    <Ctx.Provider
+      value={{ supabase, session, ready, setCompany: switchCompany }}
+    >
       {children}
-    </AuthCtx.Provider>
+    </Ctx.Provider>
   );
 }
