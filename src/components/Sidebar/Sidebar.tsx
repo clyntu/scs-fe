@@ -20,7 +20,11 @@ import SwapHorizontalCircleRoundedIcon from "@mui/icons-material/SwapHorizontalC
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import axiosInstance, { getCookie } from "../../utils/axiosConfig";
+import axiosInstance, {
+  getCookie,
+  getCompanyId as getCompanyIdFromUtils,
+} from "../../utils/axiosConfig";
+import { useSupabase } from "../../supabase/SupabaseProvider";
 import SidebarLink from "./SidebarLink";
 
 export const COMPANY_CONFIGS = {
@@ -30,6 +34,7 @@ export const COMPANY_CONFIGS = {
 
 export default function Sidebar(): JSX.Element {
   const router = useRouter();
+  const { supabase } = useSupabase();
   const currentPath = router.pathname;
 
   // Determine active sections based on currentPath (for styling purposes)
@@ -76,15 +81,20 @@ export default function Sidebar(): JSX.Element {
   };
 
   const handleLogout = async (): Promise<void> => {
-    const id = getCookie("company_id");
-    localStorage.setItem("companyId", id ?? "company-a");
     try {
-      await axiosInstance.post("/api/logout");
+      //  Sign out from Supabase (clears local session & cookies)
+      await supabase.auth.signOut();
+
+      //  Keep selected company id so login page can pre-select it
+      const cid = getCompanyIdFromUtils(); // cookie | localStorage
+      localStorage.setItem("companyId", cid);
+
+      //  Any custom axios header is now stale → remove it
       delete axiosInstance.defaults.headers.common.Authorization;
-      await router.push("/");
-    } catch (error) {
-      console.error("Logout failed:", error);
-      await router.push("/");
+    } catch (err) {
+      console.error("Supabase sign-out failed:", err);
+    } finally {
+      await router.push("/"); // back to login regardless
     }
   };
 

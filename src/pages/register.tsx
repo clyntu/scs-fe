@@ -1,115 +1,92 @@
-import * as React from "react";
+// src/pages/register.tsx
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Sheet from "@mui/joy/Sheet";
-import Typography from "@mui/joy/Typography";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel from "@mui/joy/FormLabel";
-import Input from "@mui/joy/Input";
-import Button from "@mui/joy/Button";
-import Alert from "@mui/joy/Alert";
-import Select from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
+import {
+  Sheet,
+  Typography,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Alert,
+  Select,
+  Option,
+} from "@mui/joy";
+import { useSupabase } from "../supabase/SupabaseProvider";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 
 export default function Register(): JSX.Element {
+  /* ─────────────────── hooks ─────────────────── */
+  const { supabase } = useSupabase(); // ← valid: top-level
+  const router = useRouter();
+
+  const [companyId, setCompanyId] = useState("company-a");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
-  const [companyId, setCompanyId] = useState("company-a");
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
-  // Initialize company ID from query param or localStorage
+  /* ────────── initialise company (query > cookie > local) ────────── */
   useEffect(() => {
-    // Check if there's a company ID in the query parameters
-    const queryCompanyId = router.query.companyId as string;
-
-    // Check if there's a company ID in localStorage or cookie
-    const storedCompanyId = localStorage.getItem("companyId");
-    const cookieCompanyId =
-      getCookie("company_id") || getCookie("company_id_js");
-
-    // Use query param first, then cookie, then localStorage, then default
-    const initialCompanyId =
-      queryCompanyId || cookieCompanyId || storedCompanyId || "company-a";
-
-    setCompanyId(initialCompanyId);
-
-    // Also store it in localStorage for persistence
-    if (initialCompanyId) {
-      localStorage.setItem("companyId", initialCompanyId);
-    }
+    const q = router.query.companyId as string | undefined;
+    const c = getCookie("company_id") || getCookie("company_id_js");
+    const ls =
+      typeof window !== "undefined" ? localStorage.getItem("companyId") : null;
+    const id = q || c || ls || "company-a";
+    setCompanyId(id);
+    if (typeof window !== "undefined") localStorage.setItem("companyId", id);
   }, [router.query]);
 
-  const handleRegister = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ): Promise<void> => {
-    event.preventDefault();
+  /* ─────────────────── handlers ─────────────────── */
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setGeneralError("");
 
     try {
-      // Store company ID in localStorage for later use
-      localStorage.setItem("companyId", companyId);
+      // Supabase sign-up (browser)
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName } },
+      });
+      if (error) throw error;
 
-      // Send registration data to backend with company ID header
-      const response = await axiosInstance.post(
-        "/api/register",
-        {
-          username,
-          email,
-          full_name: fullName,
-          password,
-        },
-        {
-          headers: {
-            "X-Company-ID": companyId,
-          },
-        },
+      // Persist user in your own DB (roles)
+      await axiosInstance.post(
+        "/api/users/sync",
+        { username, full_name: fullName }, // body optional
+        { headers: { "X-Company-ID": companyId } },
       );
 
-      console.log("Registration successful:", response.data);
-
-      // Redirect to login page with success message and company ID
+      //  success -> login page
       await router.push({
         pathname: "/",
         query: { registered: "success", companyId },
       });
-    } catch (error: any) {
-      console.error("Registration error:", error);
+    } catch (err: any) {
+      console.error("Registration error:", err);
 
-      // Process structured error format
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-
+      /* Supabase error object */
+      if (err?.message) {
+        setGeneralError(err.message);
+      } else if (err.response?.data?.detail) {
+        /* backend validation format */
+        const detail = err.response.data.detail;
         if (Array.isArray(detail)) {
-          // Process validation errors array
-          const fieldErrors: { [key: string]: string } = {};
-
-          detail.forEach((err) => {
-            // Get the field name from the location path
-            if (err.loc && err.loc.length > 1) {
-              const fieldName = err.loc[1];
-              fieldErrors[fieldName] = err.msg;
-            } else {
-              // If no field specified, treat as general error
-              setGeneralError(err.msg || "Validation error");
-            }
+          const map: Record<string, string> = {};
+          detail.forEach((d: any) => {
+            if (d.loc?.length > 1) map[d.loc[1]] = d.msg;
           });
-
-          setErrors(fieldErrors);
-        } else if (typeof detail === "string") {
-          // Simple string error
-          setGeneralError(detail);
+          setErrors(map);
         } else {
-          // Other object format
           setGeneralError(
-            "Registration failed. Please check your information.",
+            typeof detail === "string" ? detail : "Registration failed.",
           );
         }
       } else {
@@ -120,19 +97,13 @@ export default function Register(): JSX.Element {
     }
   };
 
-  const handleLoginRedirect = async (): Promise<void> => {
-    // Pass company ID when redirecting to login
-    await router.push({
-      pathname: "/",
-      query: { companyId },
-    });
-  };
+  const toLogin = () => router.push({ pathname: "/", query: { companyId } });
 
   return (
     <main>
       <Sheet
         sx={{
-          width: 350, // Slightly wider to accommodate error messages
+          width: 350,
           mx: "auto",
           my: 14,
           py: 4,
@@ -145,12 +116,10 @@ export default function Register(): JSX.Element {
         }}
         variant="outlined"
       >
-        <div>
-          <Typography level="h4" component="h1">
-            <b>Create an Account</b>
-          </Typography>
-          <Typography level="body-sm">Register to get started.</Typography>
-        </div>
+        <Typography level="h4" component="h1">
+          <b>Create an Account</b>
+        </Typography>
+        <Typography level="body-sm">Register to get started.</Typography>
 
         {generalError && (
           <Alert color="danger" variant="soft" sx={{ mt: 1, mb: 1 }}>
@@ -163,9 +132,8 @@ export default function Register(): JSX.Element {
             <FormLabel>Company</FormLabel>
             <Select
               value={companyId}
-              onChange={(_, newValue) => setCompanyId(newValue as string)}
+              onChange={(_, v) => setCompanyId(v as string)}
               disabled={isLoading}
-              sx={{ width: "100%" }}
             >
               <Option value="company-a">Peterson Parts Trading</Option>
               <Option value="company-b">Company B</Option>
@@ -175,13 +143,10 @@ export default function Register(): JSX.Element {
           <FormControl error={!!errors.username} sx={{ mt: 2 }}>
             <FormLabel>Username</FormLabel>
             <Input
-              type="text"
-              id="username"
               value={username}
-              placeholder="johndoe"
               onChange={(e) => setUsername(e.target.value)}
-              required
               disabled={isLoading}
+              required
             />
             {errors.username && (
               <Typography level="body-xs" color="danger">
@@ -194,12 +159,10 @@ export default function Register(): JSX.Element {
             <FormLabel>Email</FormLabel>
             <Input
               type="email"
-              id="email"
               value={email}
-              placeholder="johndoe@example.com"
               onChange={(e) => setEmail(e.target.value)}
-              required
               disabled={isLoading}
+              required
             />
             {errors.email && (
               <Typography level="body-xs" color="danger">
@@ -211,13 +174,10 @@ export default function Register(): JSX.Element {
           <FormControl error={!!errors.full_name} sx={{ mt: 2 }}>
             <FormLabel>Full Name</FormLabel>
             <Input
-              type="text"
-              id="fullName"
               value={fullName}
-              placeholder="John Doe"
               onChange={(e) => setFullName(e.target.value)}
-              required
               disabled={isLoading}
+              required
             />
             {errors.full_name && (
               <Typography level="body-xs" color="danger">
@@ -247,12 +207,12 @@ export default function Register(): JSX.Element {
 
           <Button
             className="bg-button-primary w-full"
-            sx={{ mt: 3 }}
             type="submit"
             loading={isLoading}
             disabled={isLoading}
+            sx={{ mt: 3 }}
           >
-            {isLoading ? "Creating Account..." : "Register"}
+            {isLoading ? "Creating Account…" : "Register"}
           </Button>
         </form>
 
@@ -260,7 +220,7 @@ export default function Register(): JSX.Element {
           variant="outlined"
           color="neutral"
           className="w-full"
-          onClick={handleLoginRedirect}
+          onClick={toLogin}
           disabled={isLoading}
         >
           Already have an account? Log in
