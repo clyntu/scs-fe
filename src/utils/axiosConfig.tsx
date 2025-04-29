@@ -1,5 +1,6 @@
 // utils/axiosConfig.tsx
 import axios from "axios";
+import { getSupabase } from "../supabase/supabaseClient";
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
@@ -15,23 +16,32 @@ export function getCookie(name: string): string | null {
 
 // Helper function to ensure we always have a company ID
 export function getCompanyId(): string {
-  // Try multiple sources in order of preference
-  const fromCookie = getCookie("company_id");
-  const fromLocalStorage = localStorage.getItem("companyId");
+  if (typeof window === "undefined") return "company-a"; // safe default
 
-  return fromCookie || fromLocalStorage || "company-a"; // Fallback to default
+  const fromCookie = getCookie("company_id");
+  const fromLocalStored = window.localStorage.getItem("companyId");
+
+  return fromCookie || fromLocalStored || "company-a";
 }
 
 // Only register these in the browser
 if (typeof window !== "undefined") {
   // Request interceptor
   axiosInstance.interceptors.request.use(
-    (config) => {
+    async (config) => {
       // Always get a fresh company ID for each request
       const companyId = getCompanyId();
+      const supabase = getSupabase(companyId as "company-a" | "company-b");
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      // Ensure headers object exists
-      config.headers = config.headers || {};
+      if (session?.access_token) {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${session.access_token}`,
+        };
+      }
 
       // Always send with credentials
       config.withCredentials = true;

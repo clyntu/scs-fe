@@ -11,6 +11,8 @@ import Alert from "@mui/joy/Alert";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
+import { useSupabase } from "../supabase/SupabaseProvider";
+import { getSupabase } from "../supabase/supabaseClient";
 
 export interface User {
   id: number;
@@ -20,6 +22,7 @@ export interface User {
 }
 
 export default function Login(): JSX.Element {
+  const { setCompany } = useSupabase();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyId, setCompanyId] = useState("company-a");
@@ -73,26 +76,21 @@ export default function Login(): JSX.Element {
 
     try {
       // Always store company ID in localStorage as backup
-      localStorage.setItem("companyId", companyId);
+      setCompany(companyId as "company-a" | "company-b");
 
-      // Set company ID header for the login request
-      const response = await axiosInstance.post(
-        "/api/token",
-        `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-Company-ID": companyId,
-          },
-          withCredentials: true,
-        },
-      );
+      /* create / fetch the correct client synchronously */
+      const supabase = getSupabase(companyId as "company-a" | "company-b");
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      // Manually set a JavaScript-readable cookie as backup
-      document.cookie = `company_id_js=${companyId}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=None; Secure`;
-
-      // Redirect to dashboard
-      await router.push("/configuration/item");
+      if (error) setError(error.message);
+      if (data?.session) {
+        // keep using localStorage for company, then route as before
+        localStorage.setItem("companyId", companyId);
+        router.push("/configuration/item");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
 
