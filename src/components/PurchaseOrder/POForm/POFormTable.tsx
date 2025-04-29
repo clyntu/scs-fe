@@ -191,7 +191,7 @@ const POFormTable = ({
                 />
               )}
 
-              <td>
+              <td style={{ zIndex: 1 }}>
                 <Autocomplete
                   placeholder="Select Stock Code"
                   options={items}
