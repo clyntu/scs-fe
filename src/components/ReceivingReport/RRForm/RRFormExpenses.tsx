@@ -198,7 +198,8 @@ const RRFormExpenses = ({
           <Button
             size="sm"
             color="primary"
-            className="bg-button-primary mt-4"
+            sx={{ mt: 4 }}
+            className="bg-button-primary"
             onClick={() =>
               setExpenses([
                 ...expenses,
