@@ -23,8 +23,9 @@ import SwapHorizontalCircleRoundedIcon from "@mui/icons-material/SwapHorizontalC
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { getCompanyId } from "../../utils/axiosConfig";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { useSupabase } from "../../supabase/SupabaseProvider";
+import type { User } from "../../pages/Login";
 
 import SidebarLink from "./SidebarLink";
 
@@ -37,6 +38,8 @@ export default function Sidebar(): JSX.Element | null {
   const router = useRouter();
   const currentPath = router.pathname;
   const { supabase } = useSupabase();
+
+  const [fullName, setFullName] = useState("");
 
   // avoids SSR localStorage errors
   const [mounted, setMounted] = useState(false);
@@ -53,6 +56,11 @@ export default function Sidebar(): JSX.Element | null {
     setMounted(true);
     const id = getCompanyId();
     setName(COMPANY_CONFIGS[id] ?? id);
+
+    axiosInstance
+      .get<User>("/api/users/me/")
+      .then((response) => setFullName(response.data.full_name))
+      .catch((error) => console.error("Error fetching user ID:", error));
   }, []);
 
   const toggle = (key: keyof typeof expanded): void =>
@@ -85,7 +93,11 @@ export default function Sidebar(): JSX.Element | null {
         overflow: "hidden",
       }}
     >
-      <Typography level="h4" sx={{ py: 1, px: 2, fontWeight: "bold" }}>
+      <Typography sx={{ mt: 0.5, px: 1, fontWeight: "bold", fontSize: "18px" }}>
+        Hi, {fullName}!
+      </Typography>
+
+      <Typography sx={{ mb: 2, px: 1, fontSize: "15px" }}>
         {companyName}
       </Typography>
       <Divider />
