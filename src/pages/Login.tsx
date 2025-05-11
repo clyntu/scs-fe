@@ -10,6 +10,9 @@ import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import IconButton from "@mui/joy/IconButton";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { getSupabase } from "../supabase/supabaseClient";
@@ -24,6 +27,7 @@ export interface User {
 export default function Login(): JSX.Element {
   const { setCompany } = useSupabase();
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [companyId, setCompanyId] = useState("company-a");
   const [error, setError] = useState("");
@@ -156,7 +160,7 @@ export default function Login(): JSX.Element {
             <FormLabel>Company</FormLabel>
             <Select
               value={companyId}
-              onChange={(_, newValue) => setCompanyId(newValue as string)}
+              onChange={(_, newValue) => setCompanyId(newValue!)}
               disabled={isLoading}
               sx={{ width: "100%" }}
             >
@@ -179,13 +183,24 @@ export default function Login(): JSX.Element {
           <FormControl sx={{ mt: 2 }}>
             <FormLabel>Password</FormLabel>
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               placeholder="********"
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
+              endDecorator={
+                <IconButton
+                  variant="plain"
+                  color="neutral"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  sx={{ ml: "auto" }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              }
             />
           </FormControl>
           <Button

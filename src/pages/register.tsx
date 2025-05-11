@@ -12,6 +12,9 @@ import {
   Select,
   Option,
 } from "@mui/joy";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import IconButton from "@mui/joy/IconButton";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 
@@ -24,6 +27,7 @@ export default function Register(): JSX.Element {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -97,7 +101,8 @@ export default function Register(): JSX.Element {
     }
   };
 
-  const toLogin = () => router.push({ pathname: "/", query: { companyId } });
+  const toLogin = async () =>
+    await router.push({ pathname: "/", query: { companyId } });
 
   return (
     <main>
@@ -132,7 +137,7 @@ export default function Register(): JSX.Element {
             <FormLabel>Company</FormLabel>
             <Select
               value={companyId}
-              onChange={(_, v) => setCompanyId(v as string)}
+              onChange={(_, v) => setCompanyId(v!)}
               disabled={isLoading}
             >
               <Option value="company-a">Peterson Parts Trading</Option>
@@ -189,7 +194,7 @@ export default function Register(): JSX.Element {
           <FormControl error={!!errors.password} sx={{ mt: 2 }}>
             <FormLabel>Password</FormLabel>
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               placeholder="********"
@@ -197,6 +202,17 @@ export default function Register(): JSX.Element {
               required
               disabled={isLoading}
               minLength={8}
+              endDecorator={
+                <IconButton
+                  variant="plain"
+                  color="neutral"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  sx={{ ml: "auto" }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              }
             />
             {errors.password && (
               <Typography level="body-xs" color="danger">
