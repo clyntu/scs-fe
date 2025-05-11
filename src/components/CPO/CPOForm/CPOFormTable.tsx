@@ -272,7 +272,7 @@ const CPOFormTable = ({
                 <td>
                   {selectedItem?.id !== null &&
                     addCommaToNumberWithFourPlaces(
-                      Number(price) * Number(selectedItem?.volume),
+                      Number(selectedItem.price) * Number(selectedItem?.volume),
                     )}
                 </td>
                 {/* <td>{selectedItem.total_on_stock}</td> */}
