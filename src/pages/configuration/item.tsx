@@ -508,7 +508,7 @@ const ItemForm = (): JSX.Element => {
       </Box>
       <Box className="flex align-center justify-end">
         <Pagination
-          count={Math.floor(items.total / PAGE_LIMIT) + 1}
+          count={Math.ceil(items.total / PAGE_LIMIT)}
           page={page}
           onChange={changePage}
           shape="rounded"

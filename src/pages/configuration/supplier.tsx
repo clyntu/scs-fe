@@ -341,7 +341,7 @@ const SupplierForm = (): JSX.Element => {
       </Box>
       <Box className="flex align-center justify-end">
         <Pagination
-          count={Math.floor(suppliers.total / PAGE_LIMIT) + 1}
+          count={Math.ceil(suppliers.total / PAGE_LIMIT)}
           page={page}
           onChange={changePage}
           shape="rounded"

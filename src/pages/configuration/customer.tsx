@@ -342,7 +342,7 @@ const CustomerForm = (): JSX.Element => {
       </Box>
       <Box className="flex align-center justify-end">
         <Pagination
-          count={Math.floor(customers.total / PAGE_LIMIT) + 1}
+          count={Math.ceil(customers.total / PAGE_LIMIT)}
           page={page}
           onChange={changePage}
           shape="rounded"
