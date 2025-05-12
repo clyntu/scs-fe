@@ -26,6 +26,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { useSupabase } from "../../supabase/SupabaseProvider";
 import type { User } from "../../pages/Login";
+import { authHelpers } from "../../supabase/supabaseClient";
 
 import SidebarLink from "./SidebarLink";
 
@@ -67,8 +68,17 @@ export default function Sidebar(): JSX.Element | null {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleLogout = async (): Promise<void> => {
-    await supabase.auth.signOut().catch(console.error);
-    void router.push("/");
+    try {
+      // Sign out from all Supabase clients
+      await authHelpers.signOutAll();
+
+      // Redirect to login page
+      await router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force redirect to login even if there was an error
+      window.location.href = "/";
+    }
   };
 
   if (!mounted) return null;

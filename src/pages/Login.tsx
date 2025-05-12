@@ -15,7 +15,8 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
-import { getSupabase } from "../supabase/supabaseClient";
+import { getSupabase, authHelpers } from "../supabase/supabaseClient";
+import type { CompanyId } from "../supabase/supabaseClient";
 
 export interface User {
   id: number;
@@ -79,8 +80,9 @@ export default function Login(): JSX.Element {
     setSuccessMessage("");
 
     try {
-      // Always store company ID in localStorage as backup
-      setCompany(companyId as "company-a" | "company-b");
+      // Store company ID in localStorage
+      localStorage.setItem("companyId", companyId);
+      setCompany(companyId as CompanyId);
 
       /* create / fetch the correct client synchronously */
       const supabase = getSupabase(companyId as "company-a" | "company-b");
@@ -89,28 +91,54 @@ export default function Login(): JSX.Element {
         password,
       });
 
-      if (error) setError(error.message);
+      if (error) {
+        setError(error.message);
+        setIsLoading(false);
+        return;
+      }
       if (data?.session) {
-        // keep using localStorage for company, then route as before
-        localStorage.setItem("companyId", companyId);
-        router.push("/configuration/item");
-      }
-    } catch (error: any) {
-      console.error("Login error:", error);
+        // Sync user with backend
+        try {
+          await axiosInstance.post(
+            "/api/users/sync",
+            {},
+            {
+              headers: { "X-Company-ID": companyId },
+            },
+          );
+        } catch (syncError) {
+          console.error("User sync error:", syncError);
+        }
 
-      if (error.response?.data?.detail) {
-        setError(
-          typeof error.response.data.detail === "string"
-            ? error.response.data.detail
-            : "Invalid credentials. Please try again.",
-        );
-      } else {
-        setError("Login failed. Please check your credentials and try again.");
+        // Set authentication state
+        localStorage.setItem("companyId", companyId);
+
+        // Redirect to main page
+        await router.push("/configuration/item");
       }
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+      setError(
+        typeof error === "object" && error !== null && "message" in error
+          ? String(error.message)
+          : "Login failed. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Add a check for expired sessions on page load
+  useEffect(() => {
+    const checkExpiredSession = (): void => {
+      if (router.query.expired === "true") {
+        setError("Your session has expired. Please log in again.");
+      }
+    };
+
+    checkExpiredSession();
+  }, [router.query]);
+
   const handleRegisterRedirect = async (): Promise<void> => {
     // Pass selected company ID to registration page
     await router.push({
