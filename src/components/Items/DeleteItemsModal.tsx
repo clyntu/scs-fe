@@ -47,7 +47,8 @@ const DeleteItemsModal = ({
                 Cancel
               </Button>
               <Button
-                className="ml-4 w-[130px] bg-button-warning"
+                className="bg-button-warning"
+                sx={{ ml: 2, width: 130 }}
                 color="danger"
                 size="sm"
                 loading={isDeleting}
