@@ -158,14 +158,21 @@ const ViewAR = ({
           <div>
             <Button
               variant="soft"
-              className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
+              className="bg-button-soft-primary"
+              sx={{ mt: 2, mb: 4, width: 140 }}
               onClick={handleGeneratePDF}
               loading={isPrinting}
             >
               Print Summary
             </Button>
             <Button
-              className="ml-3 mt-2 mb-4 bg-button-primary"
+              className="bg-button-primary"
+              sx={{
+                mt: 2,
+                mb: 4,
+                ml: 2,
+                width: 140,
+              }}
               color="primary"
               onClick={() => {
                 setOpenCreate(true);
