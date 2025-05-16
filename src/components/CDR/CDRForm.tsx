@@ -109,7 +109,7 @@ const CDRForm = ({
             DPItem.allocation_item.customer_purchase_order,
             itemObj?.price ?? 0,
           ),
-          delivery_plan_item_id: selectedRow.delivery_plan_id,
+          delivery_plan_item_id: DPItem.id,
 
           customer_discount_1:
             DPItem.allocation_item.customer_purchase_order.customer_discount_1,
@@ -260,7 +260,7 @@ const CDRForm = ({
     try {
       setIsSaving(true);
       await axiosInstance.put(
-        `/api/delivery-plans/${selectedRow?.id}`,
+        `/api/delivery-receipts/${selectedRow?.id}`,
         payload,
       );
       setIsSaving(false);
