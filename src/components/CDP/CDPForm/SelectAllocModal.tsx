@@ -166,9 +166,9 @@ const SelectAllocModal = ({
             </div>
             <div className="flex justify-end mt-5">
               <Button
-                className="ml-4 w-[130px]"
                 size="sm"
                 variant="outlined"
+                sx={{ ml: 2, width: 130 }}
                 onClick={() => setOpen(false)}
               >
                 Cancel
