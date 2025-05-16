@@ -386,7 +386,7 @@ const ItemsModal = ({
                     variant="soft"
                     className="bg-button-soft-primary"
                     sx={{
-                      ml: 4,
+                      ml: 2,
                       width: "100px",
                     }}
                     onClick={() => {
@@ -404,7 +404,7 @@ const ItemsModal = ({
                     size="sm"
                     variant="soft"
                     sx={{
-                      ml: 4,
+                      ml: 2,
                       width: "130px",
                     }}
                   >
@@ -418,7 +418,7 @@ const ItemsModal = ({
                   size="sm"
                   loading={isSaving}
                   sx={{
-                    ml: 4,
+                    ml: 2,
                     width: "130px",
                   }}
                 >
