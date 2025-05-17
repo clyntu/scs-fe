@@ -184,7 +184,7 @@ const ViewAR = ({
         <Box className="flex items-center mb-6">
           <Input
             size="sm"
-            placeholder="Receipt No. / Ref No. / Remarks"
+            placeholder="Rec No. / Ref No. / Remarks"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
