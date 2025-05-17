@@ -123,7 +123,7 @@ const ViewCDP = ({
         <Box className="flex items-center mb-6">
           <Input
             size="sm"
-            placeholder="Ref No."
+            placeholder="Ref No. or Remarks"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

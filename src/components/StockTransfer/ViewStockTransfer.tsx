@@ -118,7 +118,7 @@ const ViewStockTransfer = ({
         <Box className="flex items-center mb-6">
           <Input
             size="sm"
-            placeholder="STR No."
+            placeholder="STR No. or Remarks"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
