@@ -243,7 +243,6 @@ const CPOFormTable = ({
                       slotProps={{
                         input: {
                           min: 0,
-                          max: selectedItem.total_on_stock,
                         },
                       }}
                       value={selectedItem.volume}
