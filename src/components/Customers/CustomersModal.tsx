@@ -325,7 +325,8 @@ const CustomersModal = ({
             <div className="flex justify-end mt-5">
               <Button
                 type="submit"
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{ ml: 2, width: 130 }}
+                className="bg-button-primary"
                 size="sm"
                 loading={isSaving}
               >

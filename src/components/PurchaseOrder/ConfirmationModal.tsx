@@ -49,7 +49,7 @@ const ConfirmationModal = ({
             </div>
             <div className="flex justify-end mt-5">
               <Button
-                className="ml-4 w-[130px]"
+                sx={{ ml: 2, width: 130 }}
                 size="sm"
                 variant="outlined"
                 onClick={() => {
@@ -60,7 +60,8 @@ const ConfirmationModal = ({
                 Cancel
               </Button>
               <Button
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{ ml: 2, width: 130 }}
+                className="bg-button-primary"
                 color="primary"
                 size="sm"
                 onClick={() => {

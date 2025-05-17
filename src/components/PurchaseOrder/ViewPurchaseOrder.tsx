@@ -123,12 +123,12 @@ const ViewPurchaseOrder = ({
         <Box className="flex items-center mb-6">
           <Input
             size="sm"
-            placeholder="Ref No."
+            placeholder="Ref No. or Remarks"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <Select
-            className="ml-4 w-[130px]"
+            sx={{ ml: 2, width: 130 }}
             onChange={(event, value) => {
               if (value !== null) setStatus(value);
             }}
@@ -136,7 +136,6 @@ const ViewPurchaseOrder = ({
             value={status}
           >
             <Option value="all">All</Option>
-            <Option value="completed">Completed</Option>
             <Option value="posted">Posted</Option>
             <Option value="unposted">Unposted</Option>
             <Option value="archived">Archived</Option>

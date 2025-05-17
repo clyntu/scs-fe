@@ -304,7 +304,7 @@ const ItemForm = (): JSX.Element => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <Select
-            className="ml-4 w-[130px]"
+            sx={{ ml: 2, width: 130 }}
             onChange={(event, value) => {
               if (value !== null) setSelectedCategory(value);
             }}
@@ -321,7 +321,7 @@ const ItemForm = (): JSX.Element => {
             })}
           </Select>
           <Select
-            className="ml-4 w-[130px]"
+            sx={{ ml: 2, width: 130 }}
             onChange={(event, value) => {
               if (value !== null) setSelectedBrand(value);
             }}

@@ -73,7 +73,7 @@ const STFormDetails = ({
             )}
           </div>
 
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>RR Transfer</FormLabel>
               <Select
@@ -130,7 +130,7 @@ const STFormDetails = ({
             </FormControl>
           </Stack>
 
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Status</FormLabel>
               <Select

@@ -43,7 +43,7 @@ const DeleteItemsModal = ({
               </p>
             </div>
             <div className="flex justify-end mt-5">
-              <Button className="ml-4 w-[130px]" size="sm" variant="outlined">
+              <Button sx={{ ml: 2, width: 130 }} size="sm" variant="outlined">
                 Cancel
               </Button>
               <Button

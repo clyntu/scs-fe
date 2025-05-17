@@ -156,7 +156,7 @@ const RRFormDetails = ({
               <Textarea value={amountDiscount} disabled />
             </FormControl>
           </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Currency Used</FormLabel>
               <Select
