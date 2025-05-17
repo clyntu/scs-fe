@@ -69,7 +69,7 @@ const ForbiddenPage: React.FC = () => {
           endDecorator={<ArrowForwardIcon />}
           onClick={async () => await router.push("/configuration/item")}
         >
-          Go to Warehouse Dashboard
+          Go to Stocks Dashboard
         </Button>
       </Box>
     </Box>
