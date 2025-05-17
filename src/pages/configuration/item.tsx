@@ -45,11 +45,11 @@ const ItemForm = (): JSX.Element => {
 
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("active");
 
   const [isPrintingStocks, setIsPrintingStocks] = useState(false);
   const [isPrintingPricelist, setIsPrintingPricelist] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-
   const getAllStocks = (page: number, searchTerm: string): void => {
     axiosInstance
       .get<PaginatedItems>(
@@ -61,6 +61,7 @@ const ItemForm = (): JSX.Element => {
           search_term: searchTerm,
           brand: selectedBrand,
           category: selectedCategory,
+          status: selectedStatus,
         })}`,
       )
       .then((response) => setItems(response.data))
@@ -184,7 +185,6 @@ const ItemForm = (): JSX.Element => {
   function isAxiosError(error: any): error is AxiosError {
     return error.isAxiosError !== undefined;
   }
-
   const handleStocksPDFCreate = (): void => {
     // Fetch data
     setIsPrintingStocks(true);
@@ -196,6 +196,7 @@ const ItemForm = (): JSX.Element => {
           search_term: searchTerm,
           brand: selectedBrand,
           category: selectedCategory,
+          status: selectedStatus,
         })}`,
       )
       .then((response) => {
@@ -221,6 +222,7 @@ const ItemForm = (): JSX.Element => {
           search_term: searchTerm,
           brand: selectedBrand,
           category: selectedCategory,
+          status: selectedStatus,
         })}`,
       )
       .then((response) => {
@@ -336,6 +338,18 @@ const ItemForm = (): JSX.Element => {
                 </Option>
               );
             })}
+          </Select>
+          <Select
+            className="ml-4 w-[130px]"
+            onChange={(event, value) => {
+              if (value !== null) setSelectedStatus(value);
+            }}
+            size="sm"
+            value={selectedStatus}
+          >
+            <Option value="">All</Option>
+            <Option value="active">ACTIVE</Option>
+            <Option value="inactive">INACTIVE</Option>
           </Select>
           <Button
             onClick={() => {

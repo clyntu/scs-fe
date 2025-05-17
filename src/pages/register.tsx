@@ -13,12 +13,10 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
-import { useSupabase } from "../supabase/SupabaseProvider";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 
 export default function Register(): JSX.Element {
   /* ─────────────────── hooks ─────────────────── */
-  const { supabase } = useSupabase(); // ← valid: top-level
   const router = useRouter();
 
   const [companyId, setCompanyId] = useState("company-a");
@@ -51,8 +49,14 @@ export default function Register(): JSX.Element {
     setGeneralError("");
 
     try {
-      // Supabase sign-up (browser)
-      const { data, error } = await supabase.auth.signUp({
+      // Get the correct Supabase client for the selected company
+      const { getSupabase } = await import("../supabase/supabaseClient");
+      const companySpecificSupabase = getSupabase(
+        companyId as "company-a" | "company-b",
+      );
+
+      // Supabase sign-up (browser) with the company-specific client
+      const { data, error } = await companySpecificSupabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } },
