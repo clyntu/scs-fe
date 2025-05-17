@@ -75,7 +75,7 @@ const DeallocFormDetails = ({
                   required
                 />
               </div>
-              <FormLabel className="mt-2">Allocation No.</FormLabel>
+              <FormLabel sx={{ mt: 1 }}>Allocation No.</FormLabel>
               <div className="flex">
                 <Autocomplete
                   options={allocs.items}

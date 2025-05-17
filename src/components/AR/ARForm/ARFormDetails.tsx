@@ -144,6 +144,7 @@ const ARFormDetails = ({
                 slotProps={{
                   input: {
                     min: 0,
+                    step: 0.0001,
                   },
                 }}
                 onChange={(e) => setAmountPaid(String(e.target.value))}

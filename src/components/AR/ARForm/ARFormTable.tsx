@@ -112,8 +112,15 @@ const ARFormTable = ({
                         value={trans?.payment}
                         slotProps={{
                           input: {
-                            min: 0,
-                            max: trans.transaction_amount,
+                            min:
+                              Number(trans.transaction_amount) > 0
+                                ? 0
+                                : trans.transaction_amount,
+                            max:
+                              Number(trans.transaction_amount) > 0
+                                ? trans.transaction_amount
+                                : 0,
+                            step: 0.0001,
                           },
                         }}
                         onChange={(e) =>
