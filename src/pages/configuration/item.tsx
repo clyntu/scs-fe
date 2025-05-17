@@ -77,8 +77,12 @@ const ItemForm = (): JSX.Element => {
   };
 
   useEffect(() => {
+    getAllStocks(1, searchTerm);
+  }, [searchTerm, selectedBrand, selectedCategory, selectedStatus]);
+
+  useEffect(() => {
     // Fetch items
-    getAllStocks(page, searchTerm);
+    // getAllStocks(page, searchTerm);
 
     // Fetch categories
     axiosInstance
@@ -351,7 +355,7 @@ const ItemForm = (): JSX.Element => {
             <Option value="active">ACTIVE</Option>
             <Option value="inactive">INACTIVE</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={() => {
               getAllStocks(1, searchTerm);
             }}
@@ -363,7 +367,7 @@ const ItemForm = (): JSX.Element => {
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet
