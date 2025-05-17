@@ -218,6 +218,7 @@ const ARFormDetails = ({
                 slotProps={{
                   input: {
                     min: 0,
+                    step: 0.0001,
                   },
                 }}
                 onChange={(e) => setLessAmount(String(e.target.value))}
@@ -236,6 +237,7 @@ const ARFormDetails = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 0.0001,
                     },
                   }}
                   onChange={(e) => setAddAmount1(String(e.target.value))}

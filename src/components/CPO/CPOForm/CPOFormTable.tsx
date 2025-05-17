@@ -258,7 +258,7 @@ const CPOFormTable = ({
                       onChange={(e) => changePrice(e.target.value, index)}
                       slotProps={{
                         input: {
-                          min: 0.0,
+                          min: 0,
                           step: ".0001",
                         },
                       }}

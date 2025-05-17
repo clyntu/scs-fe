@@ -143,7 +143,7 @@ const RRFormExpenses = ({
                   <td>
                     <Input
                       type="number"
-                      slotProps={{ input: { min: 0 } }}
+                      slotProps={{ input: { min: 0, step: ".0001" } }}
                       onChange={(event) =>
                         handleInputChange(
                           expense.id,
