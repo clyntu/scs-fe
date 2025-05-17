@@ -70,9 +70,12 @@ const ViewPurchaseOrder = ({
           sort_by: "id",
           sort_order: "desc",
           search_term: searchTerm,
+          status,
         })}`,
       )
-      .then((response) => setPurchaseOrders(response.data))
+      .then((response) => {
+        setPurchaseOrders(response.data);
+      })
       .catch((error) => console.error("Error:", error));
   };
 

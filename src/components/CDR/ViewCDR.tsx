@@ -70,6 +70,7 @@ const ViewCDR = ({
           sort_by: "id",
           sort_order: "desc",
           search_term: searchTerm,
+          status,
         })}`,
       )
       .then((response) => setCDRs(response.data))

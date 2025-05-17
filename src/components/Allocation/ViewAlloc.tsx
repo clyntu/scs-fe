@@ -65,6 +65,7 @@ const ViewAlloc = ({
           sort_by: "id",
           sort_order: "desc",
           search_term: searchTerm,
+          status,
         })}`,
       )
       .then((response) => setAllocs(response.data))

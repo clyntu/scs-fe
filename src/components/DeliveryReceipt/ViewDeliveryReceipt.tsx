@@ -70,6 +70,7 @@ const ViewDeliveryReceipt = ({
           sort_by: "id",
           sort_order: "desc",
           search_term: searchTerm,
+          status,
         })}`,
       )
       .then((response) => setDeliveryReceipts(response.data))

@@ -73,6 +73,7 @@ const ViewAR = ({
           sort_by: "id",
           sort_order: "desc",
           search_term: searchTerm,
+          status,
         })}`,
       )
       .then((response) => setARs(response.data))
