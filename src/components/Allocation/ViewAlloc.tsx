@@ -73,9 +73,12 @@ const ViewAlloc = ({
   };
 
   useEffect(() => {
-    // Fetch Allocs
-    getAllAlloc();
-  }, []);
+    const timeout = setTimeout(() => {
+      getAllAlloc();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, status]);
 
   const handleDeleteAlloc = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -134,7 +137,7 @@ const ViewAlloc = ({
             <Option value="posted">Posted</Option>
             <Option value="archived">Archived</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={getAllAlloc}
             sx={{
               ml: 2,
@@ -144,7 +147,7 @@ const ViewAlloc = ({
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet

@@ -78,9 +78,12 @@ const ViewCPO = ({
   };
 
   useEffect(() => {
-    // Fetch purchase orders
-    getAllPO();
-  }, []);
+    const timeout = setTimeout(() => {
+      getAllPO();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, status]);
 
   const handleDeleteCPO = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -141,7 +144,7 @@ const ViewCPO = ({
             <Option value="unposted">Unposted</Option>
             <Option value="archived">Archived</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={getAllPO}
             sx={{
               ml: 2,
@@ -151,7 +154,7 @@ const ViewCPO = ({
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet

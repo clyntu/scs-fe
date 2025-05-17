@@ -55,8 +55,16 @@ const CustomerForm = (): JSX.Element => {
   };
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      getAllCustomers(1, searchTerm);
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm]);
+
+  useEffect(() => {
     // Fetch customers
-    getAllCustomers(page, searchTerm);
+    // getAllCustomers(page, searchTerm);
 
     // Fetch user ID
     axiosInstance
@@ -180,7 +188,7 @@ const CustomerForm = (): JSX.Element => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button
+          {/* <Button
             onClick={() => {
               getAllCustomers(1, searchTerm);
             }}
@@ -192,7 +200,7 @@ const CustomerForm = (): JSX.Element => {
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
         <Sheet
           sx={{

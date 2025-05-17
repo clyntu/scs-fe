@@ -77,7 +77,11 @@ const ItemForm = (): JSX.Element => {
   };
 
   useEffect(() => {
-    getAllStocks(1, searchTerm);
+    const timeout = setTimeout(() => {
+      getAllStocks(1, searchTerm);
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
   }, [searchTerm, selectedBrand, selectedCategory, selectedStatus]);
 
   useEffect(() => {

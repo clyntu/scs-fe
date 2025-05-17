@@ -55,8 +55,16 @@ const SupplierForm = (): JSX.Element => {
   };
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      getAllSuppliers(1, searchTerm);
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm]);
+
+  useEffect(() => {
     // Fetch suppliers
-    getAllSuppliers(page, searchTerm);
+    // getAllSuppliers(page, searchTerm);
     // Fetch user ID
     axiosInstance
       .get<User>("/api/users/me/")
@@ -179,7 +187,7 @@ const SupplierForm = (): JSX.Element => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button
+          {/* <Button
             onClick={() => {
               getAllSuppliers(1, searchTerm);
             }}
@@ -191,7 +199,7 @@ const SupplierForm = (): JSX.Element => {
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
         <Sheet
           sx={{

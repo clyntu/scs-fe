@@ -81,6 +81,14 @@ const ViewAR = ({
   };
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      getAllAR();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, status, paymentStatus]);
+
+  useEffect(() => {
     // Process uncleared receipts that are beyond clear date
     // Fetch ARs after
     axiosInstance
@@ -215,7 +223,7 @@ const ViewAR = ({
             <Option value="reversed">Reversed</Option>
             <Option value="cancelled">Cancelled</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={getAllAR}
             sx={{
               ml: 2,
@@ -225,7 +233,7 @@ const ViewAR = ({
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet

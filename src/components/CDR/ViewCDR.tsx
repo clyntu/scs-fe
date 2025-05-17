@@ -78,9 +78,12 @@ const ViewCDR = ({
   };
 
   useEffect(() => {
-    // Fetch CDRs
-    getAllCDRs();
-  }, []);
+    const timeout = setTimeout(() => {
+      getAllCDRs();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, status]);
 
   const handleDeleteCDR = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -141,7 +144,7 @@ const ViewCDR = ({
             <Option value="posted">Posted</Option>
             <Option value="archived">Archived</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={getAllCDRs}
             sx={{
               ml: 2,
@@ -151,7 +154,7 @@ const ViewCDR = ({
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet

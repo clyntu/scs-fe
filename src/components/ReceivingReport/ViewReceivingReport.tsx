@@ -78,9 +78,12 @@ const ViewReceivingReport = ({
   };
 
   useEffect(() => {
-    // Fetch RRs
-    getAllRR();
-  }, []);
+    const timeout = setTimeout(() => {
+      getAllRR();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, status]);
 
   const handleDeleteRR = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -141,7 +144,7 @@ const ViewReceivingReport = ({
             <Option value="posted">Posted</Option>
             <Option value="archived">Archived</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={getAllRR}
             sx={{
               ml: 2,
@@ -151,7 +154,7 @@ const ViewReceivingReport = ({
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet

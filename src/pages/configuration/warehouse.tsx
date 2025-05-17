@@ -57,8 +57,16 @@ const WarehouseForm = (): JSX.Element => {
   };
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      getAllWarehouse(1, searchTerm);
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm]);
+
+  useEffect(() => {
     // Fetch warehouses
-    getAllWarehouse(page, searchTerm);
+    // getAllWarehouse(page, searchTerm);
     // Fetch user ID
     axiosInstance
       .get<User>("/api/users/me/")
@@ -158,7 +166,7 @@ const WarehouseForm = (): JSX.Element => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Button
+          {/* <Button
             onClick={() => {
               getAllWarehouse(1, searchTerm);
             }}
@@ -170,7 +178,7 @@ const WarehouseForm = (): JSX.Element => {
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
         <Sheet
           sx={{

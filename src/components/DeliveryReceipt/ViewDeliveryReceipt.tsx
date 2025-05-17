@@ -78,9 +78,12 @@ const ViewDeliveryReceipt = ({
   };
 
   useEffect(() => {
-    // Fetch SDRs
-    getAllSDR();
-  }, []);
+    const timeout = setTimeout(() => {
+      getAllSDR();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, status]);
 
   const handleDeleteDeliveryReceipt = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -141,7 +144,7 @@ const ViewDeliveryReceipt = ({
             <Option value="posted">Posted</Option>
             <Option value="archived">Archived</Option>
           </Select>
-          <Button
+          {/* <Button
             onClick={getAllSDR}
             sx={{
               ml: 2,
@@ -151,7 +154,7 @@ const ViewDeliveryReceipt = ({
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet
