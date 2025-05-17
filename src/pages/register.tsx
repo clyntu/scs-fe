@@ -9,8 +9,6 @@ import {
   Input,
   Button,
   Alert,
-  Select,
-  Option,
 } from "@mui/joy";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -104,6 +102,11 @@ export default function Register(): JSX.Element {
   const toLogin = async () =>
     await router.push({ pathname: "/", query: { companyId } });
 
+  // Helper function to get company name from company ID
+  const getCompanyName = (id: string): string => {
+    return id === "company-a" ? "Peterson Parts Trading" : "Company B";
+  };
+
   return (
     <main>
       <Sheet
@@ -135,14 +138,9 @@ export default function Register(): JSX.Element {
         <form onSubmit={handleRegister}>
           <FormControl>
             <FormLabel>Company</FormLabel>
-            <Select
-              value={companyId}
-              onChange={(_, v) => setCompanyId(v!)}
-              disabled={isLoading}
-            >
-              <Option value="company-a">Peterson Parts Trading</Option>
-              <Option value="company-b">Company B</Option>
-            </Select>
+            <Typography level="body-md" sx={{ p: 1 }}>
+              {getCompanyName(companyId)}
+            </Typography>
           </FormControl>
 
           <FormControl error={!!errors.username} sx={{ mt: 2 }}>
@@ -201,7 +199,11 @@ export default function Register(): JSX.Element {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
-              minLength={8}
+              slotProps={{
+                input: {
+                  minLength: 8,
+                },
+              }}
               endDecorator={
                 <IconButton
                   variant="plain"
