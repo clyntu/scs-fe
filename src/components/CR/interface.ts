@@ -28,6 +28,9 @@ export interface CRFormDetailsProps {
   isEditDisabled: boolean;
   totalGross: number;
   totalItems: number;
+
+  discountReturn: number | string;
+  setDiscountReturn: Dispatch<SetStateAction<number | string>>;
 }
 
 export interface CRFormTableProps {

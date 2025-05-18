@@ -42,6 +42,8 @@ const CRFormDetails = ({
   isEditDisabled,
   totalGross,
   totalItems,
+  discountReturn,
+  setDiscountReturn,
 }: CRFormDetailsProps): JSX.Element => {
   const [isFetchingCDRs, setIsFetchingCDRs] = useState(false);
   const [CDRs, setCDRs] = useState<CDR[]>([]);
@@ -152,13 +154,28 @@ const CRFormDetails = ({
             spacing={2}
             sx={{ mb: 1, alignItems: "flex-end" }}
           >
-            <FormControl size="sm" sx={{ mb: 1, width: "46%" }}>
+            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}
                 placeholder="Remarks"
                 onChange={(e) => setRemarks(e.target.value)}
                 value={remarks}
+                disabled={isEditDisabled}
+              />
+            </FormControl>
+            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
+              <FormLabel>Fixed Discount Return</FormLabel>
+              <Input
+                type="number"
+                value={discountReturn}
+                slotProps={{
+                  input: {
+                    min: 0,
+                    step: ".0001",
+                  },
+                }}
+                onChange={(e) => setDiscountReturn(e.target.value)}
                 disabled={isEditDisabled}
               />
             </FormControl>

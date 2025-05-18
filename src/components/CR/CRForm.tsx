@@ -47,6 +47,7 @@ const CRForm = ({
   const [transactionDate, setTransactionDate] = useState(currentDate);
   const [referenceNumber, setReferenceNumber] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [discountReturn, setDiscountReturn] = useState<string | number>(0);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -57,10 +58,9 @@ const CRForm = ({
     0,
   );
 
-  const totalGross = formattedDRs.reduce(
-    (sum, item) => sum + (item.gross_amount ?? 0),
-    0,
-  );
+  const totalGross =
+    formattedDRs.reduce((sum, item) => sum + (item.gross_amount ?? 0), 0) -
+    Number(discountReturn);
 
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -206,6 +206,7 @@ const CRForm = ({
       status,
       transaction_date: transactionDate,
       reference_number: referenceNumber,
+      discount_return_amount: Number(discountReturn),
       remarks,
       customer_id: selectedCustomer?.customer_id,
       items: formattedDRs
@@ -317,6 +318,8 @@ const CRForm = ({
             isEditDisabled={isEditDisabled}
             totalGross={totalGross}
             totalItems={totalItems}
+            discountReturn={discountReturn}
+            setDiscountReturn={setDiscountReturn}
           />
           <CRFormTable
             selectedRow={selectedRow}
