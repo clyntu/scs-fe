@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Table, Sheet, Input, Select, Option } from "@mui/joy";
-import axiosInstance from "../../utils/axiosConfig";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import DeleteARModal from "./DeleteARModal";
 import { toast } from "react-toastify";
 import type {
@@ -33,6 +33,7 @@ const ViewAR = ({
   const [paymentStatus, setPaymentStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [isPrinting, setIsPrinting] = useState(false);
+  const companyId = getCompanyId();
 
   const getAllAR = (): void => {
     const payload: PaginationQueryParams = {
@@ -146,7 +147,7 @@ const ViewAR = ({
           };
         });
         setIsPrinting(false);
-        generatePDF(data, total, "Peterson Parts Trading Inc.");
+        generatePDF(data, total, companyId);
       })
       .catch((error) => {
         console.error("Error:", error);

@@ -11,21 +11,32 @@ const formatDate = (date: Date): string => {
   return `${month}/${day}/${year}`;
 };
 
-const addCustomHeader = (doc: jsPDF, title: string): void => {
+const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Company Name (bold)
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text(title, 40, 40);
+
+  const companyTitle =
+    companyId === "company-a" ? "Peterson Parts Trading" : "Company B";
+  doc.text(companyTitle, 40, 40);
 
   // Address and contact info (normal)
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-  doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-  doc.text("FAX#: 724-8680", 40, 70);
-  doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
+
+  if (companyId === "company-a") {
+    doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
+    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
+    doc.text("FAX#: 724-8680", 40, 70);
+    doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
+  } else {
+    doc.text("COMPANY B ADDRESS", 40, 50);
+    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
+    doc.text("FAX#: 724-8680", 40, 70);
+    doc.text("E-MAIL: companyb@yahoo.com", 40, 80);
+  }
 
   // "PRICELIST" aligned to the right
   doc.setFontSize(13);
@@ -44,7 +55,7 @@ export const generatePDF = (
     total_uncleared: string;
     total_bounced: string;
   },
-  title: string,
+  companyId: string,
 ): void => {
   // 1. Initialize jsPDF
   // eslint-disable-next-line new-cap
@@ -54,7 +65,7 @@ export const generatePDF = (
     format: "A4",
   });
 
-  addCustomHeader(doc, title);
+  addCustomHeader(doc, companyId);
 
   // 2. Define columns and rows
   const tableColumnHeaders = [

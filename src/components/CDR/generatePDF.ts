@@ -47,7 +47,10 @@ const calculateNetForRow = (
   return result;
 };
 
-export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
+export const generateDeliveryReceiptPDF = (
+  selectedRow: CDR,
+  companyId: string,
+): void => {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "pt",
@@ -59,20 +62,41 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   // Company Name (bold)
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("Peterson Parts Trading Inc.", 40, 40);
+
+  const title =
+    companyId === "company-a" ? "Peterson Parts Trading" : "Company B";
+  doc.text(title, 40, 40);
 
   // Address and contact info (normal)
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-  doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-  doc.text("FAX#: 724-8680", 40, 70);
-  doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
+
+  if (companyId === "company-a") {
+    doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
+    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
+    doc.text("FAX#: 724-8680", 40, 70);
+    doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
+  } else {
+    doc.text("COMPANY B ADDRESS", 40, 50);
+    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
+    doc.text("FAX#: 724-8680", 40, 70);
+    doc.text("E-MAIL: companyb@yahoo.com", 40, 80);
+  }
 
   // "PRICELIST" aligned to the right
+  const headerText = `D.R. No.: ${selectedRow.id}`;
+  const rightMargin = pageWidth - 40;
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text(`D.R. No.: ${selectedRow.id}`, pageWidth - 130, 80); // Adjust x-position as needed
+
+  // Get text width
+  const headerTextWidth = doc.getTextWidth(headerText);
+
+  // Calculate aligned X position
+  const xPos = rightMargin - headerTextWidth;
+
+  // Add text at the right-aligned position
+  doc.text(headerText, xPos, 80);
 
   // Bottom border line
   doc.setLineWidth(0.5);
@@ -92,7 +116,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
         day: "2-digit",
       },
     )}`,
-    pageWidth - 140,
+    pageWidth - 125,
     110,
   ); // top-right area
 

@@ -4,7 +4,7 @@ import { Button, Divider } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
-import axiosInstance from "../../utils/axiosConfig";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { UnplannedAlloc, type AllocItemsFE, GetOneCDR } from "./interface";
@@ -50,6 +50,7 @@ const CDRForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const companyId = getCompanyId();
 
   const totalItems = formattedAllocs.reduce(
     (sum, item) => sum + Number(item.dp_qty),
@@ -278,7 +279,7 @@ const CDRForm = ({
 
   const handlePDFCreate = (): void => {
     if (selectedRow !== null && selectedRow !== undefined) {
-      generateDeliveryReceiptPDF(selectedRow);
+      generateDeliveryReceiptPDF(selectedRow, companyId);
     }
   };
 

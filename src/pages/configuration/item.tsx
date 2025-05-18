@@ -7,7 +7,7 @@ import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import { Input, Select, Option } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
-import axiosInstance from "../../utils/axiosConfig";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { User } from "../Login";
 import type { AxiosError } from "axios";
@@ -50,6 +50,8 @@ const ItemForm = (): JSX.Element => {
   const [isPrintingStocks, setIsPrintingStocks] = useState(false);
   const [isPrintingPricelist, setIsPrintingPricelist] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const companyId = getCompanyId();
+
   const getAllStocks = (page: number, searchTerm: string): void => {
     axiosInstance
       .get<PaginatedItems>(
@@ -210,7 +212,7 @@ const ItemForm = (): JSX.Element => {
       .then((response) => {
         console.log(response.data);
         const items = response.data.items;
-        generateStocksPDF(items, "Peterson Parts Trading Inc.");
+        generateStocksPDF(items, companyId);
         setIsPrintingStocks(false);
       })
       .catch((error) => {
@@ -245,7 +247,7 @@ const ItemForm = (): JSX.Element => {
             ),
           };
         });
-        generatePricelistPDF(data, "Peterson Parts Trading Inc.");
+        generatePricelistPDF(data, companyId);
         setIsPrintingPricelist(false);
       })
       .catch((error) => {
