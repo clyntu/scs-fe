@@ -984,6 +984,7 @@ export interface CR {
   id: number;
   total_qty: number;
   total_gross: string;
+  discount_return_amount: number;
   created_by: number;
   modified_by: number | null;
   date_created: string;

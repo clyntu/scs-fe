@@ -88,6 +88,7 @@ const CRForm = ({
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
+      setDiscountReturn(selectedRow?.discount_return_amount ?? 0);
 
       // Fill in formatted DRs for table
       const formattedDRs = selectedRow.items.map((CRItem) => {
