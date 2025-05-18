@@ -103,7 +103,10 @@ const SDRFormDetails = ({
         )
         .then((response) =>
           setUnservedPOs(
-            response.data.items.filter((PO) => PO.status === "posted"),
+            response.data.items
+              .filter((PO) => PO.status === "posted")
+              .filter((PO) => PO.status === "posted")
+              .sort((a, b) => b.id - a.id),
           ),
         )
         .catch((error) => console.error("Error:", error));
