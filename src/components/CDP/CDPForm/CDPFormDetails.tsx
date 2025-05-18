@@ -92,11 +92,23 @@ const CDPFormDetails = ({
 
   const getFixedAmtDiscounts = (): void => {
     let total = 0;
+    // Keep track of processed CPO IDs to avoid counting the same discount multiple times
+    const processedCpoIds = new Set<number>();
+
     for (const allocItem of formattedAllocs) {
       console.log(allocItem);
       if (isAmtDiscountAlreadyApplied(allocItem)) {
         continue;
       }
+
+      // Skip if we've already processed this CPO ID
+      if (processedCpoIds.has(allocItem.cpo_id)) {
+        continue;
+      }
+
+      // Mark this CPO ID as processed
+      processedCpoIds.add(allocItem.cpo_id);
+
       if (!allocItem.customer_discount_1.includes("%"))
         total += Number(allocItem.customer_discount_1);
 
