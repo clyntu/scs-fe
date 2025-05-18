@@ -138,20 +138,26 @@ export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
 
   // 5. Table columns and data
   const columns = ["QTY", "Stock", "Description", "Unit Cost", "Amount"];
-  const bodyData = selectedRow.items.map((item) => [
-    item.return_qty,
-    item.item.stock_code,
-    item.item.name,
-    addCommaToNumberWithFourPlaces(Number(item.price)),
-    addCommaToNumberWithFourPlaces(
-      calculateNetForRow(
-        Number(item.return_qty),
-        Number(item.price),
-        item.delivery_receipt_item.delivery_plan_item.allocation_item
-          .customer_purchase_order,
+  const bodyData = selectedRow.items.map((item) => {
+    const costPerUnit =
+      item.delivery_receipt_item.delivery_plan_item.allocation_item.customer_purchase_order.items.find(
+        (cpoItem) => cpoItem.item_id === item.item_id,
+      )?.price;
+    return [
+      item.return_qty,
+      item.item.stock_code,
+      item.item.name,
+      addCommaToNumberWithFourPlaces(Number(costPerUnit)),
+      addCommaToNumberWithFourPlaces(
+        calculateNetForRow(
+          Number(item.return_qty),
+          Number(item.price),
+          item.delivery_receipt_item.delivery_plan_item.allocation_item
+            .customer_purchase_order,
+        ),
       ),
-    ),
-  ]);
+    ];
+  });
 
   // 6. Render the table
   autoTable(doc, {
@@ -223,9 +229,14 @@ export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
   doc.setFont("helvetica", "bold");
   doc.text("AMOUNT:", pageWidth - 190, finalY + 50);
   doc.setFont("helvetica", "normal");
-  doc.text(String(selectedRow.total_gross), pageWidth - 55, finalY + 50, {
-    align: "right",
-  });
+  doc.text(
+    String(addCommaToNumberWithFourPlaces(Number(selectedRow.total_gross))),
+    pageWidth - 55,
+    finalY + 50,
+    {
+      align: "right",
+    },
+  );
 
   // 9. Save or download
   doc.save("customer-return.pdf");
