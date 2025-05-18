@@ -154,7 +154,7 @@ const CRFormDetails = ({
             spacing={2}
             sx={{ mb: 1, alignItems: "flex-end" }}
           >
-            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
+            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}
@@ -164,7 +164,7 @@ const CRFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
+            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Fixed Discount Return</FormLabel>
               <Input
                 type="number"
