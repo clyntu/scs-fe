@@ -93,72 +93,65 @@ export interface Supplier {
   supplier_id: number;
   code: string;
   name: string;
-  building_address: string;
-  street_address: string;
-  city: string;
-  province: string;
-  country: string;
-  zip_code: string;
+  address: string;
   contact_person: string;
   contact_number: string;
-  email: string;
-  fax_number: string;
+  email?: string; // Optional
   currency: string;
-  discount_rate?: number;
   supplier_balance?: number;
-  created_by: number;
-  modified_by: number;
-  date_created: string;
-  date_modified: string;
   notes: string;
   creator?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
   };
   modifier?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
-  };
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
+  } | null;
+  date_created: string;
+  date_modified: string | null;
 }
 
 export interface Customer {
   customer_id: number;
   code: string;
   name: string;
-  building_address: string;
-  street_address: string;
-  city: string;
-  province: string;
-  country: string;
-  zip_code: string;
+  address: string;
   contact_person: string;
   contact_number: string;
-  email: string;
-  fax_number: string;
-  currency: string;
-  discount_rate?: number;
+  email?: string; // Optional
   customer_balance?: number;
-  created_by: number;
-  modified_by: number;
-  date_created: string;
-  date_modified: string;
   notes: string;
   creator?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
   };
   modifier?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
-  };
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
+  } | null;
+  date_created: string;
+  date_modified: string | null;
 }
 
 export interface SuppliersModalProps {

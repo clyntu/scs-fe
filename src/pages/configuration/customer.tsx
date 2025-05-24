@@ -80,18 +80,10 @@ const CustomerForm = (): JSX.Element => {
       customer_id: newCustomer.customer_id,
       code: newCustomer.code,
       name: newCustomer.name,
-      building_address: newCustomer.building_address,
-      street_address: newCustomer.street_address,
-      city: newCustomer.city,
-      province: newCustomer.province,
-      country: newCustomer.country,
-      zip_code: newCustomer.zip_code,
+      address: newCustomer.address,
       contact_person: newCustomer.contact_person,
       contact_number: newCustomer.contact_number,
       email: newCustomer.email,
-      fax_number: newCustomer.fax_number,
-      currency: newCustomer.currency,
-      discount_rate: newCustomer.discount_rate,
       customer_balance: newCustomer.customer_balance,
       modified_by: userId,
       notes: newCustomer.notes,
@@ -114,18 +106,10 @@ const CustomerForm = (): JSX.Element => {
     const payload = {
       code: newCustomer.code,
       name: newCustomer.name,
-      building_address: newCustomer.building_address,
-      street_address: newCustomer.street_address,
-      city: newCustomer.city,
-      province: newCustomer.province,
-      country: newCustomer.country,
-      zip_code: newCustomer.zip_code,
+      address: newCustomer.address,
       contact_person: newCustomer.contact_person,
       contact_number: newCustomer.contact_number,
       email: newCustomer.email,
-      fax_number: newCustomer.fax_number,
-      currency: newCustomer.currency,
-      discount_rate: newCustomer.discount_rate,
       customer_balance: newCustomer.customer_balance,
       created_by: userId,
       notes: newCustomer.notes,
@@ -264,18 +248,10 @@ const CustomerForm = (): JSX.Element => {
               <tr>
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
                 <th style={{ width: 300 }}>Name</th>
-                <th style={{ width: 300 }}>Building Address</th>
-                <th style={{ width: 300 }}>Street Address</th>
-                <th style={{ width: 150 }}>City</th>
-                <th style={{ width: 150 }}>Province</th>
-                <th style={{ width: 150 }}>Country</th>
-                <th style={{ width: 100 }}>Zip Code</th>
+                <th style={{ width: 400 }}>Address</th>
                 <th style={{ width: 150 }}>Contact Person</th>
                 <th style={{ width: 150 }}>Contact Number</th>
-                <th style={{ width: 300 }}>Contact Email</th>
-                <th style={{ width: 150 }}>Fax Number</th>
-                <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 100 }}>Discount Rate</th>
+                <th style={{ width: 300 }}>Email</th>
                 <th style={{ width: 100 }}>Customer Balance</th>
                 <th style={{ width: 200 }}>Created By</th>
                 <th style={{ width: 250 }}>Date Created</th>
@@ -298,18 +274,10 @@ const CustomerForm = (): JSX.Element => {
                 >
                   <td>{customer.code}</td>
                   <td>{customer.name}</td>
-                  <td>{customer.building_address}</td>
-                  <td>{customer.street_address}</td>
-                  <td>{customer.city}</td>
-                  <td>{customer.province}</td>
-                  <td>{customer.country}</td>
-                  <td>{customer.zip_code}</td>
+                  <td>{customer.address}</td>
                   <td>{customer.contact_person}</td>
                   <td>{customer.contact_number}</td>
                   <td>{customer.email}</td>
-                  <td>{customer.fax_number}</td>
-                  <td>{customer.currency}</td>
-                  <td>{customer.discount_rate}</td>
                   <td>{customer.customer_balance}</td>
                   <td>{customer?.creator?.full_name}</td>
                   <td>{customer.date_created}</td>

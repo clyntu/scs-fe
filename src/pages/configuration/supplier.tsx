@@ -79,18 +79,11 @@ const SupplierForm = (): JSX.Element => {
       supplier_id: newSupplier.supplier_id,
       code: newSupplier.code,
       name: newSupplier.name,
-      building_address: newSupplier.building_address,
-      street_address: newSupplier.street_address,
-      city: newSupplier.city,
-      province: newSupplier.province,
-      country: newSupplier.country,
-      zip_code: newSupplier.zip_code,
+      address: newSupplier.address,
       contact_person: newSupplier.contact_person,
       contact_number: newSupplier.contact_number,
       email: newSupplier.email,
-      fax_number: newSupplier.fax_number,
       currency: newSupplier.currency,
-      discount_rate: newSupplier.discount_rate,
       supplier_balance: newSupplier.supplier_balance,
       modified_by: userId,
       notes: newSupplier.notes,
@@ -113,18 +106,11 @@ const SupplierForm = (): JSX.Element => {
     const payload = {
       code: newSupplier.code,
       name: newSupplier.name,
-      building_address: newSupplier.building_address,
-      street_address: newSupplier.street_address,
-      city: newSupplier.city,
-      province: newSupplier.province,
-      country: newSupplier.country,
-      zip_code: newSupplier.zip_code,
+      address: newSupplier.address,
       contact_person: newSupplier.contact_person,
       contact_number: newSupplier.contact_number,
       email: newSupplier.email,
-      fax_number: newSupplier.fax_number,
       currency: newSupplier.currency,
-      discount_rate: newSupplier.discount_rate,
       supplier_balance: newSupplier.supplier_balance,
       created_by: userId,
       notes: newSupplier.notes,
@@ -263,18 +249,11 @@ const SupplierForm = (): JSX.Element => {
               <tr>
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
                 <th style={{ width: 300 }}>Name</th>
-                <th style={{ width: 300 }}>Building Address</th>
-                <th style={{ width: 300 }}>Street Address</th>
-                <th style={{ width: 150 }}>City</th>
-                <th style={{ width: 150 }}>Province</th>
-                <th style={{ width: 150 }}>Country</th>
-                <th style={{ width: 100 }}>Zip Code</th>
+                <th style={{ width: 400 }}>Address</th>
                 <th style={{ width: 150 }}>Contact Person</th>
                 <th style={{ width: 150 }}>Contact Number</th>
-                <th style={{ width: 300 }}>Contact Email</th>
-                <th style={{ width: 150 }}>Fax Number</th>
+                <th style={{ width: 300 }}>Email</th>
                 <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 100 }}>Discount Rate</th>
                 <th style={{ width: 100 }}>Supplier Balance</th>
                 <th style={{ width: 200 }}>Created By</th>
                 <th style={{ width: 250 }}>Date Created</th>
@@ -297,18 +276,11 @@ const SupplierForm = (): JSX.Element => {
                 >
                   <td>{supplier.code}</td>
                   <td>{supplier.name}</td>
-                  <td>{supplier.building_address}</td>
-                  <td>{supplier.street_address}</td>
-                  <td>{supplier.city}</td>
-                  <td>{supplier.province}</td>
-                  <td>{supplier.country}</td>
-                  <td>{supplier.zip_code}</td>
+                  <td>{supplier.address}</td>
                   <td>{supplier.contact_person}</td>
                   <td>{supplier.contact_number}</td>
                   <td>{supplier.email}</td>
-                  <td>{supplier.fax_number}</td>
                   <td>{supplier.currency}</td>
-                  <td>{supplier.discount_rate}</td>
                   <td>{supplier.supplier_balance}</td>
                   <td>{supplier?.creator?.full_name}</td>
                   <td>{supplier.date_created}</td>
