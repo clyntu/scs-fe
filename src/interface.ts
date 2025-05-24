@@ -63,8 +63,7 @@ export interface ViewStockHistory {
 
 export interface IStockHistory {
   transaction_type: string;
-  stock_code: string;
-  stock_description: string;
+  reference_number: string;
   transaction_date: string;
   transaction_number: number;
   quantity_in: number;

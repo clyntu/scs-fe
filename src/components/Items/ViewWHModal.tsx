@@ -136,7 +136,6 @@ const ViewWHModal = ({
                         <th style={{ width: 100 }}>On Stock</th>
                         <th style={{ width: 100 }}>Allocated</th>
                         <th style={{ width: 100 }}>Purchased</th>
-                        <th style={{ width: 100 }}>Sold</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -153,7 +152,6 @@ const ViewWHModal = ({
                             <td>{warehouseItem.total_on_stock}</td>
                             <td>{warehouseItem.total_allocated}</td>
                             <td>{warehouseItem.total_purchased}</td>
-                            <td>{warehouseItem.total_sold}</td>
                           </tr>
                         ),
                       )}

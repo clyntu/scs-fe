@@ -453,10 +453,6 @@ const ItemForm = (): JSX.Element => {
                 <th style={{ width: 100 }}>In Transit</th>
                 <th style={{ width: 100 }}>Allocated</th>
                 <th style={{ width: 100 }}>Purchased</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -493,10 +489,6 @@ const ItemForm = (): JSX.Element => {
                   <td>{item.total_in_transit}</td>
                   <td>{item.total_allocated}</td>
                   <td>{item.total_purchased}</td>
-                  <td>{item?.creator?.username}</td>
-                  <td>{item.date_created}</td>
-                  <td>{item?.modifier?.username}</td>
-                  <td>{item.date_modified}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

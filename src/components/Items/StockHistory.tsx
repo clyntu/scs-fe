@@ -109,8 +109,7 @@ const StockHistory = ({
                         </th>
                         <th style={{ width: 170 }}>Supplier</th>
                         <th style={{ width: 170 }}>Customer</th>
-                        <th style={{ width: 120 }}>Code</th>
-                        <th style={{ width: 170 }}>Name</th>
+                        <th style={{ width: 120 }}>Reference No.</th>
                         <th style={{ width: 120 }}>Tx Date</th>
                         <th style={{ width: 100 }}>Tx No.</th>
                         <th style={{ width: 100 }}>In</th>
@@ -123,13 +122,12 @@ const StockHistory = ({
                     <tbody>
                       {stockHistory.map((history: IStockHistory) => (
                         <tr
-                          key={`${history.transaction_number}-${history.stock_code}`}
+                          key={`${history.transaction_number}-${history.transaction_date}`}
                         >
                           <td>{history.transaction_type}</td>
                           <td>{history?.supplier_name ?? "-"}</td>
                           <td>{history?.customer_name ?? "-"}</td>
-                          <td>{history.stock_code}</td>
-                          <td>{history.stock_description}</td>
+                          <td>{history?.reference_number}</td>
                           <td>{history.transaction_date}</td>
                           <td>{history.transaction_number}</td>
                           <td>{history.quantity_in}</td>
