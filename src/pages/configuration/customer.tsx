@@ -37,8 +37,8 @@ const CustomerForm = (): JSX.Element => {
         `/api/customers/?${convertToQueryParams({
           page,
           limit: PAGE_LIMIT,
-          sort_by: "customer_id",
-          sort_order: "desc",
+          sort_by: "name",
+          sort_order: "asc",
           search_term,
         })}`,
       )

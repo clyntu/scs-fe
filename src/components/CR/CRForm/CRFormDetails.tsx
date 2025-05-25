@@ -164,21 +164,6 @@ const CRFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Fixed Discount Return</FormLabel>
-              <Input
-                type="number"
-                value={discountReturn}
-                slotProps={{
-                  input: {
-                    min: 0,
-                    step: ".0001",
-                  },
-                }}
-                onChange={(e) => setDiscountReturn(e.target.value)}
-                disabled={isEditDisabled}
-              />
-            </FormControl>
             {(!openEdit || status === "unposted") && (
               <Button
                 sx={{ mb: 1, width: "22.5%" }}

@@ -224,7 +224,7 @@ const CPOForm = ({
 
     if (!areDiscountsValid(discounts)) {
       toast.error(
-        "Error: Discounts must be a positive number with or without %",
+        "Error: Discounts must be in percentage format (e.g., 10%, 5.5%)",
       );
       return;
     }
@@ -265,7 +265,7 @@ const CPOForm = ({
 
     if (!areDiscountsValid(discounts)) {
       toast.error(
-        "Error: Discounts must be a positive number with or without %",
+        "Error: Discounts must be in percentage format (e.g., 10%, 5.5%)",
       );
       return;
     }

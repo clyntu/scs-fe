@@ -12,11 +12,7 @@ import {
   Divider,
   Autocomplete,
 } from "@mui/joy";
-import type {
-  AllocItemsFE,
-  CDPFormDetailsProps,
-  UnplannedAlloc,
-} from "../interface";
+import type { CDPFormDetailsProps, UnplannedAlloc } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
@@ -45,8 +41,6 @@ const CDPFormDetails = ({
   totalNet,
   totalGross,
   totalItems,
-  amountDiscount,
-  setAmountDiscount,
 }: CDPFormDetailsProps): JSX.Element => {
   const [isLoadingUnserved, setIsLoadingUnserved] = useState(false);
   const [unservedAllocs, setUnservedAllocs] = useState<UnplannedAlloc[]>([]);
@@ -73,63 +67,6 @@ const CDPFormDetails = ({
         });
     }
   }, [selectedCustomer]);
-
-  useEffect(() => {
-    if (!openEdit) getFixedAmtDiscounts();
-  }, [formattedAllocs]);
-
-  const isAmtDiscountAlreadyApplied = (allocItem: AllocItemsFE): boolean => {
-    // If the total of allocated + unserved is less than the volume, that means some allocated items are planned already
-    // Meaning, the discount has already been applied
-    if (
-      allocItem.alloc_qty + allocItem.cpo_item_unserved <
-      allocItem.cpo_item_volume
-    ) {
-      return true;
-    }
-    return false;
-  };
-
-  const getFixedAmtDiscounts = (): void => {
-    let total = 0;
-    // Keep track of processed CPO IDs to avoid counting the same discount multiple times
-    const processedCpoIds = new Set<number>();
-
-    for (const allocItem of formattedAllocs) {
-      console.log(allocItem);
-      if (isAmtDiscountAlreadyApplied(allocItem)) {
-        continue;
-      }
-
-      // Skip if we've already processed this CPO ID
-      if (processedCpoIds.has(allocItem.cpo_id)) {
-        continue;
-      }
-
-      // Mark this CPO ID as processed
-      processedCpoIds.add(allocItem.cpo_id);
-
-      if (!allocItem.customer_discount_1.includes("%"))
-        total += Number(allocItem.customer_discount_1);
-
-      if (!allocItem.customer_discount_2.includes("%"))
-        total += Number(allocItem.customer_discount_2);
-
-      if (!allocItem.customer_discount_3.includes("%"))
-        total += Number(allocItem.customer_discount_3);
-
-      if (!allocItem.transaction_discount_1.includes("%"))
-        total += Number(allocItem.transaction_discount_1);
-
-      if (!allocItem.transaction_discount_2.includes("%"))
-        total += Number(allocItem.transaction_discount_2);
-
-      if (!allocItem.transaction_discount_3.includes("%"))
-        total += Number(allocItem.transaction_discount_3);
-    }
-
-    setAmountDiscount(total);
-  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -220,15 +157,6 @@ const CDPFormDetails = ({
                 onChange={(e) => setRemarks(e.target.value)}
                 value={remarks}
                 disabled={isEditDisabled}
-              />
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
-              <FormLabel>Amount Discount</FormLabel>
-              <Textarea
-                minRows={1}
-                placeholder="0"
-                value={amountDiscount}
-                disabled
               />
             </FormControl>
             {(!openEdit || status === "unposted") && (

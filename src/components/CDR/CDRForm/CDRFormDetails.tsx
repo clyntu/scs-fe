@@ -262,15 +262,6 @@ const CDRFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
-              <FormLabel>Amount Discount</FormLabel>
-              <Textarea
-                minRows={1}
-                placeholder="0"
-                value={selectedDP?.discount_amount ?? 0}
-                disabled
-              />
-            </FormControl>
           </Stack>
         </div>
       </Card>

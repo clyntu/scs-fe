@@ -140,7 +140,7 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("customer", 0, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="Enter discount % (e.g., 10%)"
                 disabled={isEditDisabled}
               />
             </FormControl>
@@ -151,7 +151,7 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("transaction", 0, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="Enter discount % (e.g., 10%)"
                 disabled={isEditDisabled}
               />
             </FormControl>
@@ -162,7 +162,7 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("customer", 1, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="Enter discount % (e.g., 10%)"
                 disabled={isEditDisabled}
               />
             </FormControl>
@@ -173,7 +173,7 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("transaction", 1, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="Enter discount % (e.g., 10%)"
                 disabled={isEditDisabled}
               />
             </FormControl>
@@ -186,7 +186,7 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("customer", 2, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="Enter discount % (e.g., 10%)"
                 disabled={isEditDisabled}
               />
             </FormControl>
@@ -197,7 +197,7 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("transaction", 2, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="Enter discount % (e.g., 10%)"
                 disabled={isEditDisabled}
               />
             </FormControl>

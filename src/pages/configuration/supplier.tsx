@@ -37,8 +37,8 @@ const SupplierForm = (): JSX.Element => {
         `/api/suppliers/?${convertToQueryParams({
           page,
           limit: PAGE_LIMIT,
-          sort_by: "supplier_id",
-          sort_order: "desc",
+          sort_by: "name",
+          sort_order: "asc",
           search_term,
         })}`,
       )
