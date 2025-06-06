@@ -9,13 +9,11 @@ import {
   Stack,
   Button,
   Box,
-  Autocomplete,
   Select,
   Option,
 } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import { AVAILABLE_CURRENCIES } from "../../constants";
 import { toast } from "react-toastify";
 import ViewWHModal from "../../components/Items/ViewWHModal";
 import type {
@@ -23,6 +21,7 @@ import type {
   PaginatedSuppliers,
   ItemsModalProps,
   Supplier,
+  Currency,
 } from "../../interface";
 import StockHistory from "./StockHistory";
 
@@ -32,6 +31,7 @@ const ItemsModal = ({
   setOpen,
   row,
   onSave,
+  currencies = [],
 }: ItemsModalProps): JSX.Element => {
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
     total: 0,
@@ -39,7 +39,11 @@ const ItemsModal = ({
   });
   const [openStockHistory, setOpenStockHistory] = useState(false);
   const [openWH, setOpenWH] = useState(false);
+
   const generateItem = (): Item => {
+    // Use the first currency from the list if none is specified
+    const defaultCurrency =
+      currencies.length > 0 ? currencies[0] : { id: 0, code: "" };
     return {
       id: row?.id ?? 0,
       stock_code: row?.stock_code ?? "",
@@ -49,7 +53,8 @@ const ItemsModal = ({
       brand: row?.brand ?? "",
       acquisition_cost: row?.acquisition_cost,
       net_cost_before_tax: row?.net_cost_before_tax,
-      currency: row?.currency ?? "",
+      currency: row?.currency ?? defaultCurrency,
+      currency_id: row?.currency_id ?? defaultCurrency.id,
       rate: row?.rate,
       srp: row?.srp,
       last_sale_price: row?.last_sale_price,
@@ -77,7 +82,6 @@ const ItemsModal = ({
       const response =
         await axiosInstance.get<PaginatedSuppliers>("/api/suppliers/");
       setSuppliers(response.data);
-      console.log("Suppliers:", response.data);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
     }
@@ -93,17 +97,24 @@ const ItemsModal = ({
         : (e.target as HTMLInputElement).value;
     setItem({ ...item, [name]: value });
   };
-
-  const handleSelectChange = (
+  const handleCurrencyChange = (
     event:
       | React.MouseEvent<Element, MouseEvent>
       | React.KeyboardEvent<Element>
       | React.FocusEvent<Element, Element>
       | null,
-    value: string | null,
+    value: number | null,
   ): void => {
     if (value !== null) {
-      setItem({ ...item, currency: value });
+      // Find the selected currency to get both ID and code
+      const selectedCurrency = currencies.find((curr) => curr.id === value);
+      if (selectedCurrency) {
+        setItem({
+          ...item,
+          currency_id: selectedCurrency.id,
+          currency: selectedCurrency,
+        });
+      }
     }
   };
 
@@ -297,15 +308,15 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                       <FormLabel>Currency Used</FormLabel>
                       <Select
-                        name="currency"
+                        name="currency_id"
                         size="sm"
-                        value={item?.currency}
-                        onChange={handleSelectChange}
+                        value={item?.currency_id}
+                        onChange={handleCurrencyChange}
                         required
                       >
-                        {AVAILABLE_CURRENCIES.map((currency) => (
-                          <Option key={currency} value={currency}>
-                            {currency}
+                        {currencies.map((currency) => (
+                          <Option key={currency.id} value={currency.id}>
+                            {currency.code}
                           </Option>
                         ))}
                       </Select>

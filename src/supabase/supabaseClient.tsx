@@ -63,10 +63,10 @@ export function getSupabase(company: CompanyId): SupabaseClient {
       },
     });
 
-    // Log client creation in development
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`Created Supabase client for ${company}`);
-    }
+    // // Log client creation in development
+    // if (process.env.NODE_ENV !== "production") {
+    //   console.log(`Created Supabase client for ${company}`);
+    // }
   }
 
   return cache[company];

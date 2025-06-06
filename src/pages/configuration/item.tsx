@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import ItemsModal from "../../components/Items/ItemsModal";
-import ViewWHModal from "../../components/Items/ViewWHModal";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import { Input, Select, Option } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
+import CurrencyModal from "../../components/Items/CurrencyModal";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import type { User } from "../Login";
 import type { AxiosError } from "axios";
 import type {
   Brand,
@@ -17,6 +16,7 @@ import type {
   Item,
   PaginatedItems,
   PrintInventoryResponse,
+  Currency,
 } from "../../interface";
 import {
   convertToQueryParams,
@@ -36,20 +36,21 @@ const ItemForm = (): JSX.Element => {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCurrencyModal, setOpenCurrencyModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Item>();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
-
   const [isPrintingStocks, setIsPrintingStocks] = useState(false);
   const [isPrintingPricelist, setIsPrintingPricelist] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
+
   const companyId = getCompanyId();
 
   const getAllStocks = (page: number, searchTerm: string): void => {
@@ -107,6 +108,14 @@ const ItemForm = (): JSX.Element => {
         setBrands(response.data.map((brand) => brand.normalized_name));
       })
       .catch((error) => console.error("Error:", error));
+
+    // Fetch currencies
+    axiosInstance
+      .get<Currency[]>(`/api/currencies`)
+      .then((response) => {
+        setCurrencies(response.data);
+      })
+      .catch((error) => console.error("Error fetching currencies:", error));
   }, []);
 
   const handleSaveItem = async (newItem: Item): Promise<void> => {
@@ -120,7 +129,7 @@ const ItemForm = (): JSX.Element => {
       brand: newItem.brand,
       acquisition_cost: newItem.acquisition_cost,
       net_cost_before_tax: newItem.net_cost_before_tax,
-      currency: newItem.currency,
+      currency_id: newItem.currency_id,
       rate: newItem.rate,
       last_sale_price: newItem.last_sale_price,
       srp: newItem.srp,
@@ -146,7 +155,7 @@ const ItemForm = (): JSX.Element => {
       brand: newItem.brand,
       acquisition_cost: newItem.acquisition_cost,
       net_cost_before_tax: newItem.net_cost_before_tax,
-      currency: newItem.currency,
+      currency_id: newItem.currency_id,
       rate: newItem.rate,
       last_sale_price: newItem.last_sale_price,
       srp: newItem.srp,
@@ -210,7 +219,6 @@ const ItemForm = (): JSX.Element => {
         })}`,
       )
       .then((response) => {
-        console.log(response.data);
         const items = response.data.items;
         generateStocksPDF(items, companyId);
         setIsPrintingStocks(false);
@@ -292,11 +300,15 @@ const ItemForm = (): JSX.Element => {
               Print Pricelist
             </Button>
             <Button
-              sx={{
-                mt: 2,
-                mb: 4,
-                width: "140px",
-              }}
+              sx={{ mr: 2, mt: 2, mb: 4, width: "180px" }}
+              variant="outlined"
+              color="primary"
+              onClick={() => setOpenCurrencyModal(true)}
+            >
+              Manage Currencies
+            </Button>
+            <Button
+              sx={{ mt: 2, mb: 4, width: "140px" }}
               className="bg-button-primary"
               color="primary"
               onClick={() => {
@@ -483,7 +495,9 @@ const ItemForm = (): JSX.Element => {
                   <td>
                     {addCommaToNumberWithFourPlaces(item.last_sale_price)}
                   </td>
-                  <td>{item.currency}</td>
+                  <td>
+                    {item.currency?.code !== "" ? item.currency?.code : "-"}
+                  </td>
                   <td>{item.rate}</td>
                   <td>{item.total_on_stock}</td>
                   <td>{item.total_in_transit}</td>
@@ -536,6 +550,7 @@ const ItemForm = (): JSX.Element => {
         setOpen={setOpenAdd}
         title="Add Stocks"
         onSave={handleCreateItem}
+        currencies={currencies}
       />
       <ItemsModal
         open={openEdit}
@@ -543,12 +558,22 @@ const ItemForm = (): JSX.Element => {
         title="Edit Stock"
         row={selectedRow}
         onSave={handleSaveItem}
+        currencies={currencies}
       />
       <DeleteItemsModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Stock"
         onDelete={handleDeleteItem}
+      />
+      <CurrencyModal
+        open={openCurrencyModal}
+        setOpen={setOpenCurrencyModal}
+        onChange={() => {
+          void axiosInstance
+            .get<Currency[]>("/api/currencies")
+            .then((res) => setCurrencies(res.data));
+        }}
       />
     </>
   );

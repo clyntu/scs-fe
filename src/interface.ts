@@ -1,5 +1,11 @@
 import type { Expense } from "./components/ReceivingReport/interface";
 import type { User } from "./pages/Login";
+
+export interface Currency {
+  id: number;
+  code: string;
+}
+
 export interface Item {
   id: number;
   stock_code: string;
@@ -11,7 +17,8 @@ export interface Item {
   brand: string;
   acquisition_cost?: number;
   net_cost_before_tax?: number;
-  currency: string;
+  currency: Currency;
+  currency_id: number;
   last_sale_price?: number;
   srp?: number;
   rate?: number;
@@ -87,6 +94,7 @@ export interface ItemsModalProps {
   setOpen: (isOpen: boolean) => void;
   row?: Item;
   onSave: (newItem: Item) => Promise<void>;
+  currencies?: Currency[];
 }
 
 export interface Supplier {

@@ -69,7 +69,6 @@ const SDRFormTable = ({
 
     selectedPOs.forEach((PO, index1) => {
       PO.items.forEach((POItem, index2) => {
-        console.log(POItem);
         const key = `${PO.id}-${POItem.id}-${index1}-${index2}`;
         const inTransit = POItem.in_transit;
 
