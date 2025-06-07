@@ -25,6 +25,15 @@ import type {
 } from "../../interface";
 import StockHistory from "./StockHistory";
 
+// Helper function to format values to 4 decimal places
+const formatToFourDecimals = (
+  value: number | undefined,
+): number | undefined => {
+  if (value === undefined || value === null) return value;
+  // Format to 4 decimal places
+  return parseFloat(value.toFixed(4));
+};
+
 const ItemsModal = ({
   open,
   title,
@@ -52,7 +61,7 @@ const ItemsModal = ({
       category: row?.category ?? "",
       brand: row?.brand ?? "",
       acquisition_cost: row?.acquisition_cost,
-      net_cost_before_tax: row?.net_cost_before_tax,
+      net_cost_before_tax: formatToFourDecimals(row?.net_cost_before_tax),
       currency: row?.currency ?? defaultCurrency,
       currency_id: row?.currency_id ?? defaultCurrency.id,
       rate: row?.rate,
