@@ -135,7 +135,7 @@ const SuppliersModal = ({
                       name="code"
                       value={supplier.code}
                       onChange={handleChange}
-                      required
+                      // required
                     />
                   </FormControl>
                   <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
@@ -172,7 +172,7 @@ const SuppliersModal = ({
                       name="contact_person"
                       value={supplier.contact_person}
                       onChange={handleChange}
-                      required
+                      // required
                     />
                   </FormControl>
                   <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
@@ -183,7 +183,7 @@ const SuppliersModal = ({
                       name="contact_number"
                       value={supplier.contact_number}
                       onChange={handleChange}
-                      required
+                      // required
                     />
                   </FormControl>
                 </Stack>
