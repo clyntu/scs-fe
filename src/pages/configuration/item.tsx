@@ -451,20 +451,18 @@ const ItemForm = (): JSX.Element => {
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   Stock Code
                 </th>
-                <th style={{ width: 100 }}>Status</th>
                 <th style={{ width: 300 }}>Description</th>
-                <th style={{ width: 100 }}>Category</th>
-                <th style={{ width: 100 }}>Brand</th>
+                <th style={{ width: 100 }}>On Stock</th>
+                <th style={{ width: 100 }}>Allocated</th>
+                <th style={{ width: 100 }}>In Transit</th>
+                <th style={{ width: 100 }}>Purchased</th>
+                <th style={{ width: 200 }}>SRP (₱)</th>
+                <th style={{ width: 150 }}>Last Sale Price (₱)</th>
                 <th style={{ width: 150 }}>Acquisition Cost (₱)</th>
                 <th style={{ width: 200 }}>Net Cost B/F Tax (₱)</th>
-                <th style={{ width: 150 }}>Last Sale Price (₱)</th>
-                <th style={{ width: 200 }}>SRP (₱)</th>
-                <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 150 }}>Peso Rate (₱)</th>
-                <th style={{ width: 100 }}>On Stock</th>
-                <th style={{ width: 100 }}>In Transit</th>
-                <th style={{ width: 100 }}>Allocated</th>
-                <th style={{ width: 100 }}>Purchased</th>
+                <th style={{ width: 100 }}>Category</th>
+                <th style={{ width: 100 }}>Brand</th>
+                <th style={{ width: 100 }}>Status</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -481,28 +479,24 @@ const ItemForm = (): JSX.Element => {
                   }}
                 >
                   <td>{item.stock_code}</td>
-                  <td>{item.status}</td>
                   <td>{item.name}</td>
-                  <td>{item.category}</td>
-                  <td>{item.brand}</td>
+                  <td>{item.total_on_stock}</td>
+                  <td>{item.total_allocated}</td>
+                  <td>{item.total_in_transit}</td>
+                  <td>{item.total_purchased}</td>
+                  <td>{addCommaToNumberWithFourPlaces(item.srp)}</td>
+                  <td>
+                    {addCommaToNumberWithFourPlaces(item.last_sale_price)}
+                  </td>
                   <td>
                     {addCommaToNumberWithFourPlaces(item.acquisition_cost)}
                   </td>
                   <td>
                     {addCommaToNumberWithFourPlaces(item.net_cost_before_tax)}
                   </td>
-                  <td>{addCommaToNumberWithFourPlaces(item.srp)}</td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.last_sale_price)}
-                  </td>
-                  <td>
-                    {item.currency?.code !== "" ? item.currency?.code : "-"}
-                  </td>
-                  <td>{item.rate}</td>
-                  <td>{item.total_on_stock}</td>
-                  <td>{item.total_in_transit}</td>
-                  <td>{item.total_allocated}</td>
-                  <td>{item.total_purchased}</td>
+                  <td>{item.category}</td>
+                  <td>{item.brand}</td>
+                  <td>{item.status}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
