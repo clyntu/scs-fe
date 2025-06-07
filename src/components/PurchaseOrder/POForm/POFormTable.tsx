@@ -51,11 +51,6 @@ const POFormTable = ({
       );
       newSelectedItems[index] = item;
 
-      // Sort by Stock Code
-      newSelectedItems.sort((a, b) => {
-        return a.stock_code.localeCompare(b.stock_code);
-      });
-
       // @ts-expect-error (Used null instead of undefined.)
       newSelectedItems.push({ id: null });
 

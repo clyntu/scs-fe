@@ -10,6 +10,7 @@ import {
   Box,
   Divider,
   Autocomplete,
+  Button,
 } from "@mui/joy";
 import { useEffect, useState } from "react";
 
@@ -46,7 +47,9 @@ const POFormDetails = ({
   setCurrencyUsed,
   pesoRate,
   setPesoRate,
-
+  // Toggle for showing/hiding totals
+  showTotals,
+  setShowTotals,
   // Summary Amounts
   fobTotal,
   netAmount,
@@ -128,7 +131,13 @@ const POFormDetails = ({
               <FormLabel>Status</FormLabel>
               <Select
                 onChange={(event, value) => {
-                  if (value !== null) setStatus(value);
+                  if (value !== null) {
+                    setStatus(value);
+                    // Automatically show totals when status is changed to posted
+                    if (value === "posted" && setShowTotals) {
+                      setShowTotals(true);
+                    }
+                  }
                 }}
                 size="sm"
                 value={status}
@@ -276,38 +285,58 @@ const POFormDetails = ({
       </Card>
       <Card className="w-[40%]">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>FOB Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(fobTotal)}`}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>LANDED Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(landedTotal / Number(pesoRate))}`}</h5>
-            </FormControl>
+          <div className="flex justify-between mb-2">
+            <h4>Order Summary</h4>
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => setShowTotals && setShowTotals((prev) => !prev)}
+            >
+              {showTotals ? "Hide Totals" : "Show Totals"}
+            </Button>
           </div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>FOB Total</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithFourPlaces(fobTotal * Number(pesoRate))}
-              </h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithFourPlaces(netAmount * Number(pesoRate))}
-              </h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>LANDED Total</FormLabel>
-              <h5>₱{addCommaToNumberWithFourPlaces(landedTotal)}</h5>
-            </FormControl>
-          </div>
+          {showTotals === true && (
+            <>
+              <div className="flex justify-around">
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>FOB Total</FormLabel>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(fobTotal)}`}</h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>NET Amount</FormLabel>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>LANDED Total</FormLabel>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(landedTotal / Number(pesoRate))}`}</h5>
+                </FormControl>
+              </div>
+              <div className="flex justify-around">
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>FOB Total</FormLabel>
+                  <h5>
+                    ₱
+                    {addCommaToNumberWithFourPlaces(
+                      fobTotal * Number(pesoRate),
+                    )}
+                  </h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>NET Amount</FormLabel>
+                  <h5>
+                    ₱
+                    {addCommaToNumberWithFourPlaces(
+                      netAmount * Number(pesoRate),
+                    )}
+                  </h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>LANDED Total</FormLabel>
+                  <h5>₱{addCommaToNumberWithFourPlaces(landedTotal)}</h5>
+                </FormControl>
+              </div>
+            </>
+          )}
           <Divider />
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>

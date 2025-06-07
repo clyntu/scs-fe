@@ -62,9 +62,18 @@ const PurchaseOrderForm = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [indexOfModal, setIndexOfModal] = useState(0);
   const [newPrices, setNewPrices] = useState<NewPriceInstance[]>([]);
+  // Initialize showTotals state to false by default - totals will be hidden until toggle is clicked
+  const [showTotals, setShowTotals] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+
+  // Show totals by default if status is posted
+  useEffect(() => {
+    if (status === "posted") {
+      setShowTotals(true);
+    }
+  }, [status]);
 
   useEffect(() => {
     // Fetch suppliers
@@ -105,7 +114,12 @@ const PurchaseOrderForm = ({
         ],
       });
       setPesoRate(selectedRow?.peso_rate ?? 56);
-      setStatus(selectedRow?.status ?? "pending");
+      const rowStatus = selectedRow?.status ?? "pending";
+      setStatus(rowStatus);
+      // Set showTotals to true if status is posted when loading an existing PO
+      if (rowStatus === "posted") {
+        setShowTotals(true);
+      }
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
@@ -207,13 +221,6 @@ const PurchaseOrderForm = ({
       return modifiedItem;
     });
 
-    // Sort items
-    selectedItems.sort((a, b) => {
-      const stockCodeA = a.stock_code ?? ""; // Default to empty string if undefined
-      const stockCodeB = b.stock_code ?? ""; // Default to empty string if undefined
-      return stockCodeA.localeCompare(stockCodeB);
-    });
-
     // @ts-expect-error (Used null instead of undefined.)
     selectedItems?.push({ id: null });
     setSelectedItems(selectedItems);
@@ -266,6 +273,18 @@ const PurchaseOrderForm = ({
 
     // Get the biggest value if there is a duplicate
     newPrices.forEach((item: NewPriceInstance) => {
+      // Skip items with price = 0, throw error if price < 0
+      if (item.newPrice < 0) {
+        throw new Error(
+          `Invalid price: ${item.newPrice} for item ID: ${item.id}. Price cannot be negative.`,
+        );
+      }
+
+      // Skip items with price = 0
+      if (item.newPrice === 0) {
+        return; // Skip this item
+      }
+
       if (
         uniqueItems[item.id] === undefined ||
         item.newPrice > uniqueItems[item.id].newPrice
@@ -275,7 +294,9 @@ const PurchaseOrderForm = ({
     });
 
     const uniqueNewItemPrices = Object.values(uniqueItems);
-    await sendPriceChangeRequests(uniqueNewItemPrices);
+    if (uniqueNewItemPrices.length > 0) {
+      await sendPriceChangeRequests(uniqueNewItemPrices);
+    }
   };
 
   const handleCreatePurchaseOrder = async (): Promise<void> => {
@@ -290,23 +311,23 @@ const PurchaseOrderForm = ({
       );
       return;
     }
-
-    if (newPrices.length > 0) {
-      await modifyItemCostOnPriceChange();
-    }
-
-    const itemPayload: POItemValues[] = selectedItems
-      .filter((item: Item) => item.id !== null)
-      .map((item: Item) => ({
-        item_id: item.id,
-        volume: item.volume,
-        unserved_spo: item.volume,
-        price: item.price,
-        total_price: Number(item.volume) * Number(item.price),
-      }));
-
-    const payload = createPayload(itemPayload, false);
     try {
+      if (newPrices.length > 0) {
+        await modifyItemCostOnPriceChange();
+      }
+
+      const itemPayload: POItemValues[] = selectedItems
+        .filter((item: Item) => item.id !== null)
+        .map((item: Item) => ({
+          item_id: item.id,
+          volume: item.volume,
+          unserved_spo: item.volume,
+          price: item.price,
+          total_price: Number(item.volume) * Number(item.price),
+        }));
+
+      const payload = createPayload(itemPayload, false);
+
       setIsSaving(true);
       await axiosInstance.post("/api/purchase_orders/", payload);
       setIsSaving(false);
@@ -334,28 +355,28 @@ const PurchaseOrderForm = ({
       );
       return;
     }
-
-    if (newPrices.length > 0) {
-      await modifyItemCostOnPriceChange();
-    }
-
-    const itemPayload: POItemValues[] = selectedItems
-      .filter((item: Item) => item.id !== null)
-      .map((item: Item) => ({
-        item_id: item.id,
-        volume: Number(item.volume),
-        price: Number(item.price),
-        unserved_spo: Number(item.volume),
-        total_price: Number(item.volume) * Number(item.price),
-
-        // Fields needed only for edit
-        on_stock: item.on_stock,
-        allocated: item.allocated,
-        in_transit: item.in_transit,
-      }));
-
-    const payload = createPayload(itemPayload, true);
     try {
+      if (newPrices.length > 0) {
+        await modifyItemCostOnPriceChange();
+      }
+
+      const itemPayload: POItemValues[] = selectedItems
+        .filter((item: Item) => item.id !== null)
+        .map((item: Item) => ({
+          item_id: item.id,
+          volume: Number(item.volume),
+          price: Number(item.price),
+          unserved_spo: Number(item.volume),
+          total_price: Number(item.volume) * Number(item.price),
+
+          // Fields needed only for edit
+          on_stock: item.on_stock,
+          allocated: item.allocated,
+          in_transit: item.in_transit,
+        }));
+
+      const payload = createPayload(itemPayload, true);
+
       setIsSaving(true);
       await axiosInstance.put(
         `/api/purchase_orders/${selectedRow?.id}`,
@@ -441,6 +462,9 @@ const PurchaseOrderForm = ({
             setCurrencyUsed={setCurrencyUsed}
             pesoRate={pesoRate}
             setPesoRate={setPesoRate}
+            // Toggle for showing/hiding totals
+            showTotals={showTotals}
+            setShowTotals={setShowTotals}
             // Summary Amounts
             fobTotal={fobTotal}
             netAmount={netAmount}

@@ -204,13 +204,6 @@ const CPOForm = ({
       return modifiedItem;
     });
 
-    // Sort items
-    selectedItems.sort((a, b) => {
-      const stockCodeA = a.stock_code ?? ""; // Default to empty string if undefined
-      const stockCodeB = b.stock_code ?? ""; // Default to empty string if undefined
-      return stockCodeA.localeCompare(stockCodeB);
-    });
-
     // @ts-expect-error (Used null instead of undefined.)
     selectedItems?.push({ id: null });
     setSelectedItems(selectedItems);
