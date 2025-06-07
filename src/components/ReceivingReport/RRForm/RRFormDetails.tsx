@@ -57,7 +57,14 @@ const RRFormDetails = ({
 }: RRFormDetailsProps): JSX.Element => {
   const [unservedSDRs, setUnservedSDRs] = useState<PaginatedSDR | undefined>();
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [currencies, setCurrencies] = useState<Currency[]>(() => {
+    const code = selectedSupplier?.currency;
+    if (typeof code === "string" && code.trim() !== "") {
+      const placeholder: Currency = { id: -1, code };
+      return [placeholder];
+    }
+    return [];
+  });
 
   useEffect(() => {
     if (selectedSupplier !== null && selectedSupplier !== undefined) {
@@ -67,6 +74,15 @@ const RRFormDetails = ({
         )
         .then((response) => setUnservedSDRs(response.data))
         .catch((error) => console.error("Error:", error));
+    }
+  }, [selectedSupplier]);
+
+  useEffect(() => {
+    const code = selectedSupplier?.currency;
+    if (typeof code === "string" && code.trim() !== "") {
+      const placeholder: Currency = { id: -1, code };
+      setCurrencies([placeholder]);
+      setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
     }
   }, [selectedSupplier]);
 

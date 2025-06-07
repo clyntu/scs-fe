@@ -55,7 +55,14 @@ const POFormDetails = ({
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
 
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [currencies, setCurrencies] = useState<Currency[]>(() => {
+    const code = selectedSupplier?.currency;
+    if (typeof code === "string" && code.trim() !== "") {
+      const placeholder: Currency = { id: -1, code };
+      return [placeholder];
+    }
+    return [];
+  });
 
   const handleDiscountChange = (
     type: "supplier" | "transaction",
@@ -66,6 +73,15 @@ const POFormDetails = ({
     newDiscounts[type][index] = value;
     setDiscounts(newDiscounts);
   };
+
+  useEffect(() => {
+    const code = selectedSupplier?.currency;
+    if (typeof code === "string" && code.trim() !== "") {
+      const placeholder: Currency = { id: -1, code };
+      setCurrencies([placeholder]);
+      setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
+    }
+  }, [selectedSupplier]);
 
   useEffect(() => {
     axiosInstance
