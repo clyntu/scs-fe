@@ -60,7 +60,7 @@ const DeliveryReceiptForm = ({
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/")
+      .get<PaginatedSuppliers>("/api/suppliers/?with_active_po=True")
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 

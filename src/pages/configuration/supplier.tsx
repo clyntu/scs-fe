@@ -169,7 +169,7 @@ const SupplierForm = (): JSX.Element => {
         <Box className="flex items-center mb-6">
           <Input
             size="sm"
-            placeholder="Name or Email"
+            placeholder="Name"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
