@@ -245,6 +245,9 @@ const StockTransferForm = ({
           formattedItems = formattedItems.filter((formattedItem) =>
             item_ids.includes(formattedItem.item_id),
           );
+        } else {
+          // RR Transfer is 'No', filter out items with 0 stocks
+          formattedItems = formattedItems.filter((item) => item.on_stock > 0);
         }
 
         setWarehouseItems(formattedItems);
