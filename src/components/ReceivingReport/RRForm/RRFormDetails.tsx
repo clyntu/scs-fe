@@ -15,9 +15,8 @@ import {
 import type { RRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
-import type { PaginatedSDR } from "../../../interface";
+import type { PaginatedSDR, Currency } from "../../../interface";
 import SelectPOModal from "./SelectRRModal";
-import { AVAILABLE_CURRENCIES } from "../../../constants";
 import {
   formatToDateTime,
   addCommaToNumberWithFourPlaces,
@@ -58,6 +57,7 @@ const RRFormDetails = ({
 }: RRFormDetailsProps): JSX.Element => {
   const [unservedSDRs, setUnservedSDRs] = useState<PaginatedSDR | undefined>();
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   useEffect(() => {
     if (selectedSupplier !== null && selectedSupplier !== undefined) {
@@ -69,6 +69,13 @@ const RRFormDetails = ({
         .catch((error) => console.error("Error:", error));
     }
   }, [selectedSupplier]);
+
+  useEffect(() => {
+    axiosInstance
+      .get<Currency[]>("/api/currencies")
+      .then((response) => setCurrencies(response.data))
+      .catch((error) => console.error("Error fetching currencies:", error));
+  }, []);
 
   const getFixedAmtDiscounts = (): void => {
     let total = 0;
@@ -167,9 +174,9 @@ const RRFormDetails = ({
                 placeholder="USD"
                 value={currencyUsed}
               >
-                {AVAILABLE_CURRENCIES.map((currency) => (
-                  <Option key={currency} value={currency}>
-                    {currency}
+                {currencies.map((currency) => (
+                  <Option key={currency.id} value={currency.code}>
+                    {currency.code}
                   </Option>
                 ))}
               </Select>

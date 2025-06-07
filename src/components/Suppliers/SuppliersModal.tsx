@@ -14,10 +14,9 @@ import {
   Option,
   Textarea,
 } from "@mui/joy";
-import { AVAILABLE_CURRENCIES } from "../../constants";
 import { toast } from "react-toastify";
-
-import type { SuppliersModalProps, Supplier } from "../../interface";
+import type { SuppliersModalProps, Supplier, Currency } from "../../interface";
+import axiosInstance from "../../utils/axiosConfig";
 
 const SuppliersModal = ({
   open,
@@ -27,6 +26,7 @@ const SuppliersModal = ({
   onSave,
 }: SuppliersModalProps): JSX.Element => {
   const [isSaving, setIsSaving] = useState(false);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
   const generateSupplier = (): Supplier => {
     return {
       supplier_id: row?.supplier_id ?? 0,
@@ -51,6 +51,13 @@ const SuppliersModal = ({
   useEffect(() => {
     setSupplier(generateSupplier());
   }, [row]);
+
+  useEffect(() => {
+    axiosInstance
+      .get<Currency[]>("/api/currencies")
+      .then((response) => setCurrencies(response.data))
+      .catch((error) => console.error("Error fetching currencies:", error));
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -200,9 +207,9 @@ const SuppliersModal = ({
                       onChange={handleSelectChange}
                       required
                     >
-                      {AVAILABLE_CURRENCIES.map((currency) => (
-                        <Option key={currency} value={currency}>
-                          {currency}
+                      {currencies.map((currency) => (
+                        <Option key={currency.id} value={currency.code}>
+                          {currency.code}
                         </Option>
                       ))}
                     </Select>

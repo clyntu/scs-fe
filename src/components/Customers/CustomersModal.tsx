@@ -14,7 +14,6 @@ import {
   Option,
   Textarea,
 } from "@mui/joy";
-import { AVAILABLE_CURRENCIES } from "../../constants";
 import { toast } from "react-toastify";
 
 import type { Customer, CustomersModalProps } from "../../interface";

@@ -11,13 +11,15 @@ import {
   Divider,
   Autocomplete,
 } from "@mui/joy";
+import { useEffect, useState } from "react";
 
-import { AVAILABLE_CURRENCIES } from "../../../constants";
+import type { POFormProps } from "../interface";
+import type { Currency } from "../../../interface";
+import axiosInstance from "../../../utils/axiosConfig";
 import {
   formatToDateTime,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
-import type { POFormProps } from "../interface";
 
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
 
@@ -53,6 +55,8 @@ const POFormDetails = ({
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
 
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+
   const handleDiscountChange = (
     type: "supplier" | "transaction",
     index: number,
@@ -62,6 +66,13 @@ const POFormDetails = ({
     newDiscounts[type][index] = value;
     setDiscounts(newDiscounts);
   };
+
+  useEffect(() => {
+    axiosInstance
+      .get<Currency[]>("/api/currencies")
+      .then((response) => setCurrencies(response.data))
+      .catch((error) => console.error("Error fetching currencies:", error));
+  }, []);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -133,9 +144,9 @@ const POFormDetails = ({
                 value={currencyUsed}
                 disabled={isEditDisabled}
               >
-                {AVAILABLE_CURRENCIES.map((currency) => (
-                  <Option key={currency} value={currency}>
-                    {currency}
+                {currencies.map((currency) => (
+                  <Option key={currency.id} value={currency.code}>
+                    {currency.code}
                   </Option>
                 ))}
               </Select>
