@@ -116,6 +116,8 @@ const StockHistory = ({
                         <th style={{ width: 100 }}>Out</th>
                         <th style={{ width: 150 }}>Price</th>
                         <th style={{ width: 100 }}>Amount</th>
+                        <th style={{ width: 150 }}>Last Purchase Price</th>
+                        <th style={{ width: 150 }}>Last Sale Price</th>
                       </tr>
                     </thead>
 
@@ -134,6 +136,8 @@ const StockHistory = ({
                           <td>{history.quantity_out}</td>
                           <td>{history.price}</td>
                           <td>{history.amount}</td>
+                          <td>{history.last_purchase_price ?? "-"}</td>
+                          <td>{history.last_sale_price ?? "-"}</td>
                         </tr>
                       ))}
                     </tbody>

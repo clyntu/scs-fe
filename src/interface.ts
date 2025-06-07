@@ -79,6 +79,8 @@ export interface IStockHistory {
   amount: number;
   supplier_name: string;
   customer_name: string;
+  last_purchase_price?: number;
+  last_sale_price?: number;
 }
 
 export interface DeleteModalProps {
