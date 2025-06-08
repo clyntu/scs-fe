@@ -1,13 +1,6 @@
-import { useEffect } from "react";
-import {
-  Sheet,
-  Table,
-  Select,
-  Option,
-  Input,
-  Button,
-  Textarea,
-} from "@mui/joy";
+import { useEffect, useState } from "react";
+import { Sheet, Table, Autocomplete, Input, Button, Textarea } from "@mui/joy";
+import axiosInstance from "../../../utils/axiosConfig";
 import type { DeliveryReceipt } from "../../../interface";
 import type { Expense } from "../interface";
 import type { Dispatch, SetStateAction } from "react";
@@ -26,9 +19,28 @@ const RRFormExpenses = ({
   setExpenses: Dispatch<SetStateAction<Expense[]>>;
   isEditDisabled: boolean;
 }): JSX.Element => {
+  const [expenseOptions, setExpenseOptions] = useState<string[]>([
+    "Brokerage",
+    "Freight",
+  ]);
+
+  useEffect(() => {
+    axiosInstance
+      .get<string[]>("/api/receiving-reports/unique-expense-names/")
+      .then((response) => {
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          setExpenseOptions(response.data);
+        }
+      })
+      .catch(() => {
+        // fallback to default options if error
+        setExpenseOptions(["brokerage", "freight"]);
+      });
+  }, []);
+
   useEffect(() => {
     const totalExpense = expenses.reduce(
-      (acc, expense) => acc + Number(expense.amount || 0),
+      (acc, expense) => acc + Number(expense.amount ?? 0),
       0,
     );
     setTotalExpense(totalExpense);
@@ -124,21 +136,19 @@ const RRFormExpenses = ({
               expenses.map((expense) => (
                 <tr key={expense.id}>
                   <td>
-                    <Select
-                      onChange={(event, value) => {
+                    <Autocomplete
+                      freeSolo
+                      options={expenseOptions}
+                      value={expense.expense}
+                      onInputChange={(event, value) => {
                         if (value !== null)
                           handleSelectChange(expense.id, value);
                       }}
-                      className="mt-1 border-0"
-                      size="sm"
-                      placeholder="Select Expense"
-                      value={expense.expense}
+                      placeholder="Select or type expense"
                       disabled={isEditDisabled}
+                      size="sm"
                       required
-                    >
-                      <Option value="brokerage">Brokerage</Option>
-                      <Option value="freight">Freight</Option>
-                    </Select>
+                    />
                   </td>
                   <td>
                     <Input
