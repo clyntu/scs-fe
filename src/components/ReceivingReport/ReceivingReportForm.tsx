@@ -148,6 +148,11 @@ const ReceivingReportForm = ({
   };
 
   const handleCreateReceivingReport = async (): Promise<void> => {
+    if (!referenceNumber) {
+      toast.error("Please choose an SDR.");
+      return;
+    }
+
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -191,6 +196,11 @@ const ReceivingReportForm = ({
   };
 
   const handleEditReceivingReport = async (): Promise<void> => {
+    if (!referenceNumber) {
+      toast.error("Please choose an SDR.");
+      return;
+    }
+
     const payload = {
       status,
       transaction_date: transactionDate,
