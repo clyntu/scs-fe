@@ -124,7 +124,10 @@ const ViewWHModal = ({
                   <div className="w-[100%] items-center">
                     <h5>Loading...</h5>
                   </div>
-                ) : warehouseItems.length > 0 ? (
+                ) : warehouseItems.filter(
+                    (warehouseItem: AggregatedWarehouseItem) =>
+                      warehouseItem.total_on_stock > 0,
+                  ).length > 0 ? (
                   <>
                     <thead>
                       <tr>
@@ -139,8 +142,12 @@ const ViewWHModal = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {warehouseItems.map(
-                        (warehouseItem: AggregatedWarehouseItem) => (
+                      {warehouseItems
+                        .filter(
+                          (warehouseItem: AggregatedWarehouseItem) =>
+                            warehouseItem.total_on_stock > 0,
+                        )
+                        .map((warehouseItem: AggregatedWarehouseItem) => (
                           <tr
                             key={`${warehouseItem.warehouse_id}-${warehouseItem.stock_code}`}
                           >
@@ -153,8 +160,7 @@ const ViewWHModal = ({
                             <td>{warehouseItem.total_allocated}</td>
                             <td>{warehouseItem.total_purchased}</td>
                           </tr>
-                        ),
-                      )}
+                        ))}
                     </tbody>
                   </>
                 ) : (
