@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 // Helper function to format the date
 const formatDate = (date: Date): string => {
@@ -76,9 +76,9 @@ export const generatePDF = (
   ];
   const tableRows = data.map((customer) => [
     customer.customer_name,
-    addCommaToNumberWithFourPlaces(Number(customer.amount_receivable)),
-    addCommaToNumberWithFourPlaces(Number(customer.uncleared_payment)),
-    addCommaToNumberWithFourPlaces(Number(customer.bounced_payment)),
+    addCommaToNumberWithTwoPlaces(Number(customer.amount_receivable)),
+    addCommaToNumberWithTwoPlaces(Number(customer.uncleared_payment)),
+    addCommaToNumberWithTwoPlaces(Number(customer.bounced_payment)),
   ]);
 
   // 3. Table setup
@@ -119,19 +119,17 @@ export const generatePDF = (
         { content: "TOTAL:", styles: { halign: "right", fontStyle: "bold" } },
         // second & third columns show totals
         {
-          content: addCommaToNumberWithFourPlaces(
+          content: addCommaToNumberWithTwoPlaces(
             Number(total.total_receivable),
           ),
           styles: { halign: "right", fontStyle: "bold" },
         },
         {
-          content: addCommaToNumberWithFourPlaces(
-            Number(total.total_uncleared),
-          ),
+          content: addCommaToNumberWithTwoPlaces(Number(total.total_uncleared)),
           styles: { halign: "right", fontStyle: "bold" },
         },
         {
-          content: addCommaToNumberWithFourPlaces(Number(total.total_bounced)),
+          content: addCommaToNumberWithTwoPlaces(Number(total.total_bounced)),
           styles: { halign: "right", fontStyle: "bold" },
         },
       ],

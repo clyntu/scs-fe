@@ -19,6 +19,7 @@ import type { Currency } from "../../../interface";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
   formatToDateTime,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
 
@@ -193,7 +194,7 @@ const POFormDetails = ({
                   slotProps={{
                     input: {
                       min: 0,
-                      step: ".0001",
+                      step: ".01",
                     },
                   }}
                   disabled={isEditDisabled}
@@ -300,15 +301,15 @@ const POFormDetails = ({
               <div className="flex justify-around">
                 <FormControl size="sm" sx={{ mb: 1 }}>
                   <FormLabel>FOB Total</FormLabel>
-                  <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(fobTotal)}`}</h5>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(fobTotal)}`}</h5>
                 </FormControl>
                 <FormControl size="sm" sx={{ mb: 1 }}>
                   <FormLabel>NET Amount</FormLabel>
-                  <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
                 </FormControl>
                 <FormControl size="sm" sx={{ mb: 1 }}>
                   <FormLabel>LANDED Total</FormLabel>
-                  <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(landedTotal / Number(pesoRate))}`}</h5>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(landedTotal / Number(pesoRate))}`}</h5>
                 </FormControl>
               </div>
               <div className="flex justify-around">
@@ -316,16 +317,14 @@ const POFormDetails = ({
                   <FormLabel>FOB Total</FormLabel>
                   <h5>
                     ₱
-                    {addCommaToNumberWithFourPlaces(
-                      fobTotal * Number(pesoRate),
-                    )}
+                    {addCommaToNumberWithTwoPlaces(fobTotal * Number(pesoRate))}
                   </h5>
                 </FormControl>
                 <FormControl size="sm" sx={{ mb: 1 }}>
                   <FormLabel>NET Amount</FormLabel>
                   <h5>
                     ₱
-                    {addCommaToNumberWithFourPlaces(
+                    {addCommaToNumberWithTwoPlaces(
                       netAmount * Number(pesoRate),
                     )}
                   </h5>

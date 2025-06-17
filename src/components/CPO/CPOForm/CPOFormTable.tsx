@@ -3,7 +3,7 @@ import Table from "@mui/joy/Table";
 
 import type { Item } from "../../../interface";
 import type { CPOFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 
 const CPOFormTable = ({
   items,
@@ -254,7 +254,7 @@ const CPOFormTable = ({
                       slotProps={{
                         input: {
                           min: 0,
-                          step: ".0001",
+                          step: ".01",
                         },
                       }}
                       value={selectedItem.price}
@@ -265,7 +265,7 @@ const CPOFormTable = ({
                 </td>
                 <td>
                   {selectedItem?.id !== null &&
-                    addCommaToNumberWithFourPlaces(
+                    addCommaToNumberWithTwoPlaces(
                       Number(selectedItem.price) * Number(selectedItem?.volume),
                     )}
                 </td>

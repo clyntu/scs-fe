@@ -2,7 +2,7 @@ import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { ARFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import CircularProgress from "@mui/joy/CircularProgress";
 
 const ARFormTable = ({
@@ -94,12 +94,12 @@ const ARFormTable = ({
                     <td>{trans.transaction_number}</td>
                     <td>{trans.transaction_date}</td>
                     <td>
-                      {addCommaToNumberWithFourPlaces(
+                      {addCommaToNumberWithTwoPlaces(
                         Number(trans.original_amount),
                       )}
                     </td>
                     <td>
-                      {addCommaToNumberWithFourPlaces(
+                      {addCommaToNumberWithTwoPlaces(
                         Number(trans.transaction_amount),
                       )}
                     </td>
@@ -137,7 +137,7 @@ const ARFormTable = ({
                       />
                     </td>
                     <td>
-                      {addCommaToNumberWithFourPlaces(
+                      {addCommaToNumberWithTwoPlaces(
                         Number(trans.transaction_amount) -
                           Number(trans.payment),
                       )}

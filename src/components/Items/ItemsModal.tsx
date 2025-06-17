@@ -251,7 +251,7 @@ const ItemsModal = ({
                         slotProps={{
                           input: {
                             min: 0,
-                            step: ".0001",
+                            step: ".01",
                           },
                         }}
                         value={item?.acquisition_cost}
@@ -269,7 +269,7 @@ const ItemsModal = ({
                         slotProps={{
                           input: {
                             min: 0,
-                            step: ".0001",
+                            step: ".01",
                           },
                         }}
                         value={item?.net_cost_before_tax}
@@ -286,7 +286,7 @@ const ItemsModal = ({
                         slotProps={{
                           input: {
                             min: 0,
-                            step: ".0001",
+                            step: ".01",
                           },
                         }}
                         value={item?.srp}
@@ -304,7 +304,7 @@ const ItemsModal = ({
                         slotProps={{
                           input: {
                             min: 0,
-                            step: ".0001",
+                            step: ".01",
                           },
                         }}
                         value={item?.last_sale_price}
@@ -340,7 +340,7 @@ const ItemsModal = ({
                         slotProps={{
                           input: {
                             min: 0,
-                            step: ".0001",
+                            step: ".01",
                           },
                         }}
                         value={item?.rate}

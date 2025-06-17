@@ -13,6 +13,7 @@ import { Pagination } from "@mui/material";
 
 import {
   convertToQueryParams,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../helper";
 
@@ -224,12 +225,12 @@ const ViewReceivingReport = ({
                 <th style={{ width: 300 }}>Status</th>
                 {/* <th style={{ width: 300 }}>Supplier</th> */}
                 <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Net Amount (₱)</th>
-                <th style={{ width: 150 }}>FOB Total (₱)</th>
+                <th style={{ width: 150 }}>FOB Total</th>
+                <th style={{ width: 150 }}>Net Amount</th>
                 <th style={{ width: 150 }}>Landed Total (₱)</th>
+                <th style={{ width: 100 }}>Currency</th>
+                <th style={{ width: 100 }}>Rate</th>
                 <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 300 }}>Currency</th>
-                <th style={{ width: 300 }}>Rate</th>
                 <th style={{ width: 200 }}>Created By</th>
                 <th style={{ width: 200 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
@@ -254,19 +255,21 @@ const ViewReceivingReport = ({
                   <td className="capitalize">{receivingReport.status}</td>
                   <td>{receivingReport.transaction_date}</td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(receivingReport.net_amount)}
+                    {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}
                   </td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(receivingReport.fob_total)}
+                    {addCommaToNumberWithTwoPlaces(receivingReport.net_amount)}
                   </td>
+
                   <td>
                     {addCommaToNumberWithFourPlaces(
                       receivingReport.landed_total,
                     )}
                   </td>
-                  <td>{receivingReport.remarks}</td>
+
                   <td>{receivingReport.currency}</td>
                   <td>{receivingReport.rate}</td>
+                  <td>{receivingReport.remarks}</td>
                   <td>{receivingReport?.creator?.username}</td>
                   <td>{receivingReport?.modifier?.username}</td>
                   <td>{receivingReport.date_created}</td>

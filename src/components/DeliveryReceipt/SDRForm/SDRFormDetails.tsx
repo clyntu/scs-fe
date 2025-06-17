@@ -19,6 +19,7 @@ import type { PaginatedPO, PurchaseOrder } from "../../../interface";
 import SelectPOModal from "./SelectPOModal";
 import {
   formatToDateTime,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
 
@@ -231,27 +232,27 @@ const SDRFormDetails = ({
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>FOB Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(fobTotal)}`}</h5>{" "}
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(fobTotal)}`}</h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>NET Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>LANDED Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(landedTotal / pesoRate || 0)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(landedTotal / pesoRate || 0)}`}</h5>
             </FormControl>
           </div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>FOB Total</FormLabel>
               <h5>
-                ₱{addCommaToNumberWithFourPlaces(fobTotal * pesoRate)}
+                ₱{addCommaToNumberWithTwoPlaces(fobTotal * pesoRate)}
               </h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>NET Amount</FormLabel>
-              <h5>₱{addCommaToNumberWithFourPlaces(netAmount * pesoRate)}</h5>
+              <h5>₱{addCommaToNumberWithTwoPlaces(netAmount * pesoRate)}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>LANDED Total</FormLabel>

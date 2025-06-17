@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type PrintInventoryItem } from "../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 // Helper function to format the date
 const formatDate = (date: Date): string => {
@@ -85,7 +85,7 @@ export const generateStocksPDF = (
     item.stock_code,
     item.name,
     item.avail_qty,
-    addCommaToNumberWithFourPlaces(item.selling_price),
+    addCommaToNumberWithTwoPlaces(item.selling_price),
     item.alloc_qty,
     item.location,
     item.category,

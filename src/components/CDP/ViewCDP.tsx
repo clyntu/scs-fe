@@ -13,7 +13,7 @@ import { Pagination } from "@mui/material";
 
 import {
   convertToQueryParams,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 
 const PAGE_LIMIT = 10;
@@ -254,10 +254,10 @@ const ViewCDP = ({
                   <td>{CDP.transaction_date}</td>
                   <td>{CDP.total_items}</td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(Number(CDP.total_gross))}
+                    {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
                   </td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(Number(CDP.total_net))}
+                    {addCommaToNumberWithTwoPlaces(Number(CDP.total_net))}
                   </td>
                   <td>{CDP.remarks}</td>
                   <td>{CDP?.creator?.username}</td>

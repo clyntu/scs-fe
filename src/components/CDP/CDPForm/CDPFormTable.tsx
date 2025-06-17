@@ -2,7 +2,7 @@ import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { AllocItemsFE, CDPFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 
 const CDPFormTable = ({
   selectedRow,
@@ -165,7 +165,7 @@ const CDPFormTable = ({
                     disabled={isEditDisabled}
                   />
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.gross_amount)}</td>
+                <td>{addCommaToNumberWithTwoPlaces(item.gross_amount)}</td>
                 <td>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1
@@ -196,7 +196,7 @@ const CDPFormTable = ({
                     ? item.transaction_discount_3
                     : 0}
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.net_amount)}</td>
+                <td>{addCommaToNumberWithTwoPlaces(item.net_amount)}</td>
               </tr>
             );
           })}

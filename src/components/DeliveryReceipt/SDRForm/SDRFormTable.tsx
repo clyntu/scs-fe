@@ -4,7 +4,7 @@ import Table from "@mui/joy/Table";
 import type { SDRFormTableProps } from "../interface";
 import { useEffect, useState } from "react";
 import type { POItems, PurchaseOrder } from "../../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 
 const SDRFormTable = ({
   selectedRow,
@@ -318,8 +318,8 @@ const SDRFormTable = ({
                       ? PO.transaction_discount_3
                       : 0}
                   </td>
-                  <td>{addCommaToNumberWithFourPlaces(grossPerRow[key])}</td>
-                  <td>{addCommaToNumberWithFourPlaces(netPerRow[key])}</td>
+                  <td>{addCommaToNumberWithTwoPlaces(grossPerRow[key])}</td>
+                  <td>{addCommaToNumberWithTwoPlaces(netPerRow[key])}</td>
                   <td>{PO.currency_used}</td>
                   <td>{PO.peso_rate}</td>
                 </tr>

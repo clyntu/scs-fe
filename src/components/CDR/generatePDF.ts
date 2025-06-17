@@ -3,7 +3,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CDR } from "../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 const calculateNetForRow = (
   newValue: number,
@@ -154,9 +154,9 @@ export const generateDeliveryReceiptPDF = (
       item.delivery_plan_item.planned_qty,
       allocItem.item.stock_code,
       allocItem.item.name,
-      addCommaToNumberWithFourPlaces(itemObj?.price) ?? 0.0,
+      addCommaToNumberWithTwoPlaces(itemObj?.price) ?? 0.0,
       discString,
-      addCommaToNumberWithFourPlaces(
+      addCommaToNumberWithTwoPlaces(
         calculateNetForRow(
           Number(item.delivery_plan_item.planned_qty),
           allocItem.customer_purchase_order,
@@ -216,7 +216,7 @@ export const generateDeliveryReceiptPDF = (
   doc.text("NET Total:", pageWidth - 180, finalY + 60);
   doc.setFont("helvetica", "normal");
   doc.text(
-    addCommaToNumberWithFourPlaces(Number(selectedRow.total_net)) ?? "",
+    addCommaToNumberWithTwoPlaces(Number(selectedRow.total_net)) ?? "",
     pageWidth - 45,
     finalY + 60,
     {

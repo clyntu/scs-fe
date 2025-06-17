@@ -2,7 +2,7 @@ import { Sheet, Input, Autocomplete } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { DRItemsFE, CRFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 
 const CRFormTable = ({
   selectedRow,
@@ -222,14 +222,14 @@ const CRFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
-                        step: ".0001",
+                        step: ".01",
                       },
                     }}
                     placeholder="0"
                     disabled={isEditDisabled}
                   />
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.gross_amount)}</td>
+                <td>{addCommaToNumberWithTwoPlaces(item.gross_amount)}</td>
                 <td>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1

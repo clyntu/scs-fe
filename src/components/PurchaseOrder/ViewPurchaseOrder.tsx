@@ -13,7 +13,7 @@ import { Pagination } from "@mui/material";
 
 import {
   convertToQueryParams,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 
 const PAGE_LIMIT = 10;
@@ -259,13 +259,13 @@ const ViewPurchaseOrder = ({
                   <td>{purchaseOrder.currency_used}</td>
                   <td>{purchaseOrder.peso_rate}</td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(purchaseOrder.net_amount)}
+                    {addCommaToNumberWithTwoPlaces(purchaseOrder.net_amount)}
                   </td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(purchaseOrder.fob_total)}
+                    {addCommaToNumberWithTwoPlaces(purchaseOrder.fob_total)}
                   </td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(purchaseOrder.landed_total)}
+                    {addCommaToNumberWithTwoPlaces(purchaseOrder.landed_total)}
                   </td>
                   <td>{purchaseOrder.remarks}</td>
                   <td>{purchaseOrder?.creator?.username}</td>

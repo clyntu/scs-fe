@@ -4,6 +4,7 @@ import Table from "@mui/joy/Table";
 
 import type { Item } from "../../../interface";
 import type { POFormTableProps } from "../interface";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 
 const POFormTable = ({
   items,
@@ -257,7 +258,7 @@ const POFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
-                        step: ".0001",
+                        step: ".01",
                       },
                     }}
                     onChange={(e) => addItemPrice(e.target.value, index)}
@@ -275,9 +276,9 @@ const POFormTable = ({
               </td>
               <td>
                 {selectedItem?.id !== null &&
-                  (
-                    Number(selectedItem?.price) * Number(selectedItem?.volume)
-                  ).toFixed(4)}
+                  addCommaToNumberWithTwoPlaces(
+                    Number(selectedItem?.price) * Number(selectedItem?.volume),
+                  )}
               </td>
               <td>
                 {selectedItem?.id !== null && (

@@ -4,6 +4,10 @@ import Sheet from "@mui/joy/Sheet";
 import { Card, Box, Table } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
+import {
+  addCommaToNumberWithTwoPlaces,
+  addCommaToNumberWithFourPlaces,
+} from "../../helper";
 
 import { type IStockHistory, type ViewStockHistory } from "../../interface";
 
@@ -107,17 +111,17 @@ const StockHistory = ({
                         <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                           Tx Type
                         </th>
-                        <th style={{ width: 170 }}>Supplier</th>
-                        <th style={{ width: 170 }}>Customer</th>
-                        <th style={{ width: 120 }}>Reference No.</th>
-                        <th style={{ width: 120 }}>Tx Date</th>
+                        <th style={{ width: 250 }}>Supplier</th>
+                        <th style={{ width: 250 }}>Customer</th>
+                        <th style={{ width: 130 }}>Tx Date</th>
                         <th style={{ width: 100 }}>Tx No.</th>
                         <th style={{ width: 100 }}>In</th>
                         <th style={{ width: 100 }}>Out</th>
-                        <th style={{ width: 150 }}>Price</th>
-                        <th style={{ width: 100 }}>Amount</th>
-                        <th style={{ width: 150 }}>Last Purchase Price</th>
-                        <th style={{ width: 150 }}>Last Sale Price</th>
+                        <th style={{ width: 160 }}>Price</th>
+                        <th style={{ width: 160 }}>Amount</th>
+                        <th style={{ width: 160 }}>Last Purchase Price</th>
+                        <th style={{ width: 160 }}>Last Sale Price</th>
+                        <th style={{ width: 200 }}>Reference No.</th>
                       </tr>
                     </thead>
 
@@ -129,15 +133,38 @@ const StockHistory = ({
                           <td>{history.transaction_type}</td>
                           <td>{history?.supplier_name ?? "-"}</td>
                           <td>{history?.customer_name ?? "-"}</td>
-                          <td>{history?.reference_number}</td>
+
                           <td>{history.transaction_date}</td>
-                          <td>{history.transaction_number}</td>
-                          <td>{history.quantity_in}</td>
-                          <td>{history.quantity_out}</td>
-                          <td>{history.price}</td>
-                          <td>{history.amount}</td>
-                          <td>{history.last_purchase_price ?? "-"}</td>
-                          <td>{history.last_sale_price ?? "-"}</td>
+                          <td style={{ textAlign: "right" }}>
+                            {history.transaction_number}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {history.quantity_in}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {history.quantity_out}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {addCommaToNumberWithTwoPlaces(history.price)}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {addCommaToNumberWithFourPlaces(history.amount)}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {String(
+                              addCommaToNumberWithTwoPlaces(
+                                history.last_purchase_price,
+                              ),
+                            ) ?? "-"}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {String(
+                              addCommaToNumberWithTwoPlaces(
+                                history.last_sale_price,
+                              ),
+                            ) ?? "-"}
+                          </td>
+                          <td>{history?.reference_number}</td>
                         </tr>
                       ))}
                     </tbody>

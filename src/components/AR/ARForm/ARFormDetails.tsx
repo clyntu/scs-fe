@@ -14,7 +14,7 @@ import {
 import type { ARFormDetailsProps } from "../interface";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../../helper";
 
 const ARFormDetails = ({
@@ -198,11 +198,11 @@ const ARFormDetails = ({
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Payment Amount</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(paymentAmount)}</h5>{" "}
+              <h5>{addCommaToNumberWithTwoPlaces(paymentAmount)}</h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Applied</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(totalApplied)}</h5>
+              <h5>{addCommaToNumberWithTwoPlaces(totalApplied)}</h5>
             </FormControl>
           </div>
           <Divider />

@@ -8,7 +8,7 @@ import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { type DRItemsFE } from "./interface";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 import type {
   CRFormProps,
   PaginatedCustomers,
@@ -209,7 +209,7 @@ const CRForm = ({
       status,
       transaction_date: transactionDate,
       reference_number: referenceNumber,
-      discount_return_amount: addCommaToNumberWithFourPlaces(
+      discount_return_amount: addCommaToNumberWithTwoPlaces(
         Number(discountReturn),
       ),
       remarks,

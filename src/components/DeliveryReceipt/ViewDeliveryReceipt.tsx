@@ -13,6 +13,7 @@ import { Pagination } from "@mui/material";
 
 import {
   convertToQueryParams,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../helper";
 
@@ -224,8 +225,8 @@ const ViewDeliveryReceipt = ({
                 <th style={{ width: 300 }}>Status</th>
                 {/* <th style={{ width: 300 }}>Supplier</th> */}
                 <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Net Amount (₱)</th>
-                <th style={{ width: 150 }}>FOB Total (₱)</th>
+                <th style={{ width: 150 }}>FOB Total</th>
+                <th style={{ width: 150 }}>Net Amount</th>
                 <th style={{ width: 150 }}>Landed Total (₱)</th>
                 <th style={{ width: 300 }}>Remarks</th>
                 <th style={{ width: 200 }}>Created By</th>
@@ -252,10 +253,10 @@ const ViewDeliveryReceipt = ({
                   <td className="capitalize">{deliveryReceipt.status}</td>
                   <td>{deliveryReceipt.transaction_date}</td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(deliveryReceipt.net_amount)}
+                    {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
                   </td>
                   <td>
-                    {addCommaToNumberWithFourPlaces(deliveryReceipt.fob_total)}
+                    {addCommaToNumberWithTwoPlaces(deliveryReceipt.net_amount)}
                   </td>
                   <td>
                     {addCommaToNumberWithFourPlaces(

@@ -4,7 +4,10 @@ import Table from "@mui/joy/Table";
 import type { RRFormTableProps } from "../interface";
 import { useEffect, useState } from "react";
 import type { POItems, PurchaseOrder } from "../../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import {
+  addCommaToNumberWithTwoPlaces,
+  addCommaToNumberWithFourPlaces,
+} from "../../../helper";
 
 const RRFormTable = ({
   selectedRow,
@@ -216,7 +219,7 @@ const RRFormTable = ({
                         : POItem.in_transit}
                     </td>
                     <td>{POItem.price}</td>
-                    <td>{addCommaToNumberWithFourPlaces(grossPerRow[key])}</td>
+                    <td>{addCommaToNumberWithTwoPlaces(grossPerRow[key])}</td>
                     <td>
                       {PO.supplier_discount_1.includes("%")
                         ? PO.supplier_discount_1
@@ -247,7 +250,7 @@ const RRFormTable = ({
                         ? PO.transaction_discount_3
                         : 0}
                     </td>
-                    <td>{addCommaToNumberWithFourPlaces(netPerRow[key])}</td>
+                    <td>{addCommaToNumberWithTwoPlaces(netPerRow[key])}</td>
                     <td>{PO.currency_used}</td>
                     <td>{pesoRate}</td>
                     <td>

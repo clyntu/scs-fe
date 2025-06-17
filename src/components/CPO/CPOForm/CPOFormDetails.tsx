@@ -14,7 +14,7 @@ import {
 } from "@mui/joy";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../../helper";
 import type { CPOFormProps } from "../interface";
 
@@ -219,11 +219,11 @@ const CPOFormDetails = ({
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Gross Total</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(grossTotal)}</h5>{" "}
+              <h5>{addCommaToNumberWithTwoPlaces(grossTotal)}</h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>NET Amount</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(netTotal)}</h5>
+              <h5>{addCommaToNumberWithTwoPlaces(netTotal)}</h5>
             </FormControl>
           </div>
           <Divider />

@@ -3,7 +3,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CR } from "../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 const formatDate = (date: Date): string => {
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -147,8 +147,8 @@ export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
       item.return_qty,
       item.item.stock_code,
       item.item.name,
-      addCommaToNumberWithFourPlaces(Number(costPerUnit)),
-      addCommaToNumberWithFourPlaces(
+      addCommaToNumberWithTwoPlaces(Number(costPerUnit)),
+      addCommaToNumberWithTwoPlaces(
         calculateNetForRow(
           Number(item.return_qty),
           Number(item.price),
@@ -230,7 +230,7 @@ export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
   doc.text("AMOUNT:", pageWidth - 190, finalY + 50);
   doc.setFont("helvetica", "normal");
   doc.text(
-    String(addCommaToNumberWithFourPlaces(Number(selectedRow.total_gross))),
+    String(addCommaToNumberWithTwoPlaces(Number(selectedRow.total_gross))),
     pageWidth - 55,
     finalY + 50,
     {

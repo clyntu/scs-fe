@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
   convertToQueryParams,
 } from "../../../helper";
 import SelectCDRModal from "./SelectCDRModal";
@@ -187,7 +187,7 @@ const CRFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Gross</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalGross)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalGross)}`}</h5>
             </FormControl>
           </div>
           <Divider />

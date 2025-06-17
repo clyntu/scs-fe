@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../../helper";
 import SelectAllocModal from "./SelectAllocModal";
 
@@ -182,11 +182,11 @@ const CDPFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Gross</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalGross)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalGross)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total NET</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalNet)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalNet)}`}</h5>
             </FormControl>
           </div>
           <Divider />

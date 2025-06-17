@@ -2,7 +2,7 @@ import { Sheet } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { CDRFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 
 const CDRFormTable = ({
   selectedRow,
@@ -91,7 +91,7 @@ const CDRFormTable = ({
                 <td>{item?.name}</td>
                 <td>{price}</td>
                 <td>{item.dp_qty}</td>
-                <td>{addCommaToNumberWithFourPlaces(item.gross_amount)}</td>
+                <td>{addCommaToNumberWithTwoPlaces(item.gross_amount)}</td>
                 <td>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1
@@ -122,7 +122,7 @@ const CDRFormTable = ({
                     ? item.transaction_discount_3
                     : 0}
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.net_amount)}</td>
+                <td>{addCommaToNumberWithTwoPlaces(item.net_amount)}</td>
               </tr>
             );
           })}

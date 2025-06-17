@@ -19,6 +19,7 @@ import type { PaginatedSDR, Currency } from "../../../interface";
 import SelectPOModal from "./SelectRRModal";
 import {
   formatToDateTime,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
 
@@ -209,7 +210,7 @@ const RRFormDetails = ({
                 slotProps={{
                   input: {
                     min: 0,
-                    step: ".0001",
+                    step: ".01",
                   },
                 }}
                 disabled={isEditDisabled}
@@ -257,7 +258,7 @@ const RRFormDetails = ({
           <div className="grid grid-cols-2 place-items-center">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Invoice Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Landed Total</FormLabel>
@@ -267,12 +268,12 @@ const RRFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>% NET Cost</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(percentNetCost)}</h5>
+              <h5>{addCommaToNumberWithTwoPlaces(percentNetCost)}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Expense</FormLabel>
               <h5>
-                ₱{addCommaToNumberWithFourPlaces(Number(totalExpense))}
+                ₱{addCommaToNumberWithTwoPlaces(Number(totalExpense))}
               </h5>{" "}
             </FormControl>
           </div>

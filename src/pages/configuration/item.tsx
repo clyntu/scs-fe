@@ -20,7 +20,7 @@ import type {
 } from "../../interface";
 import {
   convertToQueryParams,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 import { Pagination } from "@mui/material";
 import { generatePricelistPDF } from "../../components/Items/generatePricelistPDF";
@@ -250,7 +250,7 @@ const ItemForm = (): JSX.Element => {
             availableQty: item.total_on_stock,
             stockCode: item.stock_code,
             stock: item.name,
-            netCostTotal: addCommaToNumberWithFourPlaces(
+            netCostTotal: addCommaToNumberWithTwoPlaces(
               Number(item?.total_on_stock ?? 0) * Number(item.acquisition_cost),
             ),
           };
@@ -393,7 +393,7 @@ const ItemForm = (): JSX.Element => {
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "150px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -456,10 +456,10 @@ const ItemForm = (): JSX.Element => {
                 <th style={{ width: 100 }}>Allocated</th>
                 <th style={{ width: 100 }}>In Transit</th>
                 <th style={{ width: 100 }}>Purchased</th>
-                <th style={{ width: 200 }}>SRP (₱)</th>
+                <th style={{ width: 150 }}>SRP (₱)</th>
                 <th style={{ width: 150 }}>Last Sale Price (₱)</th>
-                <th style={{ width: 150 }}>Acquisition Cost (₱)</th>
-                <th style={{ width: 200 }}>Net Cost B/F Tax (₱)</th>
+                <th style={{ width: 150 }}>Acqui. Cost (₱)</th>
+                <th style={{ width: 150 }}>Net B/F Tax (₱)</th>
                 <th style={{ width: 100 }}>Category</th>
                 <th style={{ width: 100 }}>Brand</th>
                 <th style={{ width: 100 }}>Status</th>
@@ -480,19 +480,23 @@ const ItemForm = (): JSX.Element => {
                 >
                   <td>{item.stock_code}</td>
                   <td>{item.name}</td>
-                  <td>{item.total_on_stock}</td>
-                  <td>{item.total_allocated}</td>
-                  <td>{item.total_in_transit}</td>
-                  <td>{item.total_purchased}</td>
-                  <td>{addCommaToNumberWithFourPlaces(item.srp)}</td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.last_sale_price)}
+                  <td style={{ textAlign: "right" }}>{item.total_on_stock}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_allocated}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {item.total_in_transit}
                   </td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.acquisition_cost)}
+                  <td style={{ textAlign: "right" }}>{item.total_purchased}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(item.srp)}
                   </td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.net_cost_before_tax)}
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(item.last_sale_price)}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(item.acquisition_cost)}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(item.net_cost_before_tax)}
                   </td>
                   <td>{item.category}</td>
                   <td>{item.brand}</td>
