@@ -93,12 +93,12 @@ const ARFormTable = ({
                     </td>
                     <td>{trans.transaction_number}</td>
                     <td>{trans.transaction_date}</td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithTwoPlaces(
                         Number(trans.original_amount),
                       )}
                     </td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithTwoPlaces(
                         Number(trans.transaction_amount),
                       )}
@@ -106,6 +106,7 @@ const ARFormTable = ({
                     <td>
                       <Input
                         type="number"
+                        sx={{ input: { textAlign: "right" } }}
                         name="payment"
                         size="sm"
                         placeholder="0"
@@ -120,7 +121,7 @@ const ARFormTable = ({
                               Number(trans.transaction_amount) > 0
                                 ? trans.transaction_amount
                                 : 0,
-                            step: 0.0001,
+                            step: 0.01,
                           },
                         }}
                         onChange={(e) =>

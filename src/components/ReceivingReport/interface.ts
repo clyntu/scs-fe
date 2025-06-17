@@ -136,6 +136,6 @@ export interface POItemValues {
 export interface Expense {
   id: string;
   expense: string;
-  amount: number | undefined;
+  amount: number | string | undefined;
   comments: string;
 }

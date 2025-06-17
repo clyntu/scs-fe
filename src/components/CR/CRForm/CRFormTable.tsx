@@ -165,6 +165,7 @@ const CRFormTable = ({
                 <td>
                   <Input
                     type="number"
+                    sx={{ input: { textAlign: "right" } }}
                     value={item.return_qty}
                     onChange={(e) => {
                       setFormattedDRs((prevDRItems) =>
@@ -198,6 +199,7 @@ const CRFormTable = ({
                 <td>
                   <Input
                     type="number"
+                    sx={{ input: { textAlign: "right" } }}
                     value={item.price}
                     onChange={(e) => {
                       setFormattedDRs((prevDRItems) =>
@@ -229,33 +231,35 @@ const CRFormTable = ({
                     disabled={isEditDisabled}
                   />
                 </td>
-                <td>{addCommaToNumberWithTwoPlaces(item.gross_amount)}</td>
-                <td>
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.gross_amount)}
+                </td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_2.includes("%")
                     ? item.customer_discount_2
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_3.includes("%")
                     ? item.customer_discount_3
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_1.includes("%")
                     ? item.transaction_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_2.includes("%")
                     ? item.transaction_discount_2
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_3.includes("%")
                     ? item.transaction_discount_3
                     : 0}

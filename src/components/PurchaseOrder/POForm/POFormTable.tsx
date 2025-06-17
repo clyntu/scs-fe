@@ -254,6 +254,7 @@ const POFormTable = ({
                 {selectedItem?.id !== null && (
                   <Input
                     type="number"
+                    sx={{ input: { textAlign: "right" } }}
                     value={selectedItem.price}
                     slotProps={{
                       input: {
@@ -274,7 +275,7 @@ const POFormTable = ({
                   />
                 )}
               </td>
-              <td>
+              <td style={{ textAlign: "right" }}>
                 {selectedItem?.id !== null &&
                   addCommaToNumberWithTwoPlaces(
                     Number(selectedItem?.price) * Number(selectedItem?.volume),

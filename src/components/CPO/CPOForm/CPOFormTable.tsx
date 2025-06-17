@@ -250,6 +250,7 @@ const CPOFormTable = ({
                   {selectedItem?.id !== null && (
                     <Input
                       type="number"
+                      sx={{ input: { textAlign: "right" } }}
                       onChange={(e) => changePrice(e.target.value, index)}
                       slotProps={{
                         input: {
@@ -263,7 +264,7 @@ const CPOFormTable = ({
                     />
                   )}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {selectedItem?.id !== null &&
                     addCommaToNumberWithTwoPlaces(
                       Number(selectedItem.price) * Number(selectedItem?.volume),

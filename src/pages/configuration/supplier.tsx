@@ -254,7 +254,7 @@ const SupplierForm = (): JSX.Element => {
                 <th style={{ width: 150 }}>Contact Number</th>
                 <th style={{ width: 300 }}>Email</th>
                 <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 100 }}>Supplier Balance</th>
+                <th style={{ width: 150 }}>Supplier Balance</th>
                 <th style={{ width: 200 }}>Created By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
@@ -281,7 +281,9 @@ const SupplierForm = (): JSX.Element => {
                   <td>{supplier.contact_number}</td>
                   <td>{supplier.email}</td>
                   <td>{supplier.currency}</td>
-                  <td>{supplier.supplier_balance}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {supplier.supplier_balance}
+                  </td>
                   <td>{supplier?.creator?.full_name}</td>
                   <td>{supplier.date_created}</td>
                   <td>{supplier?.modifier?.full_name}</td>

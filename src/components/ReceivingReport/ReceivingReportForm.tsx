@@ -19,6 +19,7 @@ import type {
 import { Expense } from "./interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 const ReceivingReportForm = ({
   setOpen,
@@ -109,7 +110,7 @@ const ReceivingReportForm = ({
             return {
               id: expense.id,
               expense: expense.expense,
-              amount: expense.amount,
+              amount: addCommaToNumberWithTwoPlaces(expense.amount as number),
               comments: expense.comments,
             };
           }),

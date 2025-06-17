@@ -213,47 +213,51 @@ const RRFormTable = ({
                     <td>{PO.id}</td>
                     <td>{POItem?.item.stock_code}</td>
                     <td>{POItem?.item.name}</td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {status === "posted"
                         ? POItem.on_stock
                         : POItem.in_transit}
                     </td>
-                    <td>{POItem.price}</td>
-                    <td>{addCommaToNumberWithTwoPlaces(grossPerRow[key])}</td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>{POItem.price}</td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(grossPerRow[key])}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
                       {PO.supplier_discount_1.includes("%")
                         ? PO.supplier_discount_1
                         : 0}
                     </td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {PO.supplier_discount_2.includes("%")
                         ? PO.supplier_discount_2
                         : 0}
                     </td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {PO.supplier_discount_3.includes("%")
                         ? PO.supplier_discount_3
                         : 0}
                     </td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {PO.transaction_discount_1.includes("%")
                         ? PO.transaction_discount_1
                         : 0}
                     </td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {PO.transaction_discount_2.includes("%")
                         ? PO.transaction_discount_2
                         : 0}
                     </td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {PO.transaction_discount_3.includes("%")
                         ? PO.transaction_discount_3
                         : 0}
                     </td>
-                    <td>{addCommaToNumberWithTwoPlaces(netPerRow[key])}</td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(netPerRow[key])}
+                    </td>
                     <td>{PO.currency_used}</td>
-                    <td>{pesoRate}</td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>{pesoRate}</td>
+                    <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithFourPlaces(
                         POItem.price *
                           Number(pesoRate) *

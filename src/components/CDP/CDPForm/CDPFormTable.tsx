@@ -124,19 +124,20 @@ const CDPFormTable = ({
         <tbody>
           {formattedAllocs.map((item, index) => {
             const key = `${item.id}-${item.cpo_id}-${item.stock_code}`;
-            const price = item?.price ?? 0;
+            const price = addCommaToNumberWithTwoPlaces(item?.price ?? 0);
 
             return (
               <tr key={key}>
                 <td style={{ zIndex: 1 }}>{item.id}</td>
                 <td>{item?.stock_code}</td>
                 <td>{item?.name}</td>
-                <td>{price}</td>
-                <td>{item.alloc_qty}</td>
-                <td>
+                <td style={{ textAlign: "right" }}>{price}</td>
+                <td style={{ textAlign: "right" }}>{item.alloc_qty}</td>
+                <td style={{ textAlign: "right" }}>
                   <Input
                     type="number"
                     value={item.dp_qty}
+                    sx={{ input: { textAlign: "right" } }}
                     onChange={(e) => {
                       setFormattedAllocs((prevAllocItems) =>
                         prevAllocItems.map((allocItem) =>
@@ -165,38 +166,42 @@ const CDPFormTable = ({
                     disabled={isEditDisabled}
                   />
                 </td>
-                <td>{addCommaToNumberWithTwoPlaces(item.gross_amount)}</td>
-                <td>
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.gross_amount)}
+                </td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_2.includes("%")
                     ? item.customer_discount_2
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_3.includes("%")
                     ? item.customer_discount_3
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_1.includes("%")
                     ? item.transaction_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_2.includes("%")
                     ? item.transaction_discount_2
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_3.includes("%")
                     ? item.transaction_discount_3
                     : 0}
                 </td>
-                <td>{addCommaToNumberWithTwoPlaces(item.net_amount)}</td>
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.net_amount)}
+                </td>
               </tr>
             );
           })}

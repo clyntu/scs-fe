@@ -82,47 +82,51 @@ const CDRFormTable = ({
         <tbody>
           {formattedAllocs.map((item, index) => {
             const key = `${item.id}-${item.cpo_id}-${item.stock_code}-${index}`;
-            const price = item?.price ?? 0;
+            const price = addCommaToNumberWithTwoPlaces(item?.price ?? 0);
 
             return (
               <tr key={key}>
                 <td style={{ zIndex: 1 }}>{item.id}</td>
                 <td>{item?.stock_code}</td>
                 <td>{item?.name}</td>
-                <td>{price}</td>
-                <td>{item.dp_qty}</td>
-                <td>{addCommaToNumberWithTwoPlaces(item.gross_amount)}</td>
-                <td>
+                <td style={{ textAlign: "right" }}>{price}</td>
+                <td style={{ textAlign: "right" }}>{item.dp_qty}</td>
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.gross_amount)}
+                </td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_2.includes("%")
                     ? item.customer_discount_2
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_3.includes("%")
                     ? item.customer_discount_3
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_1.includes("%")
                     ? item.transaction_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_2.includes("%")
                     ? item.transaction_discount_2
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_3.includes("%")
                     ? item.transaction_discount_3
                     : 0}
                 </td>
-                <td>{addCommaToNumberWithTwoPlaces(item.net_amount)}</td>
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.net_amount)}
+                </td>
               </tr>
             );
           })}

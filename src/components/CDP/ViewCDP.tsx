@@ -252,11 +252,11 @@ const ViewCDP = ({
                   <td className="capitalize">{CDP.status}</td>
                   <td>{CDP.customer.name}</td>
                   <td>{CDP.transaction_date}</td>
-                  <td>{CDP.total_items}</td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>{CDP.total_items}</td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(Number(CDP.total_net))}
                   </td>
                   <td>{CDP.remarks}</td>

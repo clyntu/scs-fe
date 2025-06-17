@@ -251,7 +251,7 @@ const SDRFormTable = ({
                   <td>{POItem?.item.stock_code}</td>
                   <td>{POItem?.item.name}</td>
                   {status === "posted" ? (
-                    <td>{servedAmt[key]}</td>
+                    <td style={{ textAlign: "right" }}>{servedAmt[key]}</td>
                   ) : (
                     <td>
                       <Input
@@ -276,52 +276,55 @@ const SDRFormTable = ({
                       />
                     </td>
                   )}
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {status === "posted"
                       ? POItem.unserved_spo
                       : openEdit
                         ? POItem.unserved_spo + POItem.in_transit
                         : POItem.unserved_spo}
                   </td>
-                  {status === "posted" ? null : <td>{POItem.in_transit}</td>}
-                  <td>{POItem.volume}</td>
-                  <td>{POItem?.price}</td>
+                  {status === "posted" ? null : (
+                    <td style={{ textAlign: "right" }}>{POItem.in_transit}</td>
+                  )}
+                  <td style={{ textAlign: "right" }}>{POItem.volume}</td>
+                  <td style={{ textAlign: "right" }}>{POItem?.price}</td>
 
-                  <td>{grossPerRow[key]}</td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>{grossPerRow[key]}</td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_1.includes("%")
                       ? PO.supplier_discount_1
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_2.includes("%")
                       ? PO.supplier_discount_2
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_3.includes("%")
                       ? PO.supplier_discount_3
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.transaction_discount_1.includes("%")
                       ? PO.transaction_discount_1
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.transaction_discount_2.includes("%")
                       ? PO.transaction_discount_2
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.transaction_discount_3.includes("%")
                       ? PO.transaction_discount_3
                       : 0}
                   </td>
-                  <td>{addCommaToNumberWithTwoPlaces(grossPerRow[key])}</td>
-                  <td>{addCommaToNumberWithTwoPlaces(netPerRow[key])}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(netPerRow[key])}
+                  </td>
                   <td>{PO.currency_used}</td>
-                  <td>{PO.peso_rate}</td>
+                  <td style={{ textAlign: "right" }}>{PO.peso_rate}</td>
                 </tr>
               );
             });

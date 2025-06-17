@@ -257,14 +257,16 @@ const ViewPurchaseOrder = ({
                   <td>{purchaseOrder?.supplier?.name}</td>
                   <td>{purchaseOrder.transaction_date}</td>
                   <td>{purchaseOrder.currency_used}</td>
-                  <td>{purchaseOrder.peso_rate}</td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
+                    {purchaseOrder.peso_rate}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(purchaseOrder.net_amount)}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(purchaseOrder.fob_total)}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(purchaseOrder.landed_total)}
                   </td>
                   <td>{purchaseOrder.remarks}</td>

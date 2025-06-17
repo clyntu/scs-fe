@@ -221,10 +221,10 @@ const ViewDeliveryReceipt = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   SDR No.
                 </th>
+                <th style={{ width: 250 }}>Transaction Date</th>
+                {/* <th style={{ width: 300 }}>Supplier</th> */}
                 <th style={{ width: 200 }}>Ref No.</th>
                 <th style={{ width: 300 }}>Status</th>
-                {/* <th style={{ width: 300 }}>Supplier</th> */}
-                <th style={{ width: 250 }}>Transaction Date</th>
                 <th style={{ width: 150 }}>FOB Total</th>
                 <th style={{ width: 150 }}>Net Amount</th>
                 <th style={{ width: 150 }}>Landed Total (₱)</th>
@@ -249,16 +249,19 @@ const ViewDeliveryReceipt = ({
                   }}
                 >
                   <td>{deliveryReceipt.id}</td>
-                  <td>{deliveryReceipt.reference_number}</td>
-                  <td className="capitalize">{deliveryReceipt.status}</td>
                   <td>{deliveryReceipt.transaction_date}</td>
-                  <td>
+                  {/* <td>{deliveryReceipt.supplier_id}</td> */}
+                  <td>{deliveryReceipt.reference_number}</td>
+
+                  <td className="capitalize">{deliveryReceipt.status}</td>
+
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(deliveryReceipt.net_amount)}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithFourPlaces(
                       deliveryReceipt.landed_total,
                     )}

@@ -152,8 +152,6 @@ const RRFormExpenses = ({
                   </td>
                   <td>
                     <Input
-                      type="number"
-                      slotProps={{ input: { min: 0, step: ".01" } }}
                       onChange={(event) =>
                         handleInputChange(
                           expense.id,
@@ -161,6 +159,11 @@ const RRFormExpenses = ({
                           event.target.value,
                         )
                       }
+                      sx={{
+                        input: {
+                          textAlign: "right",
+                        },
+                      }}
                       value={expense.amount}
                       placeholder="0"
                       disabled={isEditDisabled}

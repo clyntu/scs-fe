@@ -24,6 +24,8 @@ import type {
   PurchaseOrder,
 } from "../../interface";
 
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
+
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
 
@@ -211,7 +213,7 @@ const PurchaseOrderForm = ({
 
       const modifiedItem = {
         ...foundItem,
-        price: item.price,
+        price: addCommaToNumberWithTwoPlaces(item.price),
         volume: item.volume,
         on_stock: item.on_stock,
         allocated: item.allocated,

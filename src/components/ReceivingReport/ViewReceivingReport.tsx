@@ -254,21 +254,21 @@ const ViewReceivingReport = ({
                   <td>{receivingReport.reference_number}</td>
                   <td className="capitalize">{receivingReport.status}</td>
                   <td>{receivingReport.transaction_date}</td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(receivingReport.net_amount)}
                   </td>
 
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithFourPlaces(
                       receivingReport.landed_total,
                     )}
                   </td>
 
                   <td>{receivingReport.currency}</td>
-                  <td>{receivingReport.rate}</td>
+                  <td style={{ textAlign: "right" }}>{receivingReport.rate}</td>
                   <td>{receivingReport.remarks}</td>
                   <td>{receivingReport?.creator?.username}</td>
                   <td>{receivingReport?.modifier?.username}</td>

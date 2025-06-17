@@ -254,11 +254,11 @@ const ViewCDR = ({
                   <td className="capitalize">{CDR.status}</td>
                   <td>{CDR.customer.name}</td>
                   <td>{CDR.transaction_date}</td>
-                  <td>{CDR.total_items}</td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>{CDR.total_items}</td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(Number(CDR.total_net))}
                   </td>
                   <td>{CDR.remarks}</td>

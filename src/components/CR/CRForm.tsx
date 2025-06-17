@@ -222,7 +222,7 @@ const CRForm = ({
             warehouse_id: DRItem?.return_warehouse?.id ?? null,
             item_id: DRItem.item_id,
             return_qty: DRItem.return_qty,
-            price: DRItem.price,
+            price: addCommaToNumberWithTwoPlaces(Number(DRItem.price)),
           };
         }),
     };
