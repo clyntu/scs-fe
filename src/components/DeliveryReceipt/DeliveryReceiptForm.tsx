@@ -115,6 +115,11 @@ const DeliveryReceiptForm = ({
   };
 
   const handleCreateDeliveryReceipt = async (): Promise<void> => {
+    if (selectedPOs.length === 0) {
+      toast.error("Please choose POs to plan.");
+      return;
+    }
+
     const payload = {
       sdr_data: {
         status,
@@ -163,6 +168,11 @@ const DeliveryReceiptForm = ({
   };
 
   const handleEditDeliveryReceipt = async (): Promise<void> => {
+    if (selectedPOs.length === 0) {
+      toast.error("Please choose POs to plan.");
+      return;
+    }
+
     const payload = {
       sdr_data: {
         status,

@@ -230,6 +230,11 @@ const CRForm = ({
   };
 
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
+    if (formattedDRs.length === 0) {
+      toast.error("Please choose a valid Delivery Receipt.");
+      return;
+    }
+
     const payload = createPayload();
     try {
       setIsSaving(true);
@@ -248,6 +253,11 @@ const CRForm = ({
   };
 
   const handleEditDeliveryReceipt = async (): Promise<void> => {
+    if (formattedDRs.length === 0) {
+      toast.error("Please choose a valid Delivery Receipt.");
+      return;
+    }
+
     const payload = createPayload();
 
     try {

@@ -224,6 +224,11 @@ const CDPForm = ({
   };
 
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
+    if (formattedAllocs.length === 0) {
+      toast.error("Please choose a valid Allocation.");
+      return;
+    }
+
     const payload = createPayload();
     try {
       setIsSaving(true);
@@ -242,6 +247,11 @@ const CDPForm = ({
   };
 
   const handleEditDeliveryPlanning = async (): Promise<void> => {
+    if (formattedAllocs.length === 0) {
+      toast.error("Please choose a valid Allocation.");
+      return;
+    }
+
     const payload = createPayload();
 
     try {
