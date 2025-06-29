@@ -208,7 +208,6 @@ const CPOFormDetails = ({
                 onChange={(e) => setReferenceNumber(e.target.value)}
                 value={referenceNumber}
                 disabled={isEditDisabled}
-                required
               />
             </FormControl>
           </Stack>

@@ -63,7 +63,7 @@ export interface CPOPayload {
   transaction_discount_3: string;
   net_total: number;
   gross_total: number;
-  reference_number: string;
+  reference_number?: string;
   remarks: string;
   items: CPOItemValues[];
 }
