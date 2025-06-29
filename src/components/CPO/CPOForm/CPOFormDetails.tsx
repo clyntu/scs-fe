@@ -39,8 +39,6 @@ const CPOFormDetails = ({
   setRemarks,
   referenceNumber,
   setReferenceNumber,
-  priceLevel,
-  setPriceLevel,
   // Summary Amounts
   netTotal,
   grossTotal,
@@ -88,21 +86,6 @@ const CPOFormDetails = ({
                   required
                 />
               </div>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Price Level</FormLabel>
-              <Select
-                onChange={(event, value) => {
-                  if (value !== null) setPriceLevel(value);
-                }}
-                size="sm"
-                value={priceLevel}
-                disabled={isEditDisabled}
-              >
-                <Option value="1">1</Option>
-                <Option value="2">2</Option>
-                <Option value="3">3</Option>
-              </Select>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Status</FormLabel>

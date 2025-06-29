@@ -224,7 +224,6 @@ const ViewCPO = ({
                 <th style={{ width: 150 }}>Status</th>
                 <th style={{ width: 300 }}>Customer</th>
                 <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Price Level</th>
                 <th style={{ width: 150 }}>Gross Total</th>
                 <th style={{ width: 150 }}>Net Total</th>
                 <th style={{ width: 300 }}>Remarks</th>
@@ -252,7 +251,6 @@ const ViewCPO = ({
                   <td className="capitalize">{CPO.status}</td>
                   <td>{CPO?.customer?.name}</td>
                   <td>{CPO.transaction_date}</td>
-                  <td style={{ textAlign: "right" }}>{CPO.price_level}</td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(CPO.gross_total)}
                   </td>

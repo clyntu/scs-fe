@@ -53,8 +53,6 @@ const CPOForm = ({
     transaction: ["", "", ""],
   });
 
-  const [priceLevel, setPriceLevel] = useState("1");
-
   const [status, setStatus] = useState("unposted");
   const [transactionDate, setTransactionDate] = useState(currentDate);
   const [referenceNumber, setReferenceNumber] = useState("");
@@ -104,7 +102,6 @@ const CPOForm = ({
         ],
       });
       setStatus(selectedRow?.status ?? "pending");
-      setPriceLevel(selectedRow?.price_level ?? "1");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
@@ -144,7 +141,6 @@ const CPOForm = ({
       status,
       transaction_date: transactionDate,
       customer_id: selectedCustomer?.customer_id ?? 0,
-      price_level: priceLevel,
       gross_total: grossTotal,
       customer_discount_1: discounts.customer[0],
       customer_discount_2: discounts.customer[1],
@@ -199,7 +195,6 @@ const CPOForm = ({
         price: addCommaToNumberWithTwoPlaces(item.price),
         volume: item.volume,
         allocated: item.allocated,
-        p_type: item.p_type,
       };
 
       return modifiedItem;
@@ -227,7 +222,6 @@ const CPOForm = ({
       .filter((item: Item) => item.id !== null)
       .map((item: Item) => ({
         item_id: item.id,
-        p_type: item.p_type,
         volume: item.volume,
         unserved_spo: item.volume,
         price: item.price,
@@ -268,7 +262,6 @@ const CPOForm = ({
       .filter((item: Item) => item.id !== null)
       .map((item: Item) => ({
         item_id: item.id,
-        p_type: item.p_type,
         volume: Number(item.volume),
         price: Number(item.price),
         unserved_spo: Number(item.volume),
@@ -302,7 +295,6 @@ const CPOForm = ({
       customer: ["0", "0", "0"],
       transaction: ["0", "0", "0"],
     });
-    setPriceLevel("1");
     setStatus("unposted");
     setTransactionDate(currentDate);
     setReferenceNumber("");
@@ -358,8 +350,6 @@ const CPOForm = ({
             setRemarks={setRemarks}
             referenceNumber={referenceNumber}
             setReferenceNumber={setReferenceNumber}
-            priceLevel={priceLevel}
-            setPriceLevel={setPriceLevel}
             // Summary Amounts
             netTotal={netTotal}
             grossTotal={grossTotal}

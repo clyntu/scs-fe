@@ -38,7 +38,6 @@ const CPOFormTable = ({
         ...foundItem,
         price: foundItem?.srp ?? 0,
         volume: 1,
-        p_type: "regular",
       };
 
       // We need to add the new item before the null item
@@ -58,18 +57,6 @@ const CPOFormTable = ({
     const newSelectedItems = selectedItems.map((item: Item, i: number) => {
       if (i === index) {
         return { ...item, volume: value };
-      }
-
-      return item;
-    });
-
-    setSelectedItems(newSelectedItems);
-  };
-
-  const addPType = (value: string, index: number): void => {
-    const newSelectedItems = selectedItems.map((item: Item, i: number) => {
-      if (i === index) {
-        return { ...item, p_type: value };
       }
 
       return item;
@@ -151,7 +138,6 @@ const CPOFormTable = ({
               Name
             </th>
             <th style={{ width: 200 }}>Stock Code</th>
-            <th style={{ width: 200 }}>P-Type</th>
             <th style={{ width: 150 }}>Order Qty</th>
             <th style={{ width: 150 }}>Price</th>
             <th style={{ width: 150 }}>Gross</th>
@@ -164,9 +150,6 @@ const CPOFormTable = ({
         </thead>
         <tbody>
           {selectedItems.map((selectedItem: Item, index: number) => {
-            const price = isEditDisabled
-              ? selectedItem.price
-              : selectedItem.acquisition_cost;
             return (
               <tr key={`${selectedItem.id}-${index}`}>
                 <td style={{ zIndex: 1 }}>
@@ -214,21 +197,6 @@ const CPOFormTable = ({
                       },
                     }}
                   />
-                </td>
-                <td>
-                  {selectedItem.id && (
-                    <Select
-                      onChange={(event, value) => {
-                        if (value !== null) addPType(value, index);
-                      }}
-                      size="sm"
-                      value={selectedItem.p_type}
-                      disabled={isEditDisabled}
-                      placeholder="Select P-Type"
-                    >
-                      <Option value="regular">Regular</Option>
-                    </Select>
-                  )}
                 </td>
                 <td style={{ zIndex: 2 }}>
                   {selectedItem?.id !== null && (
