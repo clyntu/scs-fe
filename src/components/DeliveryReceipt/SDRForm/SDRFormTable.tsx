@@ -289,7 +289,9 @@ const SDRFormTable = ({
                   <td style={{ textAlign: "right" }}>{POItem.volume}</td>
                   <td style={{ textAlign: "right" }}>{POItem?.price}</td>
 
-                  <td style={{ textAlign: "right" }}>{grossPerRow[key]}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(grossPerRow[key])}
+                  </td>
                   <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_1.includes("%")
                       ? PO.supplier_discount_1
