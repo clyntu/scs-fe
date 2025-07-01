@@ -185,10 +185,10 @@ const RRFormTable = ({
             <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
             <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>NET Amount</th>
+            <th style={{ width: 150 }}>NET Price</th>
             <th style={{ width: 150 }}>Currency</th>
             <th style={{ width: 150 }}>Peso Rate</th>
-            <th style={{ width: 200 }}>NET Amount per Item (₱)</th>
+            <th style={{ width: 200 }}>NET Cost</th>
           </tr>
         </thead>
         <tbody>

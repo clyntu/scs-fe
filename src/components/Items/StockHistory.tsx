@@ -4,10 +4,7 @@ import Sheet from "@mui/joy/Sheet";
 import { Card, Box, Table } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import {
-  addCommaToNumberWithTwoPlaces,
-  addCommaToNumberWithFourPlaces,
-} from "../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../helper";
 
 import { type IStockHistory, type ViewStockHistory } from "../../interface";
 
@@ -24,7 +21,7 @@ const StockHistory = ({
     axiosInstance
       .get(`/api/items/stock-history/?stock_code=${row?.stock_code}`)
       .then((response) => {
-        setStockHistory(response.data);
+        setStockHistory(response.data as IStockHistory[]);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -118,9 +115,10 @@ const StockHistory = ({
                         <th style={{ width: 100 }}>In</th>
                         <th style={{ width: 100 }}>Out</th>
                         <th style={{ width: 160 }}>Price</th>
-                        <th style={{ width: 160 }}>Amount</th>
+                        <th style={{ width: 160 }}>NET Cost</th>
+                        <th style={{ width: 160 }}>NET Price</th>
+                        <th style={{ width: 160 }}>Discounts</th>
                         <th style={{ width: 160 }}>Last Purchase Price</th>
-                        <th style={{ width: 160 }}>Last Sale Price</th>
                         <th style={{ width: 200 }}>Reference No.</th>
                       </tr>
                     </thead>
@@ -148,19 +146,22 @@ const StockHistory = ({
                             {addCommaToNumberWithTwoPlaces(history.price)}
                           </td>
                           <td style={{ textAlign: "right" }}>
-                            {addCommaToNumberWithFourPlaces(history.amount)}
+                            {history.transaction_type === "DR"
+                              ? "-"
+                              : addCommaToNumberWithTwoPlaces(history.net_cost)}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {addCommaToNumberWithTwoPlaces(history.net_price)}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {addCommaToNumberWithTwoPlaces(
+                              history.discount_amount,
+                            )}
                           </td>
                           <td style={{ textAlign: "right" }}>
                             {String(
                               addCommaToNumberWithTwoPlaces(
                                 history.last_purchase_price,
-                              ),
-                            ) ?? "-"}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {String(
-                              addCommaToNumberWithTwoPlaces(
-                                history.last_sale_price,
                               ),
                             ) ?? "-"}
                           </td>

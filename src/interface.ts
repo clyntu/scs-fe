@@ -71,16 +71,19 @@ export interface ViewStockHistory {
 export interface IStockHistory {
   transaction_type: string;
   reference_number: string;
+  stock_code: string;
+  stock_description: string;
   transaction_date: string;
   transaction_number: number;
   quantity_in: number;
   quantity_out: number;
   price: number;
-  amount: number;
-  supplier_name: string;
-  customer_name: string;
+  net_cost: number;
+  net_price: number;
+  discount_amount: number;
+  supplier_name: string | null;
+  customer_name: string | null;
   last_purchase_price?: number;
-  last_sale_price?: number;
 }
 
 export interface DeleteModalProps {
