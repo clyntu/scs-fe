@@ -50,6 +50,7 @@ const CDRForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
   const companyId = getCompanyId();
 
   const totalItems = formattedAllocs.reduce(
@@ -244,8 +245,8 @@ const CDRForm = ({
       await axiosInstance.post("/api/delivery-receipts/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -266,8 +267,8 @@ const CDRForm = ({
       );
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -360,12 +361,13 @@ const CDRForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

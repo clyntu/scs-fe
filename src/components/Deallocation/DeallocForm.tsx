@@ -61,6 +61,7 @@ const DeallocForm = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
     // Fetch warehouses
@@ -269,8 +270,8 @@ const DeallocForm = ({
       await axiosInstance.post("/api/deallocations/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       console.log(error);
@@ -289,8 +290,8 @@ const DeallocForm = ({
       await axiosInstance.put(`api/deallocations/${selectedRow?.id}`, payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       console.log(error);
@@ -365,12 +366,13 @@ const DeallocForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

@@ -61,6 +61,7 @@ const StockTransferForm = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
 
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -386,8 +387,7 @@ const StockTransferForm = ({
         await axiosInstance.post("/api/stock-transfers/", payload);
         setIsSaving(false);
         toast.success("Save successful!");
-        resetForm();
-        setOpen(false);
+        setHasSaved(true);
         // Handle the response, update state, etc.
       } catch (error: any) {
         toast.error(
@@ -426,8 +426,8 @@ const StockTransferForm = ({
         );
         setIsSaving(false);
         toast.success("Save successful!");
-        resetForm();
-        setOpen(false);
+        setHasSaved(true);
+
         // Handle the response, update state, etc.
       } catch (error: any) {
         toast.error(
@@ -502,12 +502,13 @@ const StockTransferForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

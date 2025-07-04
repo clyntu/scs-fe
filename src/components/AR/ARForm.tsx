@@ -56,6 +56,7 @@ const ARForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
 
   const totalApplied = outstandingTrans.reduce(
@@ -224,8 +225,7 @@ const ARForm = ({
       await axiosInstance.post("/api/ar-receipts/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -287,9 +287,7 @@ const ARForm = ({
       }
 
       setIsSaving(false);
-      // Reset form and close modal only if everything succeeded
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
@@ -309,8 +307,7 @@ const ARForm = ({
       );
       toast.success("Reverse successful!");
       setOpenReverse(false);
-      setOpen(false);
-      resetForm();
+      setHasSaved(true);
     } catch (error: any) {
       toast.error(
         `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
@@ -409,12 +406,13 @@ const ARForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

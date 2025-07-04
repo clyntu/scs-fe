@@ -46,6 +46,7 @@ const DeliveryReceiptForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
 
   const pesoRate = selectedPOs.length > 0 ? selectedPOs[0].peso_rate : 0;
   const currencyUsed =
@@ -156,8 +157,8 @@ const DeliveryReceiptForm = ({
       await axiosInstance.post("/api/supplier-delivery-receipts/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+      
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -211,9 +212,9 @@ const DeliveryReceiptForm = ({
         payload,
       );
       toast.success("Save successful!");
-      resetForm();
       setIsSaving(false);
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -299,12 +300,13 @@ const DeliveryReceiptForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

@@ -52,6 +52,7 @@ const CRForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
   const companyId = getCompanyId();
 
   const totalItems = formattedDRs.reduce(
@@ -241,8 +242,8 @@ const CRForm = ({
       await axiosInstance.post("/api/customer-returns/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -268,8 +269,8 @@ const CRForm = ({
       );
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -358,12 +359,13 @@ const CRForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

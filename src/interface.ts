@@ -15,12 +15,12 @@ export interface Item {
   status: string;
   category: string;
   brand: string;
-  acquisition_cost?: number;
-  net_cost_before_tax?: number;
+  acquisition_cost?: number | string;
+  net_cost_before_tax?: number | string;
   currency: Currency;
   currency_id: number;
-  last_sale_price?: number;
-  srp?: number;
+  last_sale_price?: number | string;
+  srp?: number | string;
   rate?: number;
   total_on_stock: number;
   total_in_transit: number;
@@ -696,6 +696,7 @@ export interface ReceivingReport {
   landed_total: number;
   sdrs: DeliveryReceipt[];
   expenses: Expense[];
+  supplier: Supplier;
   creator: {
     full_name: string;
     username: string;

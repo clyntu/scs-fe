@@ -53,3 +53,19 @@ export function addCommaToNumberWithTwoPlaces(num: number | undefined) {
 
   return num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
+
+export function addTwoPlaces(num: number | undefined) {
+  if (num === undefined || num === null) return num;
+
+  return num.toFixed(2);
+}
+
+export function addFourPlaces(num: number | undefined) {
+  if (num === undefined || num === null) return num;
+
+  return num.toFixed(4);
+}
+
+export function removeCommas(numberString: string) {
+  return numberString.replace(/,/g, "");
+}

@@ -19,7 +19,7 @@ import type {
 import { Expense } from "./interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { addCommaToNumberWithTwoPlaces, removeCommas } from "../../helper";
 
 const ReceivingReportForm = ({
   setOpen,
@@ -59,6 +59,7 @@ const ReceivingReportForm = ({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
 
   const fobTotal = totalGross;
   const netAmount = totalNet - amountDiscount;
@@ -110,7 +111,7 @@ const ReceivingReportForm = ({
             return {
               id: expense.id,
               expense: expense.expense,
-              amount: addCommaToNumberWithTwoPlaces(expense.amount as number),
+              amount: Number(removeCommas(String(expense.amount))) || 0,
               comments: expense.comments,
             };
           }),
@@ -172,7 +173,7 @@ const ReceivingReportForm = ({
       expenses: expenses.map((expense) => {
         return {
           expense: expense.expense,
-          amount: expense.amount || 0,
+          amount: Number(removeCommas(String(expense.amount))) || 0,
           currency: "",
           comments: expense.comments,
           created_by: userId,
@@ -185,8 +186,8 @@ const ReceivingReportForm = ({
       await axiosInstance.post("/api/receiving-reports/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -236,9 +237,9 @@ const ReceivingReportForm = ({
         payload,
       );
       toast.success("Save successful!");
-      resetForm();
       setIsSaving(false);
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -336,12 +337,13 @@ const ReceivingReportForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

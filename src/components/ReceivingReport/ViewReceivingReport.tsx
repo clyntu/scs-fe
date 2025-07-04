@@ -222,8 +222,8 @@ const ViewReceivingReport = ({
                   RR No.
                 </th>
                 <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 300 }}>Status</th>
-                {/* <th style={{ width: 300 }}>Supplier</th> */}
+                <th style={{ width: 150 }}>Status</th>
+                <th style={{ width: 320 }}>Supplier</th>
                 <th style={{ width: 250 }}>Transaction Date</th>
                 <th style={{ width: 150 }}>FOB Total</th>
                 <th style={{ width: 150 }}>Net Price</th>
@@ -253,6 +253,7 @@ const ViewReceivingReport = ({
                   <td>{receivingReport.id}</td>
                   <td>{receivingReport.reference_number}</td>
                   <td className="capitalize">{receivingReport.status}</td>
+                  <td>{receivingReport.supplier.name}</td>
                   <td>{receivingReport.transaction_date}</td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}

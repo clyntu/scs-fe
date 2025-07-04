@@ -54,6 +54,7 @@ const AllocForm = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
     // Fetch warehouses
@@ -279,8 +280,8 @@ const AllocForm = ({
       await axiosInstance.post("/api/allocations/", payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
@@ -298,8 +299,8 @@ const AllocForm = ({
       await axiosInstance.put(`api/allocations/${selectedRow?.id}`, payload);
       setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       console.log(error);
@@ -370,12 +371,13 @@ const AllocForm = ({
               variant="outlined"
               onClick={() => {
                 setOpen(false);
+                resetForm();
               }}
             >
               <DoDisturbIcon className="mr-2" />
-              {isEditDisabled ? "Go Back" : "Cancel"}
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
             </Button>
-            {!isEditDisabled && (
+            {!hasSaved && !isEditDisabled && (
               <Button
                 type="submit"
                 sx={{

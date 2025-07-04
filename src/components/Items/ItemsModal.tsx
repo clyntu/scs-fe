@@ -24,6 +24,7 @@ import type {
   Currency,
 } from "../../interface";
 import StockHistory from "./StockHistory";
+import { addTwoPlaces, addFourPlaces } from "../../helper";
 
 // Helper function to format values to 4 decimal places
 const formatToFourDecimals = (
@@ -60,13 +61,13 @@ const ItemsModal = ({
       status: row?.status ?? "",
       category: row?.category ?? "",
       brand: row?.brand ?? "",
-      acquisition_cost: row?.acquisition_cost,
-      net_cost_before_tax: formatToFourDecimals(row?.net_cost_before_tax),
+      acquisition_cost: addTwoPlaces(Number(row?.acquisition_cost) ?? 0),
+      net_cost_before_tax: addFourPlaces(Number(row?.net_cost_before_tax) ?? 0),
       currency: row?.currency ?? defaultCurrency,
       currency_id: row?.currency_id ?? defaultCurrency.id,
       rate: row?.rate,
-      srp: row?.srp,
-      last_sale_price: row?.last_sale_price,
+      srp: addTwoPlaces(Number(row?.srp) ?? 0),
+      last_sale_price: addTwoPlaces(Number(row?.last_sale_price) ?? 0),
       total_on_stock: row?.total_on_stock ?? 0,
       total_in_transit: row?.total_in_transit ?? 0,
       total_allocated: row?.total_allocated ?? 0,
@@ -244,6 +245,7 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>Acquisition Cost</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="acquisition_cost"
                         type="number"
                         size="sm"
@@ -262,6 +264,7 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>Net Cost B/F Tax (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="net_cost_before_tax"
                         type="number"
                         size="sm"
@@ -279,6 +282,7 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>SRP (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="srp"
                         type="number"
                         size="sm"
@@ -297,6 +301,7 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>Last Sale Price (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="last_sale_price"
                         type="number"
                         size="sm"
