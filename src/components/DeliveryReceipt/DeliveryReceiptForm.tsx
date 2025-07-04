@@ -74,7 +74,7 @@ const DeliveryReceiptForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    const supplierID = selectedRow?.purchase_orders[0].supplier_id;
+    const supplierID = selectedRow?.purchase_orders[0]?.supplier_id;
 
     const fetchValues = (selectedRow: DeliveryReceipt) => {
       setStatus(selectedRow?.status ?? "unposted");
@@ -85,7 +85,11 @@ const DeliveryReceiptForm = ({
       setSelectedPOs(selectedRow?.purchase_orders);
     };
 
-    if (selectedRow !== null && selectedRow !== undefined) {
+    if (
+      selectedRow !== null &&
+      selectedRow !== undefined &&
+      supplierID !== undefined
+    ) {
       // Get Supplier for Edit
       setIsFetching(true);
       axiosInstance
@@ -158,7 +162,7 @@ const DeliveryReceiptForm = ({
       setIsSaving(false);
       toast.success("Save successful!");
       setHasSaved(true);
-      
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(

@@ -239,7 +239,7 @@ const RRFormDetails = ({
               />
             </FormControl>
           </Stack>
-          {!openEdit && (
+          {(!openEdit || status === "unposted") && (
             <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 3 }}>
               <Button
                 className="ml-4 bg-button-primary"
