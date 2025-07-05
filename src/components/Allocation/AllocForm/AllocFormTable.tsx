@@ -10,9 +10,21 @@ const AllocFormTable = ({
   setCPOItems,
   openCreate,
   isLoadingItems,
+  warehouseStockAvailability,
 }: AllocFormTableProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
+
+  // Helper function to get available quantity for a warehouse and item
+  const getAvailableQuantity = (
+    itemId: number,
+    warehouseId: number,
+  ): number => {
+    const stockInfo = warehouseStockAvailability[String(itemId)]?.find(
+      (stock) => stock.warehouse_id === warehouseId,
+    );
+    return stockInfo?.allocatable_qty ?? 0;
+  };
 
   return (
     <>
@@ -110,9 +122,18 @@ const AllocFormTable = ({
                       </td>
                       <td>
                         <Autocomplete
-                          options={warehouses.items.filter(
-                            (warehouse) => warehouse.id,
-                          )}
+                          options={warehouses.items.filter((warehouse) => {
+                            const stockInfo = warehouseStockAvailability[
+                              String(item.item_id)
+                            ]?.find(
+                              (stock) => stock.warehouse_id === warehouse.id,
+                            );
+                            return (
+                              stockInfo !== null &&
+                              stockInfo !== undefined &&
+                              stockInfo.allocatable_qty > 0
+                            );
+                          })}
                           getOptionLabel={(option) => option.name}
                           value={item.warehouse_1}
                           onChange={(event, newValue) => {
@@ -126,13 +147,84 @@ const AllocFormTable = ({
                               ),
                             );
                           }}
+                          renderOption={(props, option) => {
+                            const stockInfo = warehouseStockAvailability[
+                              String(item.item_id)
+                            ]?.find(
+                              (stock) => stock.warehouse_id === option.id,
+                            );
+                            return (
+                              <li
+                                {...props}
+                                style={{
+                                  padding: "8px 12px",
+                                  cursor: "pointer",
+                                  transition:
+                                    "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+                                }}
+                                className="hover:bg-blue-50 hover:shadow-sm"
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    "#eff6ff";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 2px 4px rgba(0,0,0,0.1)";
+                                  // e.currentTarget.style.borderLeft =
+                                  //   "3px solid #3b82f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "";
+                                  e.currentTarget.style.boxShadow = "";
+                                  e.currentTarget.style.borderLeft = "";
+                                }}
+                              >
+                                <div className="w-full">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-gray-900 transition-colors duration-200">
+                                        {option.name}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        Code: {option.code}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-sm font-semibold text-green-600 transition-all duration-200">
+                                        {stockInfo?.allocatable_qty ?? 0}
+                                      </span>
+                                      <span className="text-xs text-gray-400">
+                                        available
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </li>
+                            );
+                          }}
                           size="sm"
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
+                          slotProps={{
+                            input: {
+                              sx: {
+                                "& .MuiAutocomplete-input": {
+                                  fontSize: "14px",
+                                },
+                              },
+                            },
+                          }}
                         />
                       </td>
                       <td style={{ width: 150 }}>
+                        {item.warehouse_1 !== null && !isEditDisabled && (
+                          <div className="text-xs text-gray-500 mb-1">
+                            Available:{" "}
+                            {getAvailableQuantity(
+                              item.item_id,
+                              item.warehouse_1.id,
+                            )}
+                          </div>
+                        )}
                         <Input
                           type="number"
                           value={item.warehouse_1_qty}
@@ -152,6 +244,13 @@ const AllocFormTable = ({
                           slotProps={{
                             input: {
                               min: 0,
+                              max:
+                                item.warehouse_1 !== null
+                                  ? getAvailableQuantity(
+                                      item.item_id,
+                                      item.warehouse_1.id,
+                                    )
+                                  : undefined,
                             },
                           }}
                           placeholder="0"
@@ -160,9 +259,18 @@ const AllocFormTable = ({
                       </td>
                       <td style={{ width: 200 }}>
                         <Autocomplete
-                          options={warehouses.items.filter(
-                            (warehouse) => warehouse.id,
-                          )}
+                          options={warehouses.items.filter((warehouse) => {
+                            const stockInfo = warehouseStockAvailability[
+                              String(item.item_id)
+                            ]?.find(
+                              (stock) => stock.warehouse_id === warehouse.id,
+                            );
+                            return (
+                              stockInfo !== null &&
+                              stockInfo !== undefined &&
+                              stockInfo.allocatable_qty > 0
+                            );
+                          })}
                           getOptionLabel={(option) => option.name}
                           value={item.warehouse_2}
                           onChange={(event, newValue) => {
@@ -176,13 +284,84 @@ const AllocFormTable = ({
                               ),
                             );
                           }}
+                          renderOption={(props, option) => {
+                            const stockInfo = warehouseStockAvailability[
+                              String(item.item_id)
+                            ]?.find(
+                              (stock) => stock.warehouse_id === option.id,
+                            );
+                            return (
+                              <li
+                                {...props}
+                                style={{
+                                  padding: "8px 12px",
+                                  cursor: "pointer",
+                                  transition:
+                                    "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+                                }}
+                                className="hover:bg-blue-50 hover:shadow-sm"
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    "#eff6ff";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 2px 4px rgba(0,0,0,0.1)";
+                                  e.currentTarget.style.borderLeft =
+                                    "3px solid #3b82f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "";
+                                  e.currentTarget.style.boxShadow = "";
+                                  e.currentTarget.style.borderLeft = "";
+                                }}
+                              >
+                                <div className="w-full">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-gray-900 transition-colors duration-200">
+                                        {option.name}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        Code: {option.code}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-sm font-semibold text-green-600 transition-all duration-200">
+                                        {stockInfo?.allocatable_qty ?? 0}
+                                      </span>
+                                      <span className="text-xs text-gray-400">
+                                        available
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </li>
+                            );
+                          }}
                           size="sm"
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
+                          slotProps={{
+                            input: {
+                              sx: {
+                                "& .MuiAutocomplete-input": {
+                                  fontSize: "14px",
+                                },
+                              },
+                            },
+                          }}
                         />
                       </td>
                       <td style={{ width: 150 }}>
+                        {item.warehouse_2 !== null && !isEditDisabled && (
+                          <div className="text-xs text-gray-500 mb-1">
+                            Available:{" "}
+                            {getAvailableQuantity(
+                              item.item_id,
+                              item.warehouse_2.id,
+                            )}
+                          </div>
+                        )}
                         <Input
                           type="number"
                           value={item.warehouse_2_qty}
@@ -202,6 +381,13 @@ const AllocFormTable = ({
                           slotProps={{
                             input: {
                               min: 0,
+                              max:
+                                item.warehouse_2 !== null
+                                  ? getAvailableQuantity(
+                                      item.item_id,
+                                      item.warehouse_2.id,
+                                    )
+                                  : undefined,
                             },
                           }}
                           placeholder="0"
@@ -210,9 +396,18 @@ const AllocFormTable = ({
                       </td>
                       <td style={{ width: 200 }}>
                         <Autocomplete
-                          options={warehouses.items.filter(
-                            (warehouse) => warehouse.id,
-                          )}
+                          options={warehouses.items.filter((warehouse) => {
+                            const stockInfo = warehouseStockAvailability[
+                              String(item.item_id)
+                            ]?.find(
+                              (stock) => stock.warehouse_id === warehouse.id,
+                            );
+                            return (
+                              stockInfo !== null &&
+                              stockInfo !== undefined &&
+                              stockInfo.allocatable_qty > 0
+                            );
+                          })}
                           getOptionLabel={(option) => option.name}
                           value={item.warehouse_3}
                           onChange={(event, newValue) => {
@@ -226,13 +421,84 @@ const AllocFormTable = ({
                               ),
                             );
                           }}
+                          renderOption={(props, option) => {
+                            const stockInfo = warehouseStockAvailability[
+                              String(item.item_id)
+                            ]?.find(
+                              (stock) => stock.warehouse_id === option.id,
+                            );
+                            return (
+                              <li
+                                {...props}
+                                style={{
+                                  padding: "8px 12px",
+                                  cursor: "pointer",
+                                  transition:
+                                    "all 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+                                }}
+                                className="hover:bg-blue-50 hover:shadow-sm"
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    "#eff6ff";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 2px 4px rgba(0,0,0,0.1)";
+                                  e.currentTarget.style.borderLeft =
+                                    "3px solid #3b82f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "";
+                                  e.currentTarget.style.boxShadow = "";
+                                  e.currentTarget.style.borderLeft = "";
+                                }}
+                              >
+                                <div className="w-full">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-gray-900 transition-colors duration-200">
+                                        {option.name}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        Code: {option.code}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-sm font-semibold text-green-600 transition-all duration-200">
+                                        {stockInfo?.allocatable_qty ?? 0}
+                                      </span>
+                                      <span className="text-xs text-gray-400">
+                                        available
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </li>
+                            );
+                          }}
                           size="sm"
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
+                          slotProps={{
+                            input: {
+                              sx: {
+                                "& .MuiAutocomplete-input": {
+                                  fontSize: "14px",
+                                },
+                              },
+                            },
+                          }}
                         />
                       </td>
                       <td style={{ width: 150 }}>
+                        {item.warehouse_3 !== null && !isEditDisabled && (
+                          <div className="text-xs text-gray-500 mb-1">
+                            Available:{" "}
+                            {getAvailableQuantity(
+                              item.item_id,
+                              item.warehouse_3.id,
+                            )}
+                          </div>
+                        )}
                         <Input
                           type="number"
                           value={item.warehouse_3_qty}
@@ -252,6 +518,13 @@ const AllocFormTable = ({
                           slotProps={{
                             input: {
                               min: 0,
+                              max:
+                                item.warehouse_3 !== null
+                                  ? getAvailableQuantity(
+                                      item.item_id,
+                                      item.warehouse_3.id,
+                                    )
+                                  : undefined,
                             },
                           }}
                           placeholder="0"

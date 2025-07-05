@@ -1,7 +1,7 @@
 import { Button, Divider } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { User } from "../../pages/Login";
@@ -17,7 +17,12 @@ import {
   Alloc,
 } from "../../interface";
 import { convertToQueryParams } from "../../helper";
-import { AllocFormPayload, CPOItemFE } from "./interface";
+import {
+  AllocFormPayload,
+  CPOItemFE,
+  StockAvailabilityResponse,
+  WarehouseStockInfo,
+} from "./interface";
 import AllocFormDetails from "./AllocForm/AllocFormDetails";
 import AllocFormTable from "./AllocForm/AllocFormTable";
 import CircularProgress from "@mui/joy/CircularProgress";
@@ -51,10 +56,36 @@ const AllocForm = ({
 
   const [CPOItems, setCPOItems] = useState<CPOItemFE[]>([]);
 
+  // Add state for warehouse stock availability
+  const [warehouseStockAvailability, setWarehouseStockAvailability] = useState<
+    Record<string, WarehouseStockInfo[]>
+  >({});
+
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
+
+  // Add ref to track if we need to refresh stock availability
+  const lastStockFetchTime = useRef<number>(0);
+  const STOCK_REFRESH_INTERVAL = 30000; // 30 seconds
+
+  // Add window focus listener to refresh stock data
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      const now = Date.now();
+      if (
+        CPOItems.length > 0 &&
+        now - lastStockFetchTime.current > STOCK_REFRESH_INTERVAL
+      ) {
+        const itemIds = CPOItems.map((item) => item.item_id);
+        fetchWarehouseStockAvailability(itemIds);
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    return () => window.removeEventListener("focus", handleWindowFocus);
+  }, [CPOItems]);
 
   useEffect(() => {
     // Fetch warehouses
@@ -160,6 +191,12 @@ const AllocForm = ({
       );
 
       setCPOItems(formattedItems);
+
+      // Fetch warehouse stock availability for edit mode
+      const itemIds = formattedItems.map((item) => item.item_id);
+      if (itemIds.length > 0) {
+        fetchWarehouseStockAvailability(itemIds);
+      }
     };
 
     if (selectedRow) {
@@ -182,6 +219,23 @@ const AllocForm = ({
     }
   }, [selectedRow, warehouses]);
 
+  // Add function to fetch warehouse stock availability
+  const fetchWarehouseStockAvailability = async (itemIds: number[]) => {
+    if (itemIds.length === 0) return;
+
+    try {
+      const response = await axiosInstance.post<StockAvailabilityResponse>(
+        "/api/warehouses/stock-availability/",
+        { item_ids: itemIds },
+      );
+      setWarehouseStockAvailability(response.data.item_stock_availability);
+      lastStockFetchTime.current = Date.now(); // Track when we last fetched
+    } catch (error) {
+      console.error("Error fetching warehouse stock availability:", error);
+      toast.error("Failed to fetch warehouse stock information");
+    }
+  };
+
   const getCPOsByCustomer = (customer_id: number | undefined) => {
     setIsLoadingItems(true);
     if (customer_id) {
@@ -194,7 +248,7 @@ const AllocForm = ({
         .get<PaginatedCPO>(
           `/api/customer_purchase_orders/?${convertToQueryParams(params)}`,
         )
-        .then((response) => {
+        .then(async (response) => {
           const CPOItems = response.data.items
             .map((CPO) => {
               return CPO.items.map((CPOItem) => {
@@ -218,6 +272,11 @@ const AllocForm = ({
             .flat();
 
           setCPOItems(CPOItems);
+
+          // Fetch warehouse stock availability for all items
+          const itemIds = CPOItems.map((item) => item.item_id);
+          await fetchWarehouseStockAvailability(itemIds);
+
           setIsLoadingItems(false);
         })
         .catch((error) => {
@@ -359,6 +418,7 @@ const AllocForm = ({
             setCPOItems={setCPOItems}
             openCreate={openCreate}
             isLoadingItems={isLoadingItems}
+            warehouseStockAvailability={warehouseStockAvailability}
           />
           <div className="flex justify-end mt-4">
             <Button

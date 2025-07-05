@@ -7,6 +7,20 @@ import type {
 } from "../../interface";
 import type { Dispatch, SetStateAction } from "react";
 
+// Stock availability interfaces
+export interface WarehouseStockInfo {
+  warehouse_id: number;
+  warehouse_name: string;
+  warehouse_code: string;
+  available_qty: number;
+  reserved_qty: number;
+  allocatable_qty: number;
+}
+
+export interface StockAvailabilityResponse {
+  item_stock_availability: Record<string, WarehouseStockInfo[]>;
+}
+
 export interface AllocFormDetailsProps {
   openEdit: boolean;
   selectedRow: any;
@@ -49,6 +63,7 @@ export interface AllocFormTableProps {
   setCPOItems: Dispatch<SetStateAction<CPOItemFE[]>>;
   openCreate: boolean;
   isLoadingItems: boolean;
+  warehouseStockAvailability: Record<string, WarehouseStockInfo[]>;
 }
 
 interface Destinations {
