@@ -66,7 +66,7 @@ const CDPForm = ({
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>("/api/customers/?with_active_allocation=True")
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
   }, []);

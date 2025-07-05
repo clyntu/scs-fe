@@ -72,7 +72,7 @@ const ARForm = ({
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>("/api/customers/?with_pending_receivables=True")
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
   }, []);

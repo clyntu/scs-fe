@@ -67,7 +67,7 @@ const AllocForm = ({
 
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>("/api/customers/?with_active_cpo=True")
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
 

@@ -74,7 +74,7 @@ const DeallocForm = ({
 
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>("/api/customers/?with_unplanned_allocation=True")
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
 
