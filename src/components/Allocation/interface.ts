@@ -69,6 +69,7 @@ export interface AllocFormTableProps {
   openCreate: boolean;
   isLoadingItems: boolean;
   warehouseStockAvailability: Record<string, WarehouseStockInfo[]>;
+  selectedCPO: number | null;
 }
 
 interface Destinations {

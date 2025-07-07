@@ -56,8 +56,8 @@ const AllocForm = ({
 
   const [CPOItems, setCPOItems] = useState<CPOItemFE[]>([]);
 
-  const [cpoNumbers, setCPONumbers] = useState<Number[]>([]);
-  const [selectedCPO, setSelectedCPO] = useState(null);
+  const [cpoNumbers, setCPONumbers] = useState<number[]>([]);
+  const [selectedCPO, setSelectedCPO] = useState<number | null>(null);
 
   // Add state for warehouse stock availability
   const [warehouseStockAvailability, setWarehouseStockAvailability] = useState<
