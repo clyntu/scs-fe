@@ -32,7 +32,7 @@ export const calculateDiscount = (
 ): number => {
   if (discountStr.trim() === "") return 0;
   // All discounts must be percentages now
-  const percentage = parseFloat(discountStr.replace("%", ""));
+  const percentage = parseFloat(discountStr);
   return (percentage / 100) * total;
 };
 

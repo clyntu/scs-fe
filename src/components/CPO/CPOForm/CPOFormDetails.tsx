@@ -113,83 +113,83 @@ const CPOFormDetails = ({
                 required
               />
             </FormControl>
+            <FormControl size="sm" sx={{ width: "22%" }}>
+              <FormLabel>Ref No.</FormLabel>
+              <Input
+                size="sm"
+                placeholder="Ref No."
+                onChange={(e) => setReferenceNumber(e.target.value)}
+                value={referenceNumber}
+                disabled={isEditDisabled}
+              />
+            </FormControl>
           </Stack>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Cust Disc. 1</FormLabel>
+              <FormLabel>Cust Disc. 1 (%)</FormLabel>
               <Input
                 value={discounts.customer[0]}
                 onChange={(e) =>
                   handleDiscountChange("customer", 0, e.target.value)
                 }
-                placeholder="Enter discount % (e.g., 10%)"
+                placeholder="Enter discount"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Trans Disc. 1</FormLabel>
+              <FormLabel>Trans Disc. 1 (%)</FormLabel>
               <Input
                 value={discounts.transaction[0]}
                 onChange={(e) =>
                   handleDiscountChange("transaction", 0, e.target.value)
                 }
-                placeholder="Enter discount % (e.g., 10%)"
+                placeholder="Enter discount"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Cust Disc. 2</FormLabel>
+              <FormLabel>Cust Disc. 2 (%)</FormLabel>
               <Input
                 value={discounts.customer[1]}
                 onChange={(e) =>
                   handleDiscountChange("customer", 1, e.target.value)
                 }
-                placeholder="Enter discount % (e.g., 10%)"
+                placeholder="Enter discount"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Trans Disc. 2</FormLabel>
+              <FormLabel>Trans Disc. 2 (%)</FormLabel>
               <Input
                 value={discounts.transaction[1]}
                 onChange={(e) =>
                   handleDiscountChange("transaction", 1, e.target.value)
                 }
-                placeholder="Enter discount % (e.g., 10%)"
+                placeholder="Enter discount"
                 disabled={isEditDisabled}
               />
             </FormControl>
           </Stack>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Cust Disc. 3</FormLabel>
+              <FormLabel>Cust Disc. 3 (%)</FormLabel>
               <Input
                 value={discounts.customer[2]}
                 onChange={(e) =>
                   handleDiscountChange("customer", 2, e.target.value)
                 }
-                placeholder="Enter discount % (e.g., 10%)"
+                placeholder="Enter discount"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Trans Disc. 3</FormLabel>
+              <FormLabel>Trans Disc. 3 (%)</FormLabel>
               <Input
                 value={discounts.transaction[2]}
                 onChange={(e) =>
                   handleDiscountChange("transaction", 2, e.target.value)
                 }
-                placeholder="Enter discount % (e.g., 10%)"
-                disabled={isEditDisabled}
-              />
-            </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Ref No.</FormLabel>
-              <Input
-                size="sm"
-                placeholder="Search"
-                onChange={(e) => setReferenceNumber(e.target.value)}
-                value={referenceNumber}
+                placeholder="Enter discount"
                 disabled={isEditDisabled}
               />
             </FormControl>

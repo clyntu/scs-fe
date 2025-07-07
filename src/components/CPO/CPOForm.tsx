@@ -143,12 +143,18 @@ const CPOForm = ({
       transaction_date: transactionDate,
       customer_id: selectedCustomer?.customer_id ?? 0,
       gross_total: grossTotal,
-      customer_discount_1: discounts.customer[0],
-      customer_discount_2: discounts.customer[1],
-      customer_discount_3: discounts.customer[2],
-      transaction_discount_1: discounts.transaction[0],
-      transaction_discount_2: discounts.transaction[1],
-      transaction_discount_3: discounts.transaction[2],
+      customer_discount_1:
+        discounts.customer[0] !== "" ? `${discounts.customer[0]}%` : "",
+      customer_discount_2:
+        discounts.customer[1] !== "" ? `${discounts.customer[1]}%` : "",
+      customer_discount_3:
+        discounts.customer[2] !== "" ? `${discounts.customer[2]}%` : "",
+      transaction_discount_1:
+        discounts.transaction[0] !== "" ? `${discounts.transaction[0]}%` : "",
+      transaction_discount_2:
+        discounts.transaction[1] !== "" ? `${discounts.transaction[1]}%` : "",
+      transaction_discount_3:
+        discounts.transaction[2] !== "" ? `${discounts.transaction[2]}%` : "",
       net_total: netTotal,
       reference_number: referenceNumber,
       remarks,
@@ -279,7 +285,7 @@ const CPOForm = ({
       setIsSaving(false);
       toast.success("Save successful!");
       setHasSaved(true);
-      
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
