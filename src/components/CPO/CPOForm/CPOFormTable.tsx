@@ -135,9 +135,9 @@ const CPOFormTable = ({
                 width: "var(--Table-firstColumnWidth)",
               }}
             >
-              Name
+              Stock Code
             </th>
-            <th style={{ width: 200 }}>Stock Code</th>
+            <th style={{ width: 260 }}>Name</th>
             <th style={{ width: 150 }}>Order Qty</th>
             <th style={{ width: 150 }}>Price</th>
             <th style={{ width: 150 }}>Gross</th>
@@ -152,29 +152,6 @@ const CPOFormTable = ({
           {selectedItems.map((selectedItem: Item, index: number) => {
             return (
               <tr key={`${selectedItem.id}-${index}`}>
-                <td style={{ zIndex: 1 }}>
-                  <Autocomplete
-                    placeholder="Select Stock"
-                    options={items}
-                    getOptionLabel={(item) => item.name ?? ""}
-                    onChange={(event, value) => {
-                      if (value !== null) {
-                        fetchSelectedItem(event, value.id, index);
-                      }
-                    }}
-                    value={selectedItem}
-                    disabled={isEditDisabled}
-                    size="sm"
-                    slotProps={{
-                      listbox: {
-                        sx: {
-                          width: 300, // Increase the width
-                          fontSize: "13px",
-                        },
-                      },
-                    }}
-                  />
-                </td>
                 <td>
                   <Autocomplete
                     placeholder="Select Stock"
@@ -198,6 +175,30 @@ const CPOFormTable = ({
                     }}
                   />
                 </td>
+                <td style={{ zIndex: 1 }}>
+                  <Autocomplete
+                    placeholder="Select Stock"
+                    options={items}
+                    getOptionLabel={(item) => item.name ?? ""}
+                    onChange={(event, value) => {
+                      if (value !== null) {
+                        fetchSelectedItem(event, value.id, index);
+                      }
+                    }}
+                    value={selectedItem}
+                    disabled={isEditDisabled}
+                    size="sm"
+                    slotProps={{
+                      listbox: {
+                        sx: {
+                          width: 300, // Increase the width
+                          fontSize: "13px",
+                        },
+                      },
+                    }}
+                  />
+                </td>
+
                 <td style={{ zIndex: 2 }}>
                   {selectedItem?.id !== null && (
                     <Input
