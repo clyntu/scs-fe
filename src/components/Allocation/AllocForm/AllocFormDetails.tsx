@@ -12,7 +12,6 @@ import {
 } from "@mui/joy";
 import type { AllocFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
-import { ReceivingReport } from "../../../interface";
 
 const AllocFormDetails = ({
   openEdit,
@@ -29,6 +28,11 @@ const AllocFormDetails = ({
   setSelectedCustomer,
   getCPOsByCustomer,
   setCPOItems,
+  cpoNumbers,
+  selectedCPO,
+  setSelectedCPO,
+  isFilterVisible,
+  setIsFilterVisible,
 }: AllocFormDetailsProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -55,7 +59,12 @@ const AllocFormDetails = ({
                   value={selectedCustomer}
                   onChange={(event, newValue) => {
                     setSelectedCustomer(newValue);
-                    if (newValue) {
+                    setSelectedCPO(null);
+
+                    if (!isFilterVisible) {
+                      setIsFilterVisible(true);
+                    }
+                    if (newValue !== undefined && newValue !== null) {
                       getCPOsByCustomer(newValue?.customer_id);
                     } else {
                       setCPOItems([]);
@@ -104,6 +113,28 @@ const AllocFormDetails = ({
               />
             </FormControl>
           </Stack>
+          {isFilterVisible && (
+            <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
+              <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+                <FormLabel>CPO No. Filter</FormLabel>
+                <div className="flex">
+                  <Autocomplete
+                    options={cpoNumbers}
+                    getOptionLabel={(option) => String(option)}
+                    value={selectedCPO}
+                    onChange={(event, newValue) => {
+                      setSelectedCPO(newValue);
+                    }}
+                    size="sm"
+                    className="w-[100%]"
+                    placeholder="Select CPO"
+                    disabled={isEditDisabled}
+                    required
+                  />
+                </div>
+              </FormControl>
+            </Stack>
+          )}
         </div>
       </Card>
       <Card className="w-[40%]">

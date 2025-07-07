@@ -56,6 +56,9 @@ const AllocForm = ({
 
   const [CPOItems, setCPOItems] = useState<CPOItemFE[]>([]);
 
+  const [cpoNumbers, setCPONumbers] = useState<Number[]>([]);
+  const [selectedCPO, setSelectedCPO] = useState(null);
+
   // Add state for warehouse stock availability
   const [warehouseStockAvailability, setWarehouseStockAvailability] = useState<
     Record<string, WarehouseStockInfo[]>
@@ -65,6 +68,7 @@ const AllocForm = ({
   const [isFetching, setIsFetching] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(true);
 
   // Add ref to track if we need to refresh stock availability
   const lastStockFetchTime = useRef<number>(0);
@@ -206,6 +210,7 @@ const AllocForm = ({
           .then((response) => {
             fetchValues(selectedRow);
             setSelectedCustomer(response.data);
+            setIsFilterVisible(false);
             setIsFetching(false);
           })
           .catch((error) => {
@@ -236,7 +241,10 @@ const AllocForm = ({
     }
   };
 
-  const getCPOsByCustomer = (customer_id: number | undefined) => {
+  const getCPOsByCustomer = (
+    customer_id: number | undefined,
+    overwrite = true,
+  ) => {
     setIsLoadingItems(true);
     if (customer_id) {
       const params = {
@@ -249,6 +257,10 @@ const AllocForm = ({
           `/api/customer_purchase_orders/?${convertToQueryParams(params)}`,
         )
         .then(async (response) => {
+          // Get all unique CPO numbers
+          setCPONumbers([...new Set(response.data.items.map((CPO) => CPO.id))]);
+
+          // Get all CPO items
           const CPOItems = response.data.items
             .map((CPO) => {
               return CPO.items.map((CPOItem) => {
@@ -408,7 +420,12 @@ const AllocForm = ({
             selectedCustomer={selectedCustomer}
             setSelectedCustomer={setSelectedCustomer}
             getCPOsByCustomer={getCPOsByCustomer}
+            cpoNumbers={cpoNumbers}
             setCPOItems={setCPOItems}
+            selectedCPO={selectedCPO}
+            setSelectedCPO={setSelectedCPO}
+            isFilterVisible={isFilterVisible}
+            setIsFilterVisible={setIsFilterVisible}
           />
           <AllocFormTable
             selectedRow={selectedRow}
@@ -418,6 +435,7 @@ const AllocForm = ({
             setCPOItems={setCPOItems}
             openCreate={openCreate}
             isLoadingItems={isLoadingItems}
+            selectedCPO={selectedCPO}
             warehouseStockAvailability={warehouseStockAvailability}
           />
           <div className="flex justify-end mt-4">

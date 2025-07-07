@@ -10,6 +10,7 @@ const AllocFormTable = ({
   setCPOItems,
   openCreate,
   isLoadingItems,
+  selectedCPO,
   warehouseStockAvailability,
 }: AllocFormTableProps): JSX.Element => {
   const isEditDisabled =
@@ -99,7 +100,9 @@ const AllocFormTable = ({
               </tr>
             </thead>
             <tbody>
-              {CPOItems.map((item) => {
+              {CPOItems.filter(
+                (item) => selectedCPO === null || item.id === selectedCPO,
+              ).map((item) => {
                 return (
                   ((openCreate && item.volume !== item.alloc_qty) ||
                     !openCreate) && (

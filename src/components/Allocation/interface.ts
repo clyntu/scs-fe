@@ -36,6 +36,11 @@ export interface AllocFormDetailsProps {
   setSelectedCustomer: Dispatch<SetStateAction<Customer | null>>;
   getCPOsByCustomer: (customer_id: number | undefined) => void;
   setCPOItems: Dispatch<SetStateAction<CPOItemFE[]>>;
+  cpoNumbers: number[];
+  selectedCPO: number | null;
+  setSelectedCPO: Dispatch<SetStateAction<number | null>>;
+  isFilterVisible: boolean;
+  setIsFilterVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface CPOItemFE {
