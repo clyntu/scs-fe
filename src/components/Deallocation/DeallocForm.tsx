@@ -175,6 +175,7 @@ const DeallocForm = ({
       const params = {
         customer_id,
         sort_order: "desc",
+        unplanned: true,
       };
 
       axiosInstance
