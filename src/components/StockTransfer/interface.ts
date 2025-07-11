@@ -72,3 +72,19 @@ export interface STFormPayload {
   stock_code: string;
   destinations: Destinations[];
 }
+
+export interface RRAvailableStockItem {
+  item_id: number;
+  stock_code: string;
+  product_name: string;
+  rr_on_stock: number;
+  total_transferred: number;
+  available_stock: number;
+  warehouse_id: number;
+}
+
+export interface RRAvailableStockResponse {
+  rr_id: number;
+  warehouse_id: number;
+  items: RRAvailableStockItem[];
+}
