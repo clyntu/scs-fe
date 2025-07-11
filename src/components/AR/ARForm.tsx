@@ -408,6 +408,8 @@ const ARForm = ({
             cdrNumbers={cdrNumbers}
             isFilterVisible={isFilterVisible}
             setIsFilterVisible={setIsFilterVisible}
+            outstandingTrans={outstandingTrans}
+            setOutstandingTrans={setOutstandingTrans}
           />
           <ARFormTable
             outstandingTrans={outstandingTrans}

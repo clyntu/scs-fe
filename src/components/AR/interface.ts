@@ -48,6 +48,8 @@ export interface ARFormDetailsProps {
   cdrNumbers: string[];
   isFilterVisible: boolean;
   setIsFilterVisible: Dispatch<SetStateAction<boolean>>;
+  outstandingTrans: OutstandingTrans[];
+  setOutstandingTrans: Dispatch<SetStateAction<OutstandingTrans[]>>;
 }
 
 export interface ARFormTableProps {

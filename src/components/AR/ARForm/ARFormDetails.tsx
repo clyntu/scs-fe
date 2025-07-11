@@ -15,6 +15,7 @@ import type { ARFormDetailsProps } from "../interface";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
+  addTwoPlaces,
 } from "../../../helper";
 
 const ARFormDetails = ({
@@ -57,7 +58,37 @@ const ARFormDetails = ({
   cdrNumbers,
   isFilterVisible,
   setIsFilterVisible,
+  outstandingTrans,
+  setOutstandingTrans,
 }: ARFormDetailsProps): JSX.Element => {
+  const handleDRFilter = (event: React.ChangeEvent, newValue: string): void => {
+    setSelectedCDR(newValue);
+
+    if (newValue !== null) {
+      setOutstandingTrans(
+        outstandingTrans.map((t) => {
+          if ([t.transaction_number, t.reference].includes(String(newValue))) {
+            return {
+              ...t,
+              payment: addTwoPlaces(Number(t.transaction_amount)),
+            };
+          }
+
+          return t;
+        }),
+      );
+    } else {
+      setOutstandingTrans(
+        outstandingTrans.map((t) => {
+          return {
+            ...t,
+            payment: "",
+          };
+        }),
+      );
+    }
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       <Card className="w-[60%] mr-7">
@@ -210,9 +241,7 @@ const ARFormDetails = ({
                     options={cdrNumbers}
                     getOptionLabel={(option) => option}
                     value={selectedCDR}
-                    onChange={(event, newValue) => {
-                      setSelectedCDR(newValue);
-                    }}
+                    onChange={handleDRFilter}
                     size="sm"
                     className="w-[100%]"
                     placeholder="Select DR"
