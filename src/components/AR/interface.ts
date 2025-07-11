@@ -46,8 +46,6 @@ export interface ARFormDetailsProps {
   selectedCDR: string | null;
   setSelectedCDR: Dispatch<SetStateAction<string | null>>;
   cdrNumbers: string[];
-  isFilterVisible: boolean;
-  setIsFilterVisible: Dispatch<SetStateAction<boolean>>;
   outstandingTrans: OutstandingTrans[];
   setOutstandingTrans: Dispatch<SetStateAction<OutstandingTrans[]>>;
 }

@@ -39,8 +39,6 @@ export interface AllocFormDetailsProps {
   cpoNumbers: number[];
   selectedCPO: number | null;
   setSelectedCPO: Dispatch<SetStateAction<number | null>>;
-  isFilterVisible: boolean;
-  setIsFilterVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface CPOItemFE {

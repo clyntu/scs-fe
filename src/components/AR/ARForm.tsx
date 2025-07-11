@@ -61,7 +61,6 @@ const ARForm = ({
 
   const [selectedCDR, setSelectedCDR] = useState<string | null>(null);
   const [cdrNumbers, setCDRNumbers] = useState<string[]>([]);
-  const [isFilterVisible, setIsFilterVisible] = useState(true);
 
   const totalApplied = outstandingTrans.reduce(
     (total, trans) => total + Number(trans.payment),
@@ -146,7 +145,6 @@ const ARForm = ({
 
       Promise.all(promises).finally(() => {
         fetchValues(selectedRow);
-        setIsFilterVisible(false);
         setIsFetching(false);
       });
     } else {
@@ -407,8 +405,6 @@ const ARForm = ({
             selectedCDR={selectedCDR}
             setSelectedCDR={setSelectedCDR}
             cdrNumbers={cdrNumbers}
-            isFilterVisible={isFilterVisible}
-            setIsFilterVisible={setIsFilterVisible}
             outstandingTrans={outstandingTrans}
             setOutstandingTrans={setOutstandingTrans}
           />

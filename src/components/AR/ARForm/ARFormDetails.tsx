@@ -56,12 +56,10 @@ const ARFormDetails = ({
   selectedCDR,
   setSelectedCDR,
   cdrNumbers,
-  isFilterVisible,
-  setIsFilterVisible,
   outstandingTrans,
   setOutstandingTrans,
 }: ARFormDetailsProps): JSX.Element => {
-  const handleDRFilter = (event: React.ChangeEvent, newValue: string): void => {
+  const handleDRFilter = (_, newValue: string | null): void => {
     setSelectedCDR(newValue);
 
     if (newValue !== null) {
@@ -117,10 +115,6 @@ const ARFormDetails = ({
                   onChange={(event, newValue) => {
                     setSelectedCustomer(newValue);
                     setSelectedCDR(null);
-
-                    if (!isFilterVisible) {
-                      setIsFilterVisible(true);
-                    }
 
                     if (newValue !== undefined && newValue !== null)
                       fetchARByCustomer(newValue?.customer_id);
@@ -233,24 +227,22 @@ const ARFormDetails = ({
               />
             </FormControl>
 
-            {isFilterVisible && (
-              <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-                <FormLabel>DR No. Filter</FormLabel>
-                <div className="flex">
-                  <Autocomplete
-                    options={cdrNumbers}
-                    getOptionLabel={(option) => option}
-                    value={selectedCDR}
-                    onChange={handleDRFilter}
-                    size="sm"
-                    className="w-[100%]"
-                    placeholder="Select DR"
-                    disabled={isEditDisabled}
-                    required
-                  />
-                </div>
-              </FormControl>
-            )}
+            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+              <FormLabel>DR No. Filter</FormLabel>
+              <div className="flex">
+                <Autocomplete
+                  options={cdrNumbers}
+                  getOptionLabel={(option) => option}
+                  value={selectedCDR}
+                  onChange={handleDRFilter}
+                  size="sm"
+                  className="w-[100%]"
+                  placeholder="Select DR"
+                  disabled={isEditDisabled}
+                  required
+                />
+              </div>
+            </FormControl>
           </Stack>
         </div>
       </Card>

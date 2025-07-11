@@ -68,7 +68,6 @@ const AllocForm = ({
   const [isFetching, setIsFetching] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [hasSaved, setHasSaved] = useState(false);
-  const [isFilterVisible, setIsFilterVisible] = useState(true);
 
   // Add ref to track if we need to refresh stock availability
   const lastStockFetchTime = useRef<number>(0);
@@ -210,7 +209,6 @@ const AllocForm = ({
           .then((response) => {
             fetchValues(selectedRow);
             setSelectedCustomer(response.data);
-            setIsFilterVisible(false);
             setIsFetching(false);
           })
           .catch((error) => {
@@ -424,8 +422,6 @@ const AllocForm = ({
             setCPOItems={setCPOItems}
             selectedCPO={selectedCPO}
             setSelectedCPO={setSelectedCPO}
-            isFilterVisible={isFilterVisible}
-            setIsFilterVisible={setIsFilterVisible}
           />
           <AllocFormTable
             selectedRow={selectedRow}
