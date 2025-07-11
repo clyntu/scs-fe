@@ -96,7 +96,9 @@ const StockTransferForm = ({
 
     // Fetch RR
     axiosInstance
-      .get<PaginatedRR>("/api/receiving-reports/?status=posted")
+      .get<PaginatedRR>(
+        "/api/receiving-reports/?status=posted&&with_available_stock=True",
+      )
       .then((response) => {
         setReceivingReports(response.data);
       })
@@ -180,20 +182,41 @@ const StockTransferForm = ({
     return receivingReports;
   }, [selectedSupplier, receivingReports]);
 
-  const adjustOnStock = (warehouseItemFE: WarehouseItemsFE) => {
-    const params = {
-      warehouse_id: warehouseItemFE.warehouse_id,
-      item_id: warehouseItemFE.item_id,
-    };
-    axiosInstance
-      .get<FetchedWarehouseItems>(
-        `/api/warehouse_items?${convertToQueryParams(params)}`,
-      )
-      .then((response): void => {
-        const item = response.data.items[0];
-        warehouseItemFE.on_stock = item?.on_stock ?? 0;
-      })
-      .catch((error) => console.error("Error:", error));
+  const adjustOnStock = (warehouseItemFE: WarehouseItemsFE, isRRTransfer: boolean = false, rrId?: number) => {
+    if (isRRTransfer && rrId) {
+      // For RR transfers, use the RR-specific available stock endpoint
+      const params = new URLSearchParams({
+        warehouse_id: warehouseItemFE.warehouse_id.toString(),
+      });
+
+      axiosInstance
+        .get<RRAvailableStockResponse>(
+          `/api/stock-transfers/rr-available-stock/${rrId}?${params}`,
+        )
+        .then((response): void => {
+          const rrStockData = response.data;
+          const item = rrStockData.items.find(
+            (stockItem) => stockItem.item_id === warehouseItemFE.item_id
+          );
+          warehouseItemFE.on_stock = item?.available_stock ?? 0;
+        })
+        .catch((error) => console.error("Error:", error));
+    } else {
+      // For regular transfers, use the general warehouse items endpoint
+      const params = {
+        warehouse_id: warehouseItemFE.warehouse_id,
+        item_id: warehouseItemFE.item_id,
+      };
+      axiosInstance
+        .get<FetchedWarehouseItems>(
+          `/api/warehouse_items?${convertToQueryParams(params)}`,
+        )
+        .then((response): void => {
+          const item = response.data.items[0];
+          warehouseItemFE.on_stock = item?.on_stock ?? 0;
+        })
+        .catch((error) => console.error("Error:", error));
+    }
   };
 
   const fetchWarehouseItems = (
@@ -306,7 +329,11 @@ const StockTransferForm = ({
           warehouse_3_qty: undefined,
         };
 
-        if (!isEditDisabled) adjustOnStock(result);
+        if (!isEditDisabled) {
+          const isRRTransfer = selectedRow.rr_transfer;
+          const rrId = selectedRow.rr_id;
+          adjustOnStock(result, isRRTransfer, rrId);
+        }
 
         const destinations = item.destinations;
 
