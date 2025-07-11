@@ -303,6 +303,7 @@ const ARForm = ({
         }
       }
 
+      toast.success("Save successful!");
       setIsSaving(false);
       setHasSaved(true);
     } catch (error: any) {
