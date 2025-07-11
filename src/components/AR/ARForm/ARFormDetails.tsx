@@ -52,6 +52,11 @@ const ARFormDetails = ({
   refNo,
   setRefNo,
   paymentStatus,
+  selectedCDR,
+  setSelectedCDR,
+  cdrNumbers,
+  isFilterVisible,
+  setIsFilterVisible,
 }: ARFormDetailsProps): JSX.Element => {
   return (
     <Box sx={{ display: "flex" }}>
@@ -80,6 +85,12 @@ const ARFormDetails = ({
                   value={selectedCustomer}
                   onChange={(event, newValue) => {
                     setSelectedCustomer(newValue);
+                    setSelectedCDR(null);
+
+                    if (!isFilterVisible) {
+                      setIsFilterVisible(true);
+                    }
+
                     if (newValue !== undefined && newValue !== null)
                       fetchARByCustomer(newValue?.customer_id);
                   }}
@@ -190,6 +201,27 @@ const ARFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
+
+            {isFilterVisible && (
+              <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+                <FormLabel>DR No. Filter</FormLabel>
+                <div className="flex">
+                  <Autocomplete
+                    options={cdrNumbers}
+                    getOptionLabel={(option) => option}
+                    value={selectedCDR}
+                    onChange={(event, newValue) => {
+                      setSelectedCDR(newValue);
+                    }}
+                    size="sm"
+                    className="w-[100%]"
+                    placeholder="Select DR"
+                    disabled={isEditDisabled}
+                    required
+                  />
+                </div>
+              </FormControl>
+            )}
           </Stack>
         </div>
       </Card>

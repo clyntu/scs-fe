@@ -68,7 +68,7 @@ const CPOForm = ({
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>("/api/customers/?sort_by=name")
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
 

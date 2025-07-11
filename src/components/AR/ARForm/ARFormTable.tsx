@@ -11,6 +11,7 @@ const ARFormTable = ({
   selectedRow,
   isEditDisabled,
   isLoadingItems,
+  selectedCDR,
 }: ARFormTableProps): JSX.Element => {
   return (
     <>
@@ -83,70 +84,81 @@ const ARFormTable = ({
               </tr>
             </thead>
             <tbody>
-              {outstandingTrans.map((trans) => {
-                return (
-                  <tr key={trans.id}>
-                    <td>
-                      {trans.source_type === "customer_dr"
-                        ? "Customer DR"
-                        : "Sales Return"}
-                    </td>
-                    <td>{trans.transaction_number}</td>
-                    <td>{trans.transaction_date}</td>
-                    <td style={{ textAlign: "right" }}>
-                      {addCommaToNumberWithTwoPlaces(
-                        Number(trans.original_amount),
-                      )}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      {addCommaToNumberWithTwoPlaces(
-                        Number(trans.transaction_amount),
-                      )}
-                    </td>
-                    <td>
-                      <Input
-                        type="number"
-                        sx={{ input: { textAlign: "right" } }}
-                        name="payment"
-                        size="sm"
-                        placeholder="0"
-                        value={trans?.payment}
-                        slotProps={{
-                          input: {
-                            min:
-                              Number(trans.transaction_amount) > 0
-                                ? 0
-                                : trans.transaction_amount,
-                            max:
-                              Number(trans.transaction_amount) > 0
-                                ? trans.transaction_amount
-                                : 0,
-                            step: 0.01,
-                          },
-                        }}
-                        onChange={(e) =>
-                          setOutstandingTrans(
-                            outstandingTrans.map((trans2) =>
-                              trans.id === trans2.id &&
-                              trans.source_type === trans2.source_type
-                                ? { ...trans2, payment: String(e.target.value) }
-                                : trans2,
-                            ),
-                          )
-                        }
-                        disabled={isEditDisabled}
-                      />
-                    </td>
-                    <td>
-                      {addCommaToNumberWithTwoPlaces(
-                        Number(trans.transaction_amount) -
-                          Number(trans.payment),
-                      )}
-                    </td>
-                    <td>{trans.reference}</td>
-                  </tr>
-                );
-              })}
+              {outstandingTrans
+                .filter(
+                  (trans) =>
+                    selectedCDR === null ||
+                    [trans.transaction_number, trans.reference].includes(
+                      String(selectedCDR),
+                    ),
+                )
+                .map((trans) => {
+                  return (
+                    <tr key={trans.id}>
+                      <td>
+                        {trans.source_type === "customer_dr"
+                          ? "Customer DR"
+                          : "Sales Return"}
+                      </td>
+                      <td>{trans.transaction_number}</td>
+                      <td>{trans.transaction_date}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          Number(trans.original_amount),
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          Number(trans.transaction_amount),
+                        )}
+                      </td>
+                      <td>
+                        <Input
+                          type="number"
+                          sx={{ input: { textAlign: "right" } }}
+                          name="payment"
+                          size="sm"
+                          placeholder="0"
+                          value={trans?.payment}
+                          slotProps={{
+                            input: {
+                              min:
+                                Number(trans.transaction_amount) > 0
+                                  ? 0
+                                  : trans.transaction_amount,
+                              max:
+                                Number(trans.transaction_amount) > 0
+                                  ? trans.transaction_amount
+                                  : 0,
+                              step: 0.01,
+                            },
+                          }}
+                          onChange={(e) =>
+                            setOutstandingTrans(
+                              outstandingTrans.map((trans2) =>
+                                trans.id === trans2.id &&
+                                trans.source_type === trans2.source_type
+                                  ? {
+                                      ...trans2,
+                                      payment: String(e.target.value),
+                                    }
+                                  : trans2,
+                              ),
+                            )
+                          }
+                          disabled={isEditDisabled}
+                        />
+                      </td>
+                      <td>
+                        {addCommaToNumberWithTwoPlaces(
+                          Number(trans.transaction_amount) -
+                            Number(trans.payment),
+                        )}
+                      </td>
+                      <td>{trans.reference}</td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </Table>
         </Sheet>

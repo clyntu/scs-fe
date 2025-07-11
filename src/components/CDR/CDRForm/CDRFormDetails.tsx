@@ -109,6 +109,7 @@ const CDRFormDetails = ({
     setSelectedDP(newValue);
 
     if (newValue !== null) {
+      setReferenceNumber(String(newValue.reference_number));
       setAmountDiscount(Number(newValue?.discount_amount ?? 0));
       const formattedAllocs = newValue.delivery_plan_items.map((DPItem) => {
         const allocItem = DPItem.allocation_item;
@@ -156,6 +157,8 @@ const CDRFormDetails = ({
       });
 
       setFormattedAllocs(formattedAllocsWithNet);
+    } else {
+      setReferenceNumber("");
     }
   };
 
@@ -244,11 +247,10 @@ const CDRFormDetails = ({
               <FormLabel>Ref No.</FormLabel>
               <Input
                 size="sm"
-                placeholder="Search"
-                onChange={(e) => setReferenceNumber(e.target.value)}
+                placeholder="Ref No."
+                // onChange={(e) => setReferenceNumber(e.target.value)}
                 value={referenceNumber}
-                disabled={isEditDisabled}
-                required
+                disabled
               />
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
@@ -259,7 +261,6 @@ const CDRFormDetails = ({
                 onChange={(e) => setRemarks(e.target.value)}
                 value={remarks}
                 disabled={isEditDisabled}
-                required
               />
             </FormControl>
           </Stack>

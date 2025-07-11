@@ -59,6 +59,10 @@ const ARForm = ({
   const [hasSaved, setHasSaved] = useState(false);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
 
+  const [selectedCDR, setSelectedCDR] = useState<string | null>(null);
+  const [cdrNumbers, setCDRNumbers] = useState<string[]>([]);
+  const [isFilterVisible, setIsFilterVisible] = useState(true);
+
   const totalApplied = outstandingTrans.reduce(
     (total, trans) => total + Number(trans.payment),
     0,
@@ -72,7 +76,9 @@ const ARForm = ({
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/?with_pending_receivables=True")
+      .get<PaginatedCustomers>(
+        "/api/customers/?with_pending_receivables=True&sort_by=name",
+      )
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
   }, []);
@@ -140,6 +146,7 @@ const ARForm = ({
 
       Promise.all(promises).finally(() => {
         fetchValues(selectedRow);
+        setIsFilterVisible(false);
         setIsFetching(false);
       });
     } else {
@@ -160,6 +167,16 @@ const ARForm = ({
             return { ...trans, payment: "" };
           }),
         );
+
+        // Combination of transaction numbers and reference(for CR)
+        setCDRNumbers([
+          ...new Set(
+            response.data
+              .flatMap((trans) => [trans.transaction_number, trans.reference])
+              // DR numbers only
+              .filter((transNo) => transNo.startsWith("DR")),
+          ),
+        ]);
         setIsLoadingItems(false);
       })
       .catch((error) => {
@@ -386,6 +403,11 @@ const ARForm = ({
             refNo={refNo}
             setRefNo={setRefNo}
             paymentStatus={paymentStatus}
+            selectedCDR={selectedCDR}
+            setSelectedCDR={setSelectedCDR}
+            cdrNumbers={cdrNumbers}
+            isFilterVisible={isFilterVisible}
+            setIsFilterVisible={setIsFilterVisible}
           />
           <ARFormTable
             outstandingTrans={outstandingTrans}
@@ -394,6 +416,7 @@ const ARForm = ({
             openEdit={openEdit}
             isLoadingItems={isLoadingItems}
             isEditDisabled={isEditDisabled}
+            selectedCDR={selectedCDR}
           />
           <div className="flex justify-end mt-4">
             <Button

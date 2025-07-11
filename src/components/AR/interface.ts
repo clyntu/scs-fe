@@ -43,6 +43,11 @@ export interface ARFormDetailsProps {
   refNo: string;
   setRefNo: Dispatch<SetStateAction<string>>;
   paymentStatus: string;
+  selectedCDR: string | null;
+  setSelectedCDR: Dispatch<SetStateAction<string | null>>;
+  cdrNumbers: string[];
+  isFilterVisible: boolean;
+  setIsFilterVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface ARFormTableProps {
@@ -52,6 +57,7 @@ export interface ARFormTableProps {
   openEdit: boolean;
   isEditDisabled: boolean;
   isLoadingItems: boolean;
+  selectedCDR: string | null;
 }
 
 export interface DRItemsFE {

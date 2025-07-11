@@ -73,7 +73,9 @@ const CDRForm = ({
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/?with_active_delivery_plan=True")
+      .get<PaginatedCustomers>(
+        "/api/customers/?with_active_delivery_plan=True&sort_by=name",
+      )
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
   }, []);

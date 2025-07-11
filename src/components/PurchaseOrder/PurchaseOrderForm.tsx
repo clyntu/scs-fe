@@ -81,7 +81,7 @@ const PurchaseOrderForm = ({
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/")
+      .get<PaginatedSuppliers>("/api/suppliers/?sort_by=name")
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 

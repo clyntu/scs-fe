@@ -71,7 +71,7 @@ const CRForm = ({
     // Fetch customers
     axiosInstance
       .get<PaginatedCustomers>(
-        "/api/customers/?with_active_delivery_receipt=True",
+        "/api/customers/?with_active_delivery_receipt=True&sort_by=name",
       )
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
