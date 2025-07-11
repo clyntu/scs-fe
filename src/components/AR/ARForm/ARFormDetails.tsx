@@ -61,8 +61,21 @@ const ARFormDetails = ({
 }: ARFormDetailsProps): JSX.Element => {
   const handleDRFilter = (_, newValue: string | null): void => {
     setSelectedCDR(newValue);
-
+    // Make sure complete payment
     if (newValue !== null) {
+      // SIDE LOGIC: For edit, if its empty, need to fetch all AR again (cause only posted items are displayed)
+      if (
+        selectedCustomer !== null &&
+        outstandingTrans.filter((trans) =>
+          [trans.transaction_number, trans.reference].includes(
+            String(newValue),
+          ),
+        ).length === 0
+      ) {
+        fetchARByCustomer(selectedCustomer?.customer_id, false, true);
+      }
+
+      // Normal case: when DR choice is changed, select only relevant DRs
       setOutstandingTrans(
         outstandingTrans.map((t) => {
           if ([t.transaction_number, t.reference].includes(String(newValue))) {
@@ -239,7 +252,6 @@ const ARFormDetails = ({
                   className="w-[100%]"
                   placeholder="Select DR"
                   disabled={isEditDisabled}
-                  required
                 />
               </div>
             </FormControl>

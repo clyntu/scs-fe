@@ -16,6 +16,7 @@ import type {
 } from "../../interface";
 import ReverseARModal from "./ReverseARModal";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { addTwoPlaces } from "../../helper";
 
 const ARForm = ({
   setOpen,
@@ -84,7 +85,7 @@ const ARForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    const customerID = selectedRow?.customer.customer_id;
+    const customerID = selectedRow?.customer.customer_id ?? null;
 
     const fetchValues = (selectedRow: AR) => {
       setStatus(selectedRow?.status ?? "unposted");
@@ -100,6 +101,8 @@ const ARForm = ({
       setAddAmount1(String(parseFloat(selectedRow.add_amount)));
       setRemarks(selectedRow?.remarks ?? "");
       setPaymentStatus(selectedRow.payment_status);
+
+      fetchARByCustomer(customerID, true);
     };
 
     if (selectedRow !== null && selectedRow !== undefined) {
@@ -152,7 +155,11 @@ const ARForm = ({
     }
   }, [selectedRow]);
 
-  const fetchARByCustomer = (customerId: number | null) => {
+  const fetchARByCustomer = (
+    customerId: number | null,
+    noSet = false,
+    completePayment = false,
+  ) => {
     setIsLoadingItems(true);
     // Fetch ARs
     axiosInstance
@@ -160,11 +167,19 @@ const ARForm = ({
         `/api/ar-receipts/customer/${customerId}/outstanding-transactions`,
       )
       .then((response) => {
-        setOutstandingTrans(
-          response.data.map((trans) => {
-            return { ...trans, payment: "" };
-          }),
-        );
+        if (!noSet) {
+          setOutstandingTrans(
+            response.data.map((trans) => {
+              if (completePayment) {
+                return {
+                  ...trans,
+                  payment: addTwoPlaces(Number(trans.transaction_amount)),
+                };
+              }
+              return { ...trans, payment: "" };
+            }),
+          );
+        }
 
         // Combination of transaction numbers and reference(for CR)
         setCDRNumbers([

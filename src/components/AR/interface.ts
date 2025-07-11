@@ -13,7 +13,11 @@ export interface ARFormDetailsProps {
 
   // Fields
   selectedCustomer: Customer | null;
-  fetchARByCustomer: (customerId: number | null) => void;
+  fetchARByCustomer: (
+    customerId: number | null,
+    isSet?: boolean,
+    completePayment?: boolean,
+  ) => void;
   setSelectedCustomer: Dispatch<SetStateAction<Customer | null>>;
   status: string;
   setStatus: Dispatch<SetStateAction<string>>;

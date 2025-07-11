@@ -34,7 +34,8 @@ export interface AllocFormDetailsProps {
   customers: PaginatedCustomers;
   selectedCustomer: Customer | null;
   setSelectedCustomer: Dispatch<SetStateAction<Customer | null>>;
-  getCPOsByCustomer: (customer_id: number | undefined) => void;
+  getCPOsByCustomer: (customer_id: number | undefined, noSet?: boolean) => void;
+  CPOItems: CPOItemFE[];
   setCPOItems: Dispatch<SetStateAction<CPOItemFE[]>>;
   cpoNumbers: number[];
   selectedCPO: number | null;

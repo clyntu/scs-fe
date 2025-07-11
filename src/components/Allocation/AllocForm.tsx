@@ -101,7 +101,9 @@ const AllocForm = ({
 
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/?with_active_cpo=True&sort_by=name")
+      .get<PaginatedCustomers>(
+        "/api/customers/?with_active_cpo=True&sort_by=name",
+      )
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
 
@@ -209,6 +211,7 @@ const AllocForm = ({
           .then((response) => {
             fetchValues(selectedRow);
             setSelectedCustomer(response.data);
+            getCPOsByCustomer(response.data.customer_id, true);
             setIsFetching(false);
           })
           .catch((error) => {
@@ -241,7 +244,7 @@ const AllocForm = ({
 
   const getCPOsByCustomer = (
     customer_id: number | undefined,
-    overwrite = true,
+    noSet = false,
   ) => {
     setIsLoadingItems(true);
     if (customer_id) {
@@ -259,33 +262,35 @@ const AllocForm = ({
           setCPONumbers([...new Set(response.data.items.map((CPO) => CPO.id))]);
 
           // Get all CPO items
-          const CPOItems = response.data.items
-            .map((CPO) => {
-              return CPO.items.map((CPOItem) => {
-                return {
-                  id: CPO.id,
-                  name: CPOItem.item.name,
-                  volume: CPOItem.volume,
-                  alloc_qty: CPOItem.volume - CPOItem.unserved_cpo,
-                  item_id: CPOItem.item_id,
+          if (!noSet) {
+            const CPOItems = response.data.items
+              .map((CPO) => {
+                return CPO.items.map((CPOItem) => {
+                  return {
+                    id: CPO.id,
+                    name: CPOItem.item.name,
+                    volume: CPOItem.volume,
+                    alloc_qty: CPOItem.volume - CPOItem.unserved_cpo,
+                    item_id: CPOItem.item_id,
 
-                  // allocations
-                  warehouse_1: null,
-                  warehouse_1_qty: undefined,
-                  warehouse_2: null,
-                  warehouse_2_qty: undefined,
-                  warehouse_3: null,
-                  warehouse_3_qty: undefined,
-                };
-              });
-            })
-            .flat();
+                    // allocations
+                    warehouse_1: null,
+                    warehouse_1_qty: undefined,
+                    warehouse_2: null,
+                    warehouse_2_qty: undefined,
+                    warehouse_3: null,
+                    warehouse_3_qty: undefined,
+                  };
+                });
+              })
+              .flat();
 
-          setCPOItems(CPOItems);
+            setCPOItems(CPOItems);
 
-          // Fetch warehouse stock availability for all items
-          const itemIds = CPOItems.map((item) => item.item_id);
-          await fetchWarehouseStockAvailability(itemIds);
+            // Fetch warehouse stock availability for all items
+            const itemIds = CPOItems.map((item) => item.item_id);
+            await fetchWarehouseStockAvailability(itemIds);
+          }
 
           setIsLoadingItems(false);
         })
@@ -419,6 +424,7 @@ const AllocForm = ({
             setSelectedCustomer={setSelectedCustomer}
             getCPOsByCustomer={getCPOsByCustomer}
             cpoNumbers={cpoNumbers}
+            CPOItems={CPOItems}
             setCPOItems={setCPOItems}
             selectedCPO={selectedCPO}
             setSelectedCPO={setSelectedCPO}

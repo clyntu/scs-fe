@@ -31,6 +31,7 @@ const AllocFormDetails = ({
   cpoNumbers,
   selectedCPO,
   setSelectedCPO,
+  CPOItems,
 }: AllocFormDetailsProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -118,6 +119,15 @@ const AllocFormDetails = ({
                   value={selectedCPO}
                   onChange={(event, newValue) => {
                     setSelectedCPO(newValue);
+
+                    // SIDE LOGIC: For edit, if its empty, need to fetch all CPO again (cause only posted items are displayed)
+                    if (
+                      selectedCustomer !== null &&
+                      CPOItems.filter((item) => item.id === newValue).length ===
+                        0
+                    ) {
+                      getCPOsByCustomer(selectedCustomer.customer_id, false);
+                    }
                   }}
                   size="sm"
                   className="w-[100%]"
