@@ -59,7 +59,10 @@ const ARFormDetails = ({
   outstandingTrans,
   setOutstandingTrans,
 }: ARFormDetailsProps): JSX.Element => {
-  const handleDRFilter = (_, newValue: string | null): void => {
+  const handleDRFilter = (
+    event: React.SyntheticEvent,
+    newValue: string | null,
+  ): void => {
     setSelectedCDR(newValue);
     // Make sure complete payment
     if (newValue !== null) {
@@ -85,7 +88,10 @@ const ARFormDetails = ({
             };
           }
 
-          return t;
+          return {
+            ...t,
+            payment: "",
+          };
         }),
       );
     } else {
