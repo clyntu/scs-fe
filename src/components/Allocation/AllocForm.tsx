@@ -312,7 +312,7 @@ const AllocForm = ({
       customer_id: selectedCustomer?.customer_id,
       remarks,
       transaction_date: transactionDate,
-      cpo_number_filter: selectedCPO,
+      cpo_number_filter: String(selectedCPO),
       allocation_items: CPOItems.map((cpoItem: CPOItemFE) => {
         // Construct warehouse_allocations array
         const warehouse_allocations = [];
