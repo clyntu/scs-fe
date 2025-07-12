@@ -21,7 +21,11 @@ import type {
   StockTransfer,
 } from "../../interface";
 import { convertToQueryParams } from "../../helper";
-import { STFormPayload, WarehouseItemsFE } from "./interface";
+import {
+  STFormPayload,
+  WarehouseItemsFE,
+  RRAvailableStockResponse,
+} from "./interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 
 const StockTransferForm = ({
@@ -92,7 +96,9 @@ const StockTransferForm = ({
 
     // Fetch RR
     axiosInstance
-      .get<PaginatedRR>("/api/receiving-reports/?status=posted")
+      .get<PaginatedRR>(
+        "/api/receiving-reports/?status=posted&&with_available_stock=True",
+      )
       .then((response) => {
         setReceivingReports(response.data);
       })
@@ -176,37 +182,41 @@ const StockTransferForm = ({
     return receivingReports;
   }, [selectedSupplier, receivingReports]);
 
-  const getItemsByRR = (rr: ReceivingReport) => {
-    const itemIds: any = [];
-
-    // get all item ids
-    rr?.sdrs.forEach((SDR) => {
-      SDR.purchase_orders.forEach((PO) => {
-        PO.items.forEach((POItem) => {
-          if (!itemIds.includes(POItem.item_id)) {
-            itemIds.push(POItem.item_id);
-          }
-        });
+  const adjustOnStock = (warehouseItemFE: WarehouseItemsFE, isRRTransfer: boolean = false, rrId?: number) => {
+    if (isRRTransfer && rrId) {
+      // For RR transfers, use the RR-specific available stock endpoint
+      const params = new URLSearchParams({
+        warehouse_id: warehouseItemFE.warehouse_id.toString(),
       });
-    });
 
-    return itemIds;
-  };
-
-  const adjustOnStock = (warehouseItemFE: WarehouseItemsFE) => {
-    const params = {
-      warehouse_id: warehouseItemFE.warehouse_id,
-      item_id: warehouseItemFE.item_id,
-    };
-    axiosInstance
-      .get<FetchedWarehouseItems>(
-        `/api/warehouse_items?${convertToQueryParams(params)}`,
-      )
-      .then((response): void => {
-        const item = response.data.items[0];
-        warehouseItemFE.on_stock = item?.on_stock ?? 0;
-      })
-      .catch((error) => console.error("Error:", error));
+      axiosInstance
+        .get<RRAvailableStockResponse>(
+          `/api/stock-transfers/rr-available-stock/${rrId}?${params}`,
+        )
+        .then((response): void => {
+          const rrStockData = response.data;
+          const item = rrStockData.items.find(
+            (stockItem) => stockItem.item_id === warehouseItemFE.item_id
+          );
+          warehouseItemFE.on_stock = item?.available_stock ?? 0;
+        })
+        .catch((error) => console.error("Error:", error));
+    } else {
+      // For regular transfers, use the general warehouse items endpoint
+      const params = {
+        warehouse_id: warehouseItemFE.warehouse_id,
+        item_id: warehouseItemFE.item_id,
+      };
+      axiosInstance
+        .get<FetchedWarehouseItems>(
+          `/api/warehouse_items?${convertToQueryParams(params)}`,
+        )
+        .then((response): void => {
+          const item = response.data.items[0];
+          warehouseItemFE.on_stock = item?.on_stock ?? 0;
+        })
+        .catch((error) => console.error("Error:", error));
+    }
   };
 
   const fetchWarehouseItems = (
@@ -214,52 +224,90 @@ const StockTransferForm = ({
     rr: ReceivingReport | null = null,
   ) => {
     setIsLoadingItems(true);
-    const params: {
-      warehouse_id: number;
-    } = {
-      warehouse_id,
-    };
-    axiosInstance
-      .get<FetchedWarehouseItems>(
-        `/api/warehouse_items?${convertToQueryParams(params)}`,
-      )
-      .then((response): void => {
-        const tempWarehouseItems = response.data.items;
-        let formattedItems = tempWarehouseItems.map((warehouseItem) => {
-          return {
-            id: `${warehouseItem.warehouse_id}-${warehouseItem.item_id}`,
-            warehouse_id: warehouseItem.warehouse_id,
-            item_id: warehouseItem.item_id,
-            name: warehouseItem.item.name,
-            stock_code: warehouseItem.item.stock_code,
-            total_quantity: 0,
-            on_stock: warehouseItem.on_stock,
-            warehouse_1: null,
-            warehouse_1_qty: undefined,
-            warehouse_2: null,
-            warehouse_2_qty: undefined,
-            warehouse_3: null,
-            warehouse_3_qty: undefined,
-          };
-        });
 
-        if (rr !== null && rr !== undefined) {
-          const item_ids = getItemsByRR(rr);
-          formattedItems = formattedItems.filter((formattedItem) =>
-            item_ids.includes(formattedItem.item_id),
+    // For RR Transfer = Yes, use the new RR-specific endpoint
+    if (rr !== null && rr !== undefined) {
+      const params = new URLSearchParams({
+        warehouse_id: warehouse_id.toString(),
+      });
+
+      axiosInstance
+        .get<RRAvailableStockResponse>(
+          `/api/stock-transfers/rr-available-stock/${rr.id}?${params}`,
+        )
+        .then((response): void => {
+          const rrStockData = response.data;
+          const formattedItems = rrStockData.items.map((item) => {
+            return {
+              id: `${item.warehouse_id}-${item.item_id}`,
+              warehouse_id: item.warehouse_id,
+              item_id: item.item_id,
+              name: item.product_name,
+              stock_code: item.stock_code,
+              total_quantity: 0,
+              on_stock: item.available_stock, // Use RR-specific available stock
+              warehouse_1: null,
+              warehouse_1_qty: undefined,
+              warehouse_2: null,
+              warehouse_2_qty: undefined,
+              warehouse_3: null,
+              warehouse_3_qty: undefined,
+            };
+          });
+
+          // Filter out items with 0 available stock
+          const availableItems = formattedItems.filter(
+            (item: WarehouseItemsFE) => item.on_stock > 0,
           );
-        } else {
+          setWarehouseItems(availableItems);
+          setIsLoadingItems(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching RR available stock:", error);
+          setIsLoadingItems(false);
+        });
+    } else {
+      // For RR Transfer = No, use the regular warehouse items endpoint
+      const params: {
+        warehouse_id: number;
+      } = {
+        warehouse_id,
+      };
+      axiosInstance
+        .get<FetchedWarehouseItems>(
+          `/api/warehouse_items?${convertToQueryParams(params)}`,
+        )
+        .then((response): void => {
+          const tempWarehouseItems = response.data.items;
+          let formattedItems = tempWarehouseItems.map((warehouseItem) => {
+            return {
+              id: `${warehouseItem.warehouse_id}-${warehouseItem.item_id}`,
+              warehouse_id: warehouseItem.warehouse_id,
+              item_id: warehouseItem.item_id,
+              name: warehouseItem.item.name,
+              stock_code: warehouseItem.item.stock_code,
+              total_quantity: 0,
+              on_stock: warehouseItem.on_stock,
+              warehouse_1: null,
+              warehouse_1_qty: undefined,
+              warehouse_2: null,
+              warehouse_2_qty: undefined,
+              warehouse_3: null,
+              warehouse_3_qty: undefined,
+            };
+          });
+
           // RR Transfer is 'No', filter out items with 0 stocks
           formattedItems = formattedItems.filter((item) => item.on_stock > 0);
-        }
 
-        setWarehouseItems(formattedItems);
-        setIsLoadingItems(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setIsLoadingItems(false);
-      });
+          setWarehouseItems(formattedItems);
+          setIsLoadingItems(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoadingItems(false);
+        });
+    }
   };
 
   const getWarehouseItemsOnView = () => {
@@ -281,7 +329,11 @@ const StockTransferForm = ({
           warehouse_3_qty: undefined,
         };
 
-        if (!isEditDisabled) adjustOnStock(result);
+        if (!isEditDisabled) {
+          const isRRTransfer = selectedRow.rr_transfer;
+          const rrId = selectedRow.rr_id;
+          adjustOnStock(result, isRRTransfer, rrId);
+        }
 
         const destinations = item.destinations;
 
