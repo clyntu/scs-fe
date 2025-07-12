@@ -120,6 +120,11 @@ const AllocForm = ({
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setRemarks(selectedRow?.remarks ?? "");
+      setSelectedCPO(
+        selectedRow?.cpo_number_filter
+          ? Number(selectedRow.cpo_number_filter)
+          : null,
+      );
 
       // Fill up tables
       const formattedItems = selectedRow.allocation_items.map(
@@ -307,6 +312,7 @@ const AllocForm = ({
       customer_id: selectedCustomer?.customer_id,
       remarks,
       transaction_date: transactionDate,
+      cpo_number_filter: selectedCPO,
       allocation_items: CPOItems.map((cpoItem: CPOItemFE) => {
         // Construct warehouse_allocations array
         const warehouse_allocations = [];

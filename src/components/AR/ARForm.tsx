@@ -101,6 +101,7 @@ const ARForm = ({
       setAddAmount1(String(parseFloat(selectedRow.add_amount)));
       setRemarks(selectedRow?.remarks ?? "");
       setPaymentStatus(selectedRow.payment_status);
+      setSelectedCDR(selectedRow?.cdr_number_filter);
 
       fetchARByCustomer(customerID, true);
     };
@@ -248,6 +249,7 @@ const ARForm = ({
         status === "posted" && paymentMode === "cash" ? "cleared" : "pending",
       payment_amount: paymentAmount,
       total_applied: totalApplied,
+      cdr_number_filter: selectedCDR,
     };
 
     try {
@@ -295,6 +297,7 @@ const ARForm = ({
       receipt_items: receiptItems,
       payment_amount: paymentAmount,
       total_applied: totalApplied,
+      cdr_number_filter: selectedCDR,
     };
 
     try {

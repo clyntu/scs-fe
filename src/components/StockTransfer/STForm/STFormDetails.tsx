@@ -115,6 +115,7 @@ const STFormDetails = ({
                 onChange={(_, newValue) => {
                   if (newValue !== null) {
                     setSelectedRR(newValue);
+                    console.log("Called");
                     fetchWarehouseItems(1, newValue);
                   }
                 }}

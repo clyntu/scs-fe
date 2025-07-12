@@ -823,6 +823,7 @@ export interface Alloc {
   };
   remarks: string;
   allocation_items: AllocItem[];
+  cpo_number_filter: string;
   creator: User;
   modifier: User;
   date_created: string;
@@ -1025,6 +1026,7 @@ export interface AR {
   modified_by: number;
   date_created: string;
   date_modified: string;
+  cdr_number_filter: string;
   customer: Customer;
   creator: User;
   modifier: User;
