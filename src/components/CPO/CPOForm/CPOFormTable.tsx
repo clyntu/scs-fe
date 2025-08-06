@@ -224,7 +224,7 @@ const CPOFormTable = ({
                       slotProps={{
                         input: {
                           min: 0,
-                          step: ".01",
+                          step: ".0001",
                         },
                       }}
                       value={selectedItem.price}

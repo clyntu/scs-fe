@@ -194,7 +194,7 @@ const POFormDetails = ({
                   slotProps={{
                     input: {
                       min: 0,
-                      step: ".01",
+                      step: ".0001",
                     },
                   }}
                   disabled={isEditDisabled}

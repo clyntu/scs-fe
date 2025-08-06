@@ -259,7 +259,7 @@ const POFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
-                        step: ".01",
+                        step: ".0001",
                       },
                     }}
                     onChange={(e) => addItemPrice(e.target.value, index)}
