@@ -22,7 +22,7 @@ import type {
 } from "../../interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { addCommaToNumberWithFourPlaces } from "../../helper";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -199,7 +199,7 @@ const CPOForm = ({
 
       const modifiedItem = {
         ...foundItem,
-        price: addCommaToNumberWithTwoPlaces(item.price),
+        price: addCommaToNumberWithFourPlaces(item.price),
         volume: item.volume,
         allocated: item.allocated,
       };
