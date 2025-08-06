@@ -117,8 +117,6 @@ const POFormDetails = ({
                   value={selectedSupplier}
                   onChange={(event, newValue) => {
                     setSelectedSupplier(newValue);
-                    // @ts-expect-error (Item object, unless its using the empty object)
-                    setSelectedItems(INITIAL_SELECTED_ITEMS);
                   }}
                   size="sm"
                   className="w-[100%]"
