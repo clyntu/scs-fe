@@ -81,8 +81,6 @@ const POFormDetails = ({
   useEffect(() => {
     const code = selectedSupplier?.currency;
     if (typeof code === "string" && code.trim() !== "") {
-      const placeholder: Currency = { id: -1, code };
-      setCurrencies([placeholder]);
       setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
     }
   }, [selectedSupplier]);
