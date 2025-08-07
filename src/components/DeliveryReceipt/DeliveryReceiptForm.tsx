@@ -23,6 +23,8 @@ const DeliveryReceiptForm = ({
   openEdit,
   selectedRow,
   title,
+  setSelectedRow,
+  viewFilters,
 }: SDRFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
@@ -61,7 +63,9 @@ const DeliveryReceiptForm = ({
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/?with_active_po=True&sort_by=name")
+      .get<PaginatedSuppliers>(
+        "/api/suppliers/?with_active_po=True&sort_by=name",
+      )
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 
@@ -257,6 +261,8 @@ const DeliveryReceiptForm = ({
             openEdit={openEdit}
             selectedRow={selectedRow}
             suppliers={suppliers}
+            setSelectedRow={setSelectedRow}
+            viewFilters={viewFilters}
             // Fields
             selectedSupplier={selectedSupplier}
             setSelectedSupplier={setSelectedSupplier}

@@ -12,10 +12,15 @@ import {
   Divider,
   Autocomplete,
 } from "@mui/joy";
+import RecordNavigation from "../../RecordNavigation";
 import type { RRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
-import type { PaginatedSDR, Currency } from "../../../interface";
+import type {
+  PaginatedSDR,
+  Currency,
+  ReceivingReport,
+} from "../../../interface";
 import SelectPOModal from "./SelectRRModal";
 import {
   formatToDateTime,
@@ -26,6 +31,8 @@ import {
 const RRFormDetails = ({
   openEdit,
   selectedRow,
+  setSelectedRow,
+  viewFilters,
   suppliers,
   selectedSDRs,
   setSelectedSDRs,
@@ -123,11 +130,31 @@ const RRFormDetails = ({
       <Card className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
-            {openEdit && (
+            {openEdit &&
+            selectedRow !== null &&
+            selectedRow !== undefined &&
+            typeof selectedRow.id === "number" &&
+            setSelectedRow !== null &&
+            setSelectedRow !== undefined ? (
+              <RecordNavigation<ReceivingReport>
+                currentRecord={selectedRow}
+                onRecordChange={setSelectedRow}
+                apiEndpoint="/api/receiving-reports"
+                recordIdField="id"
+                recordDisplayField="id"
+                recordDisplayPrefix="RR No."
+                sortBy="id"
+                sortOrder="desc"
+                viewFilters={viewFilters}
+              />
+            ) : openEdit &&
+              selectedRow !== null &&
+              selectedRow !== undefined &&
+              typeof selectedRow.id === "number" ? (
               <div>
-                <h4>RR No. {selectedRow?.id}</h4>
+                <h4>RR No. {selectedRow.id}</h4>
               </div>
-            )}
+            ) : null}
           </div>
           {openEdit && <Divider />}
 

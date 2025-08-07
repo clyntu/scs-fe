@@ -12,6 +12,8 @@ import type { Dispatch, SetStateAction } from "react";
 export interface STFormDetailsProps {
   openEdit: boolean;
   selectedRow: StockTransfer | undefined;
+  setSelectedRow?: (record: StockTransfer) => void;
+  viewFilters?: Record<string, any>;
   status: string;
   setStatus: (status: string) => void;
   transactionDate: string;

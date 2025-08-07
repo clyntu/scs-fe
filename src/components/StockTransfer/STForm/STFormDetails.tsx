@@ -10,13 +10,16 @@ import {
   Box,
   Autocomplete,
 } from "@mui/joy";
+import RecordNavigation from "../../RecordNavigation";
 import type { STFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
-import { type Warehouse } from "../../../interface";
+import { type Warehouse, type StockTransfer } from "../../../interface";
 
 const STFormDetails = ({
   openEdit,
   selectedRow,
+  setSelectedRow,
+  viewFilters,
 
   // Fields
   status,
@@ -66,13 +69,32 @@ const STFormDetails = ({
       <Card className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
-            {openEdit && (
+            {openEdit &&
+            selectedRow !== null &&
+            selectedRow !== undefined &&
+            typeof selectedRow.id === "number" &&
+            setSelectedRow !== null &&
+            setSelectedRow !== undefined ? (
+              <RecordNavigation<StockTransfer>
+                currentRecord={selectedRow}
+                onRecordChange={setSelectedRow}
+                apiEndpoint="/api/stock-transfers"
+                recordIdField="id"
+                recordDisplayField="id"
+                recordDisplayPrefix="STR No."
+                sortBy="id"
+                sortOrder="desc"
+                viewFilters={viewFilters}
+              />
+            ) : openEdit &&
+              selectedRow !== null &&
+              selectedRow !== undefined &&
+              typeof selectedRow.id === "number" ? (
               <div>
-                <h4>STR No. {selectedRow?.id}</h4>
+                <h4>STR No. {selectedRow.id}</h4>
               </div>
-            )}
+            ) : null}
           </div>
-
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>RR Transfer</FormLabel>
@@ -130,7 +152,6 @@ const STFormDetails = ({
               />
             </FormControl>
           </Stack>
-
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Status</FormLabel>

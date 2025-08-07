@@ -23,6 +23,7 @@ const ViewPurchaseOrder = ({
   setOpenEdit,
   selectedRow,
   setSelectedRow,
+  onFiltersChange,
 }: ViewPurchaseOrderProps): JSX.Element => {
   const [purchaseOrders, setPurchaseOrders] = useState<PaginatedPO>({
     total: 0,
@@ -82,10 +83,20 @@ const ViewPurchaseOrder = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       getAllPO();
+      // Notify parent of current filters when they change
+      if (onFiltersChange != null) {
+        const currentFilters: Record<string, any> = {
+          search_term: searchTerm,
+        };
+        if (status !== "all") {
+          currentFilters.status = status;
+        }
+        onFiltersChange(currentFilters);
+      }
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, onFiltersChange]);
 
   const handleDeletePurchaseOrder = async (): Promise<void> => {
     if (selectedRow !== undefined) {

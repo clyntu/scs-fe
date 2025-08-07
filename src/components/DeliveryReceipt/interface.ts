@@ -13,6 +13,8 @@ export interface SDRFormDetailsProps {
   suppliers: PaginatedSuppliers;
   selectedPOs: PurchaseOrder[];
   setSelectedPOs: Dispatch<SetStateAction<PurchaseOrder[]>>;
+  setSelectedRow?: (record: DeliveryReceipt) => void;
+  viewFilters?: Record<string, any>;
 
   // Fields
   selectedSupplier: Supplier | null;

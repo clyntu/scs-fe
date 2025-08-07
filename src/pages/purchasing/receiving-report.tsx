@@ -7,6 +7,9 @@ const ReceivingReportMenu = (): JSX.Element => {
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedRow, setSelectedRow] = useState<ReceivingReport | undefined>();
+  const [currentViewFilters, setCurrentViewFilters] = useState<
+    Record<string, any>
+  >({});
 
   return (
     <div>
@@ -26,6 +29,8 @@ const ReceivingReportMenu = (): JSX.Element => {
           openEdit={openEdit}
           selectedRow={selectedRow}
           title="Edit Receiving Report"
+          setSelectedRow={setSelectedRow}
+          viewFilters={currentViewFilters}
         />
       )}
 
@@ -35,6 +40,7 @@ const ReceivingReportMenu = (): JSX.Element => {
           setOpenEdit={setOpenEdit}
           selectedRow={selectedRow}
           setSelectedRow={setSelectedRow}
+          onFiltersChange={setCurrentViewFilters}
         />
       )}
     </div>

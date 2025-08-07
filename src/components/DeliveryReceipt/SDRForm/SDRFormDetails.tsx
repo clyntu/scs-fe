@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import type { PaginatedPO, PurchaseOrder } from "../../../interface";
 import SelectPOModal from "./SelectPOModal";
+import RecordNavigation from "../../RecordNavigation";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
@@ -29,6 +30,8 @@ const SDRFormDetails = ({
   suppliers,
   selectedPOs,
   setSelectedPOs,
+  setSelectedRow,
+  viewFilters,
 
   // Fields
   selectedSupplier,
@@ -129,13 +132,23 @@ const SDRFormDetails = ({
       <Card className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
-            {openEdit && (
-              <div>
-                <h4>SDR No. {selectedRow?.id}</h4>
-              </div>
+            {openEdit && selectedRow != null && setSelectedRow != null && (
+              <>
+                <RecordNavigation
+                  currentRecord={selectedRow}
+                  onRecordChange={setSelectedRow}
+                  apiEndpoint="/api/supplier-delivery-receipts"
+                  recordIdField="id"
+                  recordDisplayField="id"
+                  recordDisplayPrefix="SDR No."
+                  sortBy="id"
+                  sortOrder="desc"
+                  viewFilters={viewFilters}
+                />
+                <Divider />
+              </>
             )}
           </div>
-          {openEdit && <Divider />}
 
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>

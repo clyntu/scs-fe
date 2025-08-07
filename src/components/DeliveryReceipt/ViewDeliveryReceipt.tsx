@@ -24,6 +24,7 @@ const ViewDeliveryReceipt = ({
   setOpenEdit,
   selectedRow,
   setSelectedRow,
+  onFiltersChange,
 }: ViewDeliveryReceiptProps): JSX.Element => {
   const [deliveryReceipts, setDeliveryReceipts] = useState<PaginatedSDR>({
     total: 0,
@@ -81,10 +82,20 @@ const ViewDeliveryReceipt = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       getAllSDR();
+      // Notify parent of current filters when they change
+      if (onFiltersChange != null) {
+        const currentFilters: Record<string, any> = {
+          search_term: searchTerm,
+        };
+        if (status !== "all") {
+          currentFilters.status = status;
+        }
+        onFiltersChange(currentFilters);
+      }
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, onFiltersChange]);
 
   const handleDeleteDeliveryReceipt = async (): Promise<void> => {
     if (selectedRow !== undefined) {

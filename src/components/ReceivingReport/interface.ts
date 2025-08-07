@@ -37,6 +37,8 @@ export interface SDRFormDetailsProps {
 export interface RRFormDetailsProps {
   openEdit: boolean;
   selectedRow: ReceivingReport | undefined;
+  setSelectedRow?: (record: ReceivingReport) => void;
+  viewFilters?: Record<string, any>;
   suppliers: PaginatedSuppliers;
   selectedSDRs: DeliveryReceipt[];
   setSelectedSDRs: Dispatch<SetStateAction<DeliveryReceipt[]>>;

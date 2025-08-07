@@ -407,6 +407,8 @@ export interface PurchaseOrderFormProps {
   openEdit: boolean;
   selectedRow?: PurchaseOrder;
   title: string;
+  setSelectedRow?: (record: PurchaseOrder) => void;
+  viewFilters?: Record<string, any>;
 }
 
 export interface CPO {
@@ -459,6 +461,8 @@ export interface SDRFormProps {
   openEdit: boolean;
   selectedRow?: DeliveryReceipt;
   title: string;
+  setSelectedRow?: (record: DeliveryReceipt) => void;
+  viewFilters?: Record<string, any>;
 }
 
 export interface RRFormProps {
@@ -467,6 +471,8 @@ export interface RRFormProps {
   openEdit: boolean;
   selectedRow?: ReceivingReport;
   title: string;
+  setSelectedRow?: (record: ReceivingReport) => void;
+  viewFilters?: Record<string, any>;
 }
 
 export interface STFormProps {
@@ -475,6 +481,8 @@ export interface STFormProps {
   openEdit: boolean;
   selectedRow?: StockTransfer;
   title: string;
+  setSelectedRow?: (record: StockTransfer) => void;
+  viewFilters?: Record<string, any>;
 }
 
 export interface AllocFormProps {
@@ -530,6 +538,7 @@ export interface ViewPurchaseOrderProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: PurchaseOrder | undefined;
   setSelectedRow: (purchaseOrder: PurchaseOrder) => void;
+  onFiltersChange?: (filters: Record<string, any>) => void;
 }
 
 export interface ViewCPOProps {
@@ -543,6 +552,7 @@ export interface ViewDeliveryReceiptProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: DeliveryReceipt | undefined;
   setSelectedRow: (deliveryReceipt: DeliveryReceipt) => void;
+  onFiltersChange?: (filters: Record<string, any>) => void;
 }
 
 export interface ViewReceivingReportProps {
@@ -550,6 +560,7 @@ export interface ViewReceivingReportProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: ReceivingReport | undefined;
   setSelectedRow: (receivingReport: ReceivingReport) => void;
+  onFiltersChange?: (filters: Record<string, any>) => void;
 }
 
 export interface ViewStockTransferProps {
@@ -557,6 +568,7 @@ export interface ViewStockTransferProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: StockTransfer | undefined;
   setSelectedRow: (stockTransfer: StockTransfer) => void;
+  onFiltersChange?: (filters: Record<string, any>) => void;
 }
 
 export interface ViewAllocProps {
@@ -1064,4 +1076,16 @@ export interface PrintInventoryResponse {
   items: PrintInventoryItem[];
   next_page: string;
   previous_page: string;
+}
+
+export interface RecordNavigationProps<T> {
+  currentRecord: T | null;
+  onRecordChange: (record: T) => void;
+  apiEndpoint: string;
+  recordIdField: keyof T;
+  recordDisplayField: keyof T;
+  recordDisplayPrefix: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  additionalFilters?: Record<string, any>;
 }

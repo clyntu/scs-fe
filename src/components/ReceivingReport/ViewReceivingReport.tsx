@@ -24,6 +24,7 @@ const ViewReceivingReport = ({
   setOpenEdit,
   selectedRow,
   setSelectedRow,
+  onFiltersChange,
 }: ViewReceivingReportProps): JSX.Element => {
   const [receivingReports, setReceivingReports] = useState<PaginatedRR>({
     total: 0,
@@ -81,10 +82,20 @@ const ViewReceivingReport = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       getAllRR();
+      // Notify parent of current filters when they change
+      if (onFiltersChange != null) {
+        const currentFilters: Record<string, any> = {
+          search_term: searchTerm,
+        };
+        if (status !== "all") {
+          currentFilters.status = status;
+        }
+        onFiltersChange(currentFilters);
+      }
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, onFiltersChange]);
 
   const handleDeleteRR = async (): Promise<void> => {
     if (selectedRow !== undefined) {

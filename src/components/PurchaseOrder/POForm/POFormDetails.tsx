@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import type { POFormProps } from "../interface";
 import type { Currency } from "../../../interface";
 import axiosInstance from "../../../utils/axiosConfig";
+import RecordNavigation from "../../RecordNavigation";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
@@ -30,6 +31,8 @@ const POFormDetails = ({
   selectedRow,
   suppliers,
   setSelectedItems,
+  setSelectedRow,
+  viewFilters,
 
   // Fields
   selectedSupplier,
@@ -97,14 +100,23 @@ const POFormDetails = ({
       <Card className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
-            {openEdit && (
-              <div>
-                <h4>PO No. {selectedRow?.id}</h4>
-              </div>
+            {openEdit && selectedRow != null && setSelectedRow != null && (
+              <>
+                <RecordNavigation
+                  currentRecord={selectedRow}
+                  onRecordChange={setSelectedRow}
+                  apiEndpoint="/api/purchase_orders"
+                  recordIdField="id"
+                  recordDisplayField="id"
+                  recordDisplayPrefix="PO No."
+                  sortBy="id"
+                  sortOrder="desc"
+                  viewFilters={viewFilters}
+                />
+                <Divider />
+              </>
             )}
           </div>
-          {openEdit && <Divider />}
-
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>

@@ -11,6 +11,8 @@ export interface POFormProps {
   selectedRow: PurchaseOrder | undefined;
   suppliers: PaginatedSuppliers;
   setSelectedItems: Dispatch<SetStateAction<Item[]>>;
+  setSelectedRow?: (record: PurchaseOrder) => void;
+  viewFilters?: Record<string, any>;
 
   // Fields
   selectedSupplier: Supplier | null;

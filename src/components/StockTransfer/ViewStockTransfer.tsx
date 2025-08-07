@@ -20,6 +20,7 @@ const ViewStockTransfer = ({
   setOpenEdit,
   selectedRow,
   setSelectedRow,
+  onFiltersChange,
 }: ViewStockTransferProps): JSX.Element => {
   const [stockTransfers, setStockTransfers] = useState<PaginatedST>({
     total: 0,
@@ -77,10 +78,20 @@ const ViewStockTransfer = ({
   useEffect(() => {
     const timeout = setTimeout(() => {
       getAllST();
+      // Notify parent of current filters when they change
+      if (onFiltersChange != null) {
+        const currentFilters: Record<string, any> = {
+          search_term: searchTerm,
+        };
+        if (status !== "all") {
+          currentFilters.status = status;
+        }
+        onFiltersChange(currentFilters);
+      }
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, onFiltersChange]);
 
   const handleDeleteST = async (): Promise<void> => {
     if (selectedRow !== undefined) {

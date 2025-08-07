@@ -35,6 +35,8 @@ const PurchaseOrderForm = ({
   openEdit,
   selectedRow,
   title,
+  setSelectedRow,
+  viewFilters,
 }: PurchaseOrderFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
   const isEditDisabled =
@@ -448,6 +450,8 @@ const PurchaseOrderForm = ({
             openEdit={openEdit}
             selectedRow={selectedRow}
             suppliers={suppliers}
+            setSelectedRow={setSelectedRow}
+            viewFilters={viewFilters}
             // Fields
             selectedSupplier={selectedSupplier}
             setSelectedSupplier={setSelectedSupplier}

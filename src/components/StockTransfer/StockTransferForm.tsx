@@ -34,6 +34,8 @@ const StockTransferForm = ({
   openEdit,
   selectedRow,
   title,
+  setSelectedRow,
+  viewFilters,
 }: STFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
   const [status, setStatus] = useState("unposted");
@@ -182,7 +184,11 @@ const StockTransferForm = ({
     return receivingReports;
   }, [selectedSupplier, receivingReports]);
 
-  const adjustOnStock = (warehouseItemFE: WarehouseItemsFE, isRRTransfer: boolean = false, rrId?: number) => {
+  const adjustOnStock = (
+    warehouseItemFE: WarehouseItemsFE,
+    isRRTransfer: boolean = false,
+    rrId?: number,
+  ) => {
     if (isRRTransfer && rrId) {
       // For RR transfers, use the RR-specific available stock endpoint
       const params = new URLSearchParams({
@@ -196,7 +202,7 @@ const StockTransferForm = ({
         .then((response): void => {
           const rrStockData = response.data;
           const item = rrStockData.items.find(
-            (stockItem) => stockItem.item_id === warehouseItemFE.item_id
+            (stockItem) => stockItem.item_id === warehouseItemFE.item_id,
           );
           warehouseItemFE.on_stock = item?.available_stock ?? 0;
         })
@@ -504,7 +510,7 @@ const StockTransferForm = ({
         if (openEdit) await handleEditStockTransfer();
       }}
     >
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="mb-6">{title}</h2>
       </div>
       {isFetching ? (
@@ -516,6 +522,8 @@ const StockTransferForm = ({
           <STFormDetails
             openEdit={openEdit}
             selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+            viewFilters={viewFilters}
             status={status}
             setStatus={setStatus}
             transactionDate={transactionDate}

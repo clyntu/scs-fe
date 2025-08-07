@@ -27,6 +27,8 @@ const ReceivingReportForm = ({
   openEdit,
   selectedRow,
   title,
+  setSelectedRow,
+  viewFilters,
 }: RRFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
   const initialExpense: Expense = {
@@ -279,6 +281,8 @@ const ReceivingReportForm = ({
           <RRFormDetails
             openEdit={openEdit}
             selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+            viewFilters={viewFilters}
             suppliers={suppliers}
             // Fields
             selectedSupplier={selectedSupplier}
