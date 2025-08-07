@@ -79,9 +79,13 @@ const POFormDetails = ({
   };
 
   useEffect(() => {
-    const code = selectedSupplier?.currency;
-    if (typeof code === "string" && code.trim() !== "") {
-      setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
+    if (selectedRow?.currency_used !== undefined) {
+      setCurrencyUsed(selectedRow.currency_used);
+    } else {
+      const code = selectedSupplier?.currency;
+      if (typeof code === "string" && code.trim() !== "") {
+        setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
+      }
     }
   }, [selectedSupplier]);
 
