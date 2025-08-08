@@ -59,7 +59,7 @@ const ItemForm = (): JSX.Element => {
         `/api/items/?${convertToQueryParams({
           page,
           limit: PAGE_LIMIT,
-          sort_by: "name",
+          sort_by: "stock_code",
           sort_order: "asc",
           search_term: searchTerm,
           brand: selectedBrand,
