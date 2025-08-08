@@ -17,6 +17,7 @@ import {
 import { toast } from "react-toastify";
 
 import type { Customer, CustomersModalProps } from "../../interface";
+import { formatToCP } from "../../helper";
 
 const CustomersModal = ({
   open,
@@ -26,10 +27,10 @@ const CustomersModal = ({
   onSave,
 }: CustomersModalProps): JSX.Element => {
   const [isSaving, setIsSaving] = useState(false);
+
   const generateCustomer = (): Customer => {
     return {
       customer_id: row?.customer_id ?? 0,
-      code: row?.code ?? "",
       name: row?.name ?? "",
       address: row?.address ?? "",
       contact_person: row?.contact_person ?? "",
@@ -109,11 +110,13 @@ const CustomersModal = ({
                     <FormLabel>Code</FormLabel>
                     <Input
                       size="sm"
-                      placeholder="ABC-123"
                       name="code"
-                      value={customer.code}
-                      onChange={handleChange}
-                      required
+                      value={
+                        title !== "Add Customers"
+                          ? formatToCP(customer.customer_id)
+                          : "-"
+                      }
+                      disabled
                     />
                   </FormControl>
                   <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>

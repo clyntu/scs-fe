@@ -17,6 +17,7 @@ import {
 import { toast } from "react-toastify";
 import type { SuppliersModalProps, Supplier, Currency } from "../../interface";
 import axiosInstance from "../../utils/axiosConfig";
+import { formatToSP } from "../../helper";
 
 const SuppliersModal = ({
   open,
@@ -30,7 +31,6 @@ const SuppliersModal = ({
   const generateSupplier = (): Supplier => {
     return {
       supplier_id: row?.supplier_id ?? 0,
-      code: row?.code ?? "",
       name: row?.name ?? "",
       address: row?.address ?? "",
       contact_person: row?.contact_person ?? "",
@@ -131,11 +131,13 @@ const SuppliersModal = ({
                     <FormLabel>Code</FormLabel>
                     <Input
                       size="sm"
-                      placeholder="ABC-123"
                       name="code"
-                      value={supplier.code}
-                      onChange={handleChange}
-                      // required
+                      value={
+                        title !== "Add Suppliers"
+                          ? formatToSP(supplier.supplier_id)
+                          : "-"
+                      }
+                      disabled
                     />
                   </FormControl>
                   <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>

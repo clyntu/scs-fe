@@ -1,5 +1,3 @@
-import type { PaginationQueryParams } from "./interface";
-
 export const convertToQueryParams = (queryParams: any): string => {
   const queryString = Object.entries(queryParams)
     .filter(([_, value]) => value !== undefined)
@@ -21,7 +19,7 @@ export const convertToQueryParams = (queryParams: any): string => {
   return queryString;
 };
 
-export function formatToDateTime(dateStr: string | undefined) {
+export function formatToDateTime(dateStr: string | undefined): string {
   if (dateStr === undefined || dateStr === null) return "-";
   const date = new Date(dateStr);
 
@@ -42,30 +40,45 @@ export function formatToDateTime(dateStr: string | undefined) {
   return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
-export function addCommaToNumberWithFourPlaces(num: number | undefined) {
+export function addCommaToNumberWithFourPlaces(num: number | undefined): any {
   if (num === undefined || num === null) return num;
 
   return num.toFixed(4).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-export function addCommaToNumberWithTwoPlaces(num: number | undefined) {
+export function addCommaToNumberWithTwoPlaces(num: number | undefined): any {
   if (num === undefined || num === null) return num;
 
   return num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-export function addTwoPlaces(num: number | undefined) {
+export function addTwoPlaces(num: number | undefined): any {
   if (num === undefined || num === null) return num;
 
   return num.toFixed(2);
 }
 
-export function addFourPlaces(num: number | undefined) {
+export function addFourPlaces(num: number | undefined): any {
   if (num === undefined || num === null) return num;
 
   return num.toFixed(4);
 }
 
-export function removeCommas(numberString: string) {
+export function removeCommas(numberString: string): string {
   return numberString.replace(/,/g, "");
 }
+
+export const formatToSP = (number: number): string => {
+  const padded = number.toString().padStart(4, "0");
+  return `SP${padded}`;
+};
+
+export const formatToCP = (number: number): string => {
+  const padded = number.toString().padStart(4, "0");
+  return `CP${padded}`;
+};
+
+export const formatToWH = (number: number): string => {
+  const padded = number.toString().padStart(4, "0");
+  return `WH${padded}`;
+};

@@ -13,7 +13,7 @@ import { Pagination } from "@mui/material";
 
 import type { Supplier, PaginatedSuppliers } from "../../interface";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToSP } from "../../helper";
 
 const PAGE_LIMIT = 10;
 
@@ -77,7 +77,6 @@ const SupplierForm = (): JSX.Element => {
 
     const payload = {
       supplier_id: newSupplier.supplier_id,
-      code: newSupplier.code,
       name: newSupplier.name,
       address: newSupplier.address,
       contact_person: newSupplier.contact_person,
@@ -104,7 +103,6 @@ const SupplierForm = (): JSX.Element => {
 
   const handleCreateSupplier = async (newSupplier: Supplier): Promise<void> => {
     const payload = {
-      code: newSupplier.code,
       name: newSupplier.name,
       address: newSupplier.address,
       contact_person: newSupplier.contact_person,
@@ -173,19 +171,6 @@ const SupplierForm = (): JSX.Element => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          {/* <Button
-            onClick={() => {
-              getAllSuppliers(1, searchTerm);
-            }}
-            sx={{
-              ml: 2,
-              width: "80px",
-            }}
-            className="bg-button-primary"
-            size="sm"
-          >
-            Search
-          </Button> */}
         </Box>
         <Sheet
           sx={{
@@ -274,7 +259,7 @@ const SupplierForm = (): JSX.Element => {
                     setSelectedRow(supplier);
                   }}
                 >
-                  <td>{supplier.code}</td>
+                  <td>{formatToSP(supplier.supplier_id)}</td>
                   <td>{supplier.name}</td>
                   <td>{supplier.address}</td>
                   <td>{supplier.contact_person}</td>

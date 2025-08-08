@@ -104,7 +104,6 @@ export interface ItemsModalProps {
 
 export interface Supplier {
   supplier_id: number;
-  code: string;
   name: string;
   address: string;
   contact_person: string;
@@ -137,7 +136,6 @@ export interface Supplier {
 
 export interface Customer {
   customer_id: number;
-  code: string;
   name: string;
   address: string;
   contact_person: string;

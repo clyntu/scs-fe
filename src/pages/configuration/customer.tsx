@@ -12,7 +12,7 @@ import { Pagination } from "@mui/material";
 
 import type { Customer, PaginatedCustomers } from "../../interface";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToCP } from "../../helper";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
 
 const PAGE_LIMIT = 10;
@@ -78,7 +78,6 @@ const CustomerForm = (): JSX.Element => {
 
     const payload = {
       customer_id: newCustomer.customer_id,
-      code: newCustomer.code,
       name: newCustomer.name,
       address: newCustomer.address,
       contact_person: newCustomer.contact_person,
@@ -104,7 +103,6 @@ const CustomerForm = (): JSX.Element => {
 
   const handleCreateCustomer = async (newCustomer: Customer): Promise<void> => {
     const payload = {
-      code: newCustomer.code,
       name: newCustomer.name,
       address: newCustomer.address,
       contact_person: newCustomer.contact_person,
@@ -172,19 +170,6 @@ const CustomerForm = (): JSX.Element => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          {/* <Button
-            onClick={() => {
-              getAllCustomers(1, searchTerm);
-            }}
-            sx={{
-              ml: 2,
-              width: "80px",
-            }}
-            className="bg-button-primary"
-            size="sm"
-          >
-            Search
-          </Button> */}
         </Box>
         <Sheet
           sx={{
@@ -272,7 +257,7 @@ const CustomerForm = (): JSX.Element => {
                     setSelectedRow(customer);
                   }}
                 >
-                  <td>{customer.code}</td>
+                  <td>{formatToCP(customer.customer_id)}</td>
                   <td>{customer.name}</td>
                   <td>{customer.address}</td>
                   <td>{customer.contact_person}</td>
