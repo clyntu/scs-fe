@@ -452,7 +452,7 @@ const ItemForm = (): JSX.Element => {
                   Stock Code
                 </th>
                 <th style={{ width: 300 }}>Description</th>
-                <th style={{ width: 100 }}>On Stock</th>
+                <th style={{ width: 100 }}>Available</th>
                 <th style={{ width: 100 }}>Allocated</th>
                 <th style={{ width: 100 }}>In Transit</th>
                 <th style={{ width: 100 }}>Purchased</th>

@@ -75,7 +75,7 @@ const STFormTable = ({
                   Product Name
                 </th>
                 <th style={{ width: 200 }}>Stock Code</th>
-                {!isEditDisabled && <th style={{ width: 150 }}>On Stock</th>}
+                {!isEditDisabled && <th style={{ width: 150 }}>Available</th>}
                 <th style={{ width: 150 }}>Total Quantity</th>
                 <th style={{ width: 200 }}>To Whse 1</th>
                 <th style={{ width: 150 }}>Whse 1 Qty.</th>

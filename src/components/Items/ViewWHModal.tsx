@@ -136,7 +136,7 @@ const ViewWHModal = ({
                             ? "Stock Name"
                             : "Warehouse Name"}
                         </th>
-                        <th style={{ width: 100 }}>On Stock</th>
+                        <th style={{ width: 100 }}>Available</th>
                         <th style={{ width: 100 }}>Allocated</th>
                         <th style={{ width: 100 }}>Purchased</th>
                       </tr>

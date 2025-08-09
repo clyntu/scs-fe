@@ -356,7 +356,7 @@ const ItemsModal = ({
                   </Stack>
                   <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>On Stock</FormLabel>
+                      <FormLabel>Available</FormLabel>
                       <Input
                         name="total_on_stock"
                         type="number"
