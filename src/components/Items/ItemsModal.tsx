@@ -354,11 +354,22 @@ const ItemsModal = ({
                       />
                     </FormControl>
                   </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                  <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
+                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                      <FormLabel>On Stock</FormLabel>
+                      <Input
+                        name="total_on_stock"
+                        type="number"
+                        size="sm"
+                        placeholder="0"
+                        value={item?.total_on_stock + item?.total_allocated}
+                        disabled
+                      />
+                    </FormControl>
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                       <FormLabel>Available</FormLabel>
                       <Input
-                        name="total_on_stock"
+                        name="total_available"
                         type="number"
                         size="sm"
                         placeholder="0"
@@ -367,19 +378,6 @@ const ItemsModal = ({
                       />
                     </FormControl>
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>In Transit</FormLabel>
-                      <Input
-                        name="total_in_transit"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_in_transit}
-                        disabled
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                       <FormLabel>Allocated</FormLabel>
                       <Input
                         name="total_allocated"
@@ -387,6 +385,19 @@ const ItemsModal = ({
                         size="sm"
                         placeholder="0"
                         value={item?.total_allocated}
+                        disabled
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                      <FormLabel>In Transit</FormLabel>
+                      <Input
+                        name="total_in_transit"
+                        type="number"
+                        size="sm"
+                        placeholder="0"
+                        value={item?.total_in_transit}
                         disabled
                       />
                     </FormControl>
@@ -401,6 +412,10 @@ const ItemsModal = ({
                         disabled
                       />
                     </FormControl>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: "48%" }}
+                    ></FormControl>
                   </Stack>
                 </div>
               </Card>

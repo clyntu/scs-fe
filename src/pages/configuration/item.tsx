@@ -452,6 +452,7 @@ const ItemForm = (): JSX.Element => {
                   Stock Code
                 </th>
                 <th style={{ width: 300 }}>Description</th>
+                <th style={{ width: 100 }}>On Stock</th>
                 <th style={{ width: 100 }}>Available</th>
                 <th style={{ width: 100 }}>Allocated</th>
                 <th style={{ width: 100 }}>In Transit</th>
@@ -480,6 +481,9 @@ const ItemForm = (): JSX.Element => {
                 >
                   <td>{item.stock_code}</td>
                   <td>{item.name}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {item.total_on_stock + item.total_allocated}
+                  </td>
                   <td style={{ textAlign: "right" }}>{item.total_on_stock}</td>
                   <td style={{ textAlign: "right" }}>{item.total_allocated}</td>
                   <td style={{ textAlign: "right" }}>
