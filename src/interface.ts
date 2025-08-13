@@ -26,6 +26,7 @@ export interface Item {
   total_in_transit: number;
   total_allocated: number;
   total_purchased: number;
+  total_sold: number;
   created_by: number;
   modified_by: number;
   date_created: string;

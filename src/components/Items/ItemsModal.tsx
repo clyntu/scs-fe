@@ -72,6 +72,7 @@ const ItemsModal = ({
       total_in_transit: row?.total_in_transit ?? 0,
       total_allocated: row?.total_allocated ?? 0,
       total_purchased: row?.total_purchased ?? 0,
+      total_sold: row?.total_sold ?? 0,
       created_by: row?.created_by ?? 0,
       modified_by: row?.modified_by ?? 0,
       date_created: row?.date_created ?? "",
@@ -412,10 +413,17 @@ const ItemsModal = ({
                         disabled
                       />
                     </FormControl>
-                    <FormControl
-                      size="sm"
-                      sx={{ mb: 1, width: "48%" }}
-                    ></FormControl>
+                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                      <FormLabel>Sold</FormLabel>
+                      <Input
+                        name="total_sold"
+                        type="number"
+                        size="sm"
+                        placeholder="0"
+                        value={item?.total_sold}
+                        disabled
+                      />
+                    </FormControl>
                   </Stack>
                 </div>
               </Card>
