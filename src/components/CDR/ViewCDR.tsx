@@ -64,7 +64,7 @@ const ViewCDR = ({
     setPage(value);
     axiosInstance
       .get<PaginatedCDR>(
-        `/api/delivery-plans/?${convertToQueryParams({
+        `/api/delivery-receipts/?${convertToQueryParams({
           page: value,
           limit: PAGE_LIMIT,
           sort_by: "id",

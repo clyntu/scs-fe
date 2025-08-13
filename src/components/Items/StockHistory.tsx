@@ -128,7 +128,7 @@ const StockHistory = ({
                       {stockHistory.map((history: IStockHistory, index) => {
                         const rowKey = `${history.transaction_number}-${history.transaction_date}`;
                         const isSelected = selectedRows.has(rowKey);
-                        
+
                         const handleRowClick = (
                           event: React.MouseEvent,
                         ): void => {
@@ -160,7 +160,7 @@ const StockHistory = ({
                               currentIndex,
                             );
                             const endIndex = Math.max(lastIndex, currentIndex);
-                            
+
                             setSelectedRows((prev) => {
                               const newSelection = new Set(prev);
                               for (let i = startIndex; i <= endIndex; i++) {
@@ -175,7 +175,7 @@ const StockHistory = ({
                             setLastSelectedRow(rowKey);
                           }
                         };
-                        
+
                         return (
                           <tr
                             key={rowKey}
@@ -236,7 +236,8 @@ const StockHistory = ({
                                 .join(" / ")}
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              {history.transaction_type === "DR"
+                              {history.transaction_type === "DR" ||
+                              history.transaction_type === "CR"
                                 ? "-"
                                 : addCommaToNumberWithTwoPlaces(
                                     history.net_cost,
