@@ -81,9 +81,16 @@ export interface IStockHistory {
   net_cost: number;
   net_price: number;
   discount_amount: number;
+  supplier_discount_1?: string;
+  supplier_discount_2?: string;
+  supplier_discount_3?: string;
+  transaction_discount_1?: string;
+  transaction_discount_2?: string;
+  transaction_discount_3?: string;
   supplier_name: string | null;
   customer_name: string | null;
   last_purchase_price?: number;
+  gross_amount?: number;
 }
 
 export interface DeleteModalProps {

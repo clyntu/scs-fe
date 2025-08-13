@@ -144,17 +144,29 @@ const CPOForm = ({
       customer_id: selectedCustomer?.customer_id ?? 0,
       gross_total: grossTotal,
       customer_discount_1:
-        discounts.customer[0] !== "" ? `${discounts.customer[0]}%` : "",
+        discounts.customer[0] !== ""
+          ? `${discounts.customer[0].replaceAll("%", "")}%`
+          : "",
       customer_discount_2:
-        discounts.customer[1] !== "" ? `${discounts.customer[1]}%` : "",
+        discounts.customer[1] !== ""
+          ? `${discounts.customer[1].replaceAll("%", "")}%`
+          : "",
       customer_discount_3:
-        discounts.customer[2] !== "" ? `${discounts.customer[2]}%` : "",
+        discounts.customer[2] !== ""
+          ? `${discounts.customer[2].replaceAll("%", "")}%`
+          : "",
       transaction_discount_1:
-        discounts.transaction[0] !== "" ? `${discounts.transaction[0]}%` : "",
+        discounts.transaction[0] !== ""
+          ? `${discounts.transaction[0].replaceAll("%", "")}%`
+          : "",
       transaction_discount_2:
-        discounts.transaction[1] !== "" ? `${discounts.transaction[1]}%` : "",
+        discounts.transaction[1] !== ""
+          ? `${discounts.transaction[1].replaceAll("%", "")}%`
+          : "",
       transaction_discount_3:
-        discounts.transaction[2] !== "" ? `${discounts.transaction[2]}%` : "",
+        discounts.transaction[2] !== ""
+          ? `${discounts.transaction[2].replaceAll("%", "")}%`
+          : "",
       net_total: netTotal,
       reference_number: referenceNumber,
       remarks,

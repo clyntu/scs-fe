@@ -15,6 +15,8 @@ const StockHistory = ({
 }: ViewStockHistory): JSX.Element => {
   const [stockHistory, setStockHistory] = useState<IStockHistory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [lastSelectedRow, setLastSelectedRow] = useState<string | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
@@ -115,59 +117,135 @@ const StockHistory = ({
                         <th style={{ width: 100 }}>In</th>
                         <th style={{ width: 100 }}>Out</th>
                         <th style={{ width: 160 }}>Price</th>
+                        <th style={{ width: 160 }}>Gross Amount</th>
+                        <th style={{ width: 200 }}>Tx Discounts (in %)</th>
                         <th style={{ width: 160 }}>NET Cost</th>
-                        <th style={{ width: 160 }}>NET Price</th>
-                        <th style={{ width: 160 }}>Discounts</th>
-                        <th style={{ width: 160 }}>Last Purchase Price</th>
                         <th style={{ width: 200 }}>Reference No.</th>
                       </tr>
                     </thead>
 
                     <tbody>
-                      {stockHistory.map((history: IStockHistory) => (
-                        <tr
-                          key={`${history.transaction_number}-${history.transaction_date}`}
-                        >
-                          <td>{history.transaction_type}</td>
-                          <td>{history?.supplier_name ?? "-"}</td>
-                          <td>{history?.customer_name ?? "-"}</td>
-
-                          <td>{history.transaction_date}</td>
-                          <td style={{ textAlign: "right" }}>
-                            {history.transaction_number}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {history.quantity_in}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {history.quantity_out}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {addCommaToNumberWithTwoPlaces(history.price)}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {history.transaction_type === "DR"
-                              ? "-"
-                              : addCommaToNumberWithTwoPlaces(history.net_cost)}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {addCommaToNumberWithTwoPlaces(history.net_price)}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {addCommaToNumberWithTwoPlaces(
-                              history.discount_amount,
-                            )}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {String(
-                              addCommaToNumberWithTwoPlaces(
-                                history.last_purchase_price,
-                              ),
-                            ) ?? "-"}
-                          </td>
-                          <td>{history?.reference_number}</td>
-                        </tr>
-                      ))}
+                      {stockHistory.map((history: IStockHistory, index) => {
+                        const rowKey = `${history.transaction_number}-${history.transaction_date}`;
+                        const isSelected = selectedRows.has(rowKey);
+                        
+                        const handleRowClick = (
+                          event: React.MouseEvent,
+                        ): void => {
+                          if (event.ctrlKey || event.metaKey) {
+                            // Ctrl/Cmd + Click: Toggle selection of clicked row
+                            setSelectedRows((prev) => {
+                              const newSelection = new Set(prev);
+                              if (newSelection.has(rowKey)) {
+                                newSelection.delete(rowKey);
+                              } else {
+                                newSelection.add(rowKey);
+                              }
+                              return newSelection;
+                            });
+                            setLastSelectedRow(rowKey);
+                          } else if (
+                            event.shiftKey &&
+                            lastSelectedRow != null
+                          ) {
+                            // Shift + Click: Select range from last selected to current
+                            const lastIndex = stockHistory.findIndex(
+                              (h) =>
+                                `${h.transaction_number}-${h.transaction_date}` ===
+                                lastSelectedRow,
+                            );
+                            const currentIndex = index;
+                            const startIndex = Math.min(
+                              lastIndex,
+                              currentIndex,
+                            );
+                            const endIndex = Math.max(lastIndex, currentIndex);
+                            
+                            setSelectedRows((prev) => {
+                              const newSelection = new Set(prev);
+                              for (let i = startIndex; i <= endIndex; i++) {
+                                const key = `${stockHistory[i].transaction_number}-${stockHistory[i].transaction_date}`;
+                                newSelection.add(key);
+                              }
+                              return newSelection;
+                            });
+                          } else {
+                            // Normal click: Select only this row
+                            setSelectedRows(new Set([rowKey]));
+                            setLastSelectedRow(rowKey);
+                          }
+                        };
+                        
+                        return (
+                          <tr
+                            key={rowKey}
+                            onClick={handleRowClick}
+                            style={{
+                              backgroundColor: isSelected
+                                ? "#e3f2fd"
+                                : "inherit",
+                              cursor: "pointer",
+                              transition: "background-color 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.backgroundColor =
+                                  "#f5f5f5";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.backgroundColor =
+                                  "inherit";
+                              }
+                            }}
+                          >
+                            <td>{history.transaction_type}</td>
+                            <td>{history?.supplier_name ?? "-"}</td>
+                            <td>{history?.customer_name ?? "-"}</td>
+                            <td>{history.transaction_date}</td>
+                            <td style={{ textAlign: "right" }}>
+                              {history.transaction_number}
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              {history.quantity_in}
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              {history.quantity_out}
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              {addCommaToNumberWithTwoPlaces(history.price)}
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              {addCommaToNumberWithTwoPlaces(
+                                history.gross_amount,
+                              )}
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              {[
+                                history.supplier_discount_1,
+                                history.supplier_discount_2,
+                                history.supplier_discount_3,
+                                history.transaction_discount_1,
+                                history.transaction_discount_2,
+                                history.transaction_discount_3,
+                              ]
+                                .map((d) =>
+                                  d != null && d.trim() !== "" ? d : "-",
+                                )
+                                .join(" / ")}
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              {history.transaction_type === "DR"
+                                ? "-"
+                                : addCommaToNumberWithTwoPlaces(
+                                    history.net_cost,
+                                  )}
+                            </td>
+                            <td>{history?.reference_number}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </>
                 ) : (
