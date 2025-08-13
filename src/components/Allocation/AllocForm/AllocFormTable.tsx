@@ -126,6 +126,8 @@ const AllocFormTable = ({
                       <td>
                         <Autocomplete
                           options={warehouses.items.filter((warehouse) => {
+                            if (warehouse.id === 1) return false;
+
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
                             ]?.find(
@@ -263,6 +265,8 @@ const AllocFormTable = ({
                       <td style={{ width: 200 }}>
                         <Autocomplete
                           options={warehouses.items.filter((warehouse) => {
+                            if (warehouse.id === 1) return false;
+
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
                             ]?.find(
@@ -400,6 +404,8 @@ const AllocFormTable = ({
                       <td style={{ width: 200 }}>
                         <Autocomplete
                           options={warehouses.items.filter((warehouse) => {
+                            if (warehouse.id === 1) return false;
+
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
                             ]?.find(
