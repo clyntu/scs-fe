@@ -145,7 +145,8 @@ const ViewWHModal = ({
                       {warehouseItems
                         .filter(
                           (warehouseItem: AggregatedWarehouseItem) =>
-                            warehouseItem.total_on_stock > 0,
+                            warehouseItem.total_on_stock > 0 ||
+                            warehouseItem.total_allocated > 0 ||
                         )
                         .map((warehouseItem: AggregatedWarehouseItem) => (
                           <tr
@@ -158,7 +159,6 @@ const ViewWHModal = ({
                             </td>
                             <td>{warehouseItem.total_on_stock}</td>
                             <td>{warehouseItem.total_allocated}</td>
-                            <td>{warehouseItem.total_purchased}</td>
                           </tr>
                         ))}
                     </tbody>
