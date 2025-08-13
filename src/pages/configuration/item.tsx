@@ -455,8 +455,10 @@ const ItemForm = (): JSX.Element => {
                 <th style={{ width: 100 }}>On Stock</th>
                 <th style={{ width: 100 }}>Available</th>
                 <th style={{ width: 100 }}>Allocated</th>
-                <th style={{ width: 100 }}>In Transit</th>
+
                 <th style={{ width: 100 }}>Purchased</th>
+                <th style={{ width: 100 }}>In Transit</th>
+                <th style={{ width: 100 }}>Sold</th>
                 <th style={{ width: 150 }}>SRP (₱)</th>
                 <th style={{ width: 150 }}>Last Sale Price (₱)</th>
                 <th style={{ width: 150 }}>Acqui. Cost (₱)</th>
@@ -486,10 +488,11 @@ const ItemForm = (): JSX.Element => {
                   </td>
                   <td style={{ textAlign: "right" }}>{item.total_on_stock}</td>
                   <td style={{ textAlign: "right" }}>{item.total_allocated}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_purchased}</td>
                   <td style={{ textAlign: "right" }}>
                     {item.total_in_transit}
                   </td>
-                  <td style={{ textAlign: "right" }}>{item.total_purchased}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_sold}</td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(item.srp)}
                   </td>
