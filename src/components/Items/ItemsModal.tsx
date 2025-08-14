@@ -54,6 +54,10 @@ const ItemsModal = ({
     // Use the first currency from the list if none is specified
     const defaultCurrency =
       currencies.length > 0 ? currencies[0] : { id: 0, code: "" };
+    
+    // Check if this is a new item (no existing row data)
+    const isNewItem = !row || !row.id;
+    
     return {
       id: row?.id ?? 0,
       stock_code: row?.stock_code ?? "",
@@ -61,13 +65,17 @@ const ItemsModal = ({
       status: row?.status ?? "",
       category: row?.category ?? "",
       brand: row?.brand ?? "",
-      acquisition_cost: addTwoPlaces(Number(row?.acquisition_cost) ?? 0),
-      net_cost_before_tax: addFourPlaces(Number(row?.net_cost_before_tax) ?? 0),
+      // acquisition_cost: required field, empty for new items
+      acquisition_cost: isNewItem ? "" : addTwoPlaces(Number(row?.acquisition_cost) ?? 0),
+      // net_cost_before_tax: not required, defaults to 0
+      net_cost_before_tax: isNewItem ? "" : addFourPlaces(Number(row?.net_cost_before_tax) ?? 0),
       currency: row?.currency ?? defaultCurrency,
       currency_id: row?.currency_id ?? defaultCurrency.id,
       rate: row?.rate,
-      srp: addTwoPlaces(Number(row?.srp) ?? 0),
-      last_sale_price: addTwoPlaces(Number(row?.last_sale_price) ?? 0),
+      // srp: required field, empty for new items
+      srp: isNewItem ? "" : addTwoPlaces(Number(row?.srp) ?? 0),
+      // last_sale_price: not required, defaults to 0
+      last_sale_price: isNewItem ? "" : addTwoPlaces(Number(row?.last_sale_price) ?? 0),
       total_on_stock: row?.total_on_stock ?? 0,
       total_in_transit: row?.total_in_transit ?? 0,
       total_allocated: row?.total_allocated ?? 0,
@@ -135,7 +143,18 @@ const ItemsModal = ({
     setIsSaving(true);
     e.preventDefault();
     try {
-      await onSave(item);
+      // Create a copy of the item to process before saving
+      const itemToSave = { ...item };
+      
+      // Ensure net_cost_before_tax and last_sale_price default to 0 if empty
+      if (!itemToSave.net_cost_before_tax || itemToSave.net_cost_before_tax === '') {
+        itemToSave.net_cost_before_tax = 0;
+      }
+      if (!itemToSave.last_sale_price || itemToSave.last_sale_price === '') {
+        itemToSave.last_sale_price = 0;
+      }
+      
+      await onSave(itemToSave);
       setItem(generateItem());
       setOpen(false);
       setIsSaving(false);
@@ -250,7 +269,7 @@ const ItemsModal = ({
                         name="acquisition_cost"
                         type="number"
                         size="sm"
-                        placeholder="0"
+                        placeholder="Enter acquisition cost"
                         slotProps={{
                           input: {
                             min: 0,
@@ -269,7 +288,7 @@ const ItemsModal = ({
                         name="net_cost_before_tax"
                         type="number"
                         size="sm"
-                        placeholder="0"
+                        placeholder="0 (default)"
                         slotProps={{
                           input: {
                             min: 0,
@@ -287,7 +306,7 @@ const ItemsModal = ({
                         name="srp"
                         type="number"
                         size="sm"
-                        placeholder="0"
+                        placeholder="Enter SRP"
                         slotProps={{
                           input: {
                             min: 0,
@@ -306,7 +325,7 @@ const ItemsModal = ({
                         name="last_sale_price"
                         type="number"
                         size="sm"
-                        placeholder="0"
+                        placeholder="0 (default)"
                         slotProps={{
                           input: {
                             min: 0,
