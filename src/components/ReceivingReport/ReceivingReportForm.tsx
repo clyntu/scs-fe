@@ -75,7 +75,7 @@ const ReceivingReportForm = ({
     // Fetch suppliers
     axiosInstance
       .get<PaginatedSuppliers>(
-        "/api/suppliers/?with_active_po=True&sort_by=name",
+        "/api/suppliers/?with_active_sdr=True&sort_by=name",
       )
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
