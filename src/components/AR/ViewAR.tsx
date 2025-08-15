@@ -14,6 +14,7 @@ import { Pagination } from "@mui/material";
 
 import { convertToQueryParams } from "../../helper";
 import { CustomerReceivableResponse } from "./interface";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -282,11 +283,13 @@ const ViewAR = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -328,7 +331,9 @@ const ViewAR = ({
                 >
                   <td>{AR.id}</td>
                   <td>{AR.reference_number}</td>
-                  <td className="capitalize">{AR.status}</td>
+                  <td>
+                    <StatusChip status={AR.status} />
+                  </td>
                   <td className="capitalize">{AR.payment_status}</td>
                   <td>{AR.customer.name}</td>
                   <td>{AR.transaction_date}</td>
@@ -341,7 +346,7 @@ const ViewAR = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"

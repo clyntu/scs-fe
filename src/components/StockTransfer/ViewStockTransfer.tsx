@@ -12,6 +12,7 @@ import type {
 import { Pagination } from "@mui/material";
 
 import { convertToQueryParams } from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -197,11 +198,13 @@ const ViewStockTransfer = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -240,7 +243,9 @@ const ViewStockTransfer = ({
                   }}
                 >
                   <td>{stockTransfer.id}</td>
-                  <td className="capitalize">{stockTransfer.status}</td>
+                  <td>
+                    <StatusChip status={stockTransfer.status} />
+                  </td>
                   <td>{stockTransfer.transaction_date}</td>
                   <td>{stockTransfer.rr_transfer ? "Yes" : "No"}</td>
                   <td>{stockTransfer?.rr_id ?? "N/A"}</td>

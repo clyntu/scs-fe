@@ -16,6 +16,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -203,11 +204,13 @@ const ViewReceivingReport = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -252,7 +255,9 @@ const ViewReceivingReport = ({
                 >
                   <td>{receivingReport.id}</td>
                   <td>{receivingReport.reference_number}</td>
-                  <td className="capitalize">{receivingReport.status}</td>
+                  <td>
+                    <StatusChip status={receivingReport.status} />
+                  </td>
                   <td>{receivingReport.supplier.name}</td>
                   <td>{receivingReport.transaction_date}</td>
                   <td style={{ textAlign: "right" }}>
@@ -278,7 +283,7 @@ const ViewReceivingReport = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"

@@ -12,6 +12,7 @@ import { Pagination } from "@mui/material";
 
 import { convertToQueryParams } from "../../helper";
 import DeleteAllocModal from "./DeleteAllocModal";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -195,11 +196,13 @@ const ViewAlloc = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -237,7 +240,9 @@ const ViewAlloc = ({
                   }}
                 >
                   <td>{alloc?.id}</td>
-                  <td className="capitalize">{alloc.status}</td>
+                  <td>
+                    <StatusChip status={alloc.status} />
+                  </td>
                   <td>{alloc?.transaction_date}</td>
                   <td>{alloc?.customer.name}</td>
                   <td>{alloc?.remarks}</td>

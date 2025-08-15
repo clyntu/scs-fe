@@ -15,6 +15,7 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -202,11 +203,13 @@ const ViewCPO = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -248,7 +251,9 @@ const ViewCPO = ({
                 >
                   <td>{CPO.id}</td>
                   <td>{CPO.reference_number}</td>
-                  <td className="capitalize">{CPO.status}</td>
+                  <td>
+                    <StatusChip status={CPO.status} />
+                  </td>
                   <td>{CPO?.customer?.name}</td>
                   <td>{CPO.transaction_date}</td>
                   <td style={{ textAlign: "right" }}>
@@ -265,7 +270,7 @@ const ViewCPO = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"

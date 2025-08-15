@@ -15,6 +15,7 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -202,11 +203,13 @@ const ViewCDR = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -251,7 +254,9 @@ const ViewCDR = ({
                   <td>{CDR.id}</td>
                   <td>{CDR.reference_number}</td>
                   <td>{CDR.delivery_plan_id}</td>
-                  <td className="capitalize">{CDR.status}</td>
+                  <td>
+                    <StatusChip status={CDR.status} />
+                  </td>
                   <td>{CDR.customer.name}</td>
                   <td>{CDR.transaction_date}</td>
                   <td style={{ textAlign: "right" }}>{CDR.total_items}</td>
@@ -269,7 +274,7 @@ const ViewCDR = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"

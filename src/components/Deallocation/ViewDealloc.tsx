@@ -12,6 +12,7 @@ import { Pagination } from "@mui/material";
 
 import { convertToQueryParams } from "../../helper";
 import DeleteDeallocModal from "./DeleteDeallocModal";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -81,7 +82,6 @@ const ViewDealloc = ({
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
   }, [searchTerm, status]);
-
 
   const handleDeleteDealloc = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -199,11 +199,13 @@ const ViewDealloc = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -241,7 +243,9 @@ const ViewDealloc = ({
                   }}
                 >
                   <td>{dealloc?.id}</td>
-                  <td className="capitalize">{dealloc.status}</td>
+                  <td>
+                    <StatusChip status={dealloc.status} />
+                  </td>
                   <td>{dealloc?.transaction_date}</td>
                   <td>{dealloc?.allocation_id}</td>
                   <td>{dealloc?.remarks}</td>

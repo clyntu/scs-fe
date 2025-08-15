@@ -12,6 +12,7 @@ import type {
 import { Pagination } from "@mui/material";
 
 import { convertToQueryParams } from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -199,11 +200,13 @@ const ViewCR = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -243,7 +246,9 @@ const ViewCR = ({
                 >
                   <td>{CR.id}</td>
                   <td>{CR.reference_number}</td>
-                  <td className="capitalize">{CR.status}</td>
+                  <td>
+                    <StatusChip status={CR.status} />
+                  </td>
                   <td>{CR.customer.name}</td>
                   <td>{CR.transaction_date}</td>
                   <td>{CR.remarks}</td>
@@ -254,7 +259,7 @@ const ViewCR = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"

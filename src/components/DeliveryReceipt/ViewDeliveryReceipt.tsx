@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Button, Table, Sheet, Input, Select, Option } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteDeliveryReceiptModal from "./DeleteDeliveryReceiptModal";
+import CancelTransactionModal from "../shared/CancelTransactionModal";
 import { toast } from "react-toastify";
 import type {
   ViewDeliveryReceiptProps,
@@ -16,6 +17,11 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../helper";
+import {
+  StatusChip,
+  canCancelTransaction,
+  isTransactionCancelled,
+} from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -30,6 +36,7 @@ const ViewDeliveryReceipt = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -105,6 +112,27 @@ const ViewDeliveryReceipt = ({
     }
   };
 
+  const handleCancelDeliveryReceipt = async (reason: string): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/supplier-delivery-receipts/${selectedRow.id}`;
+      try {
+        await axiosInstance.delete(url, {
+          data: { cancellation_reason: reason },
+        });
+        toast.success("Delivery Receipt cancelled successfully!");
+        setDeliveryReceipts((prevSDR) => ({
+          ...prevSDR,
+          items: prevSDR.items.map((SDR) =>
+            SDR.id === selectedRow.id ? { ...SDR, status: "cancelled" } : SDR,
+          ),
+          total: prevSDR.total,
+        }));
+      } catch (error: any) {
+        toast.error(`Error message: ${error.response.data.detail}`);
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -143,6 +171,7 @@ const ViewDeliveryReceipt = ({
             <Option value="all">All</Option>
             <Option value="unposted">Unposted</Option>
             <Option value="posted">Posted</Option>
+            <Option value="cancelled">Cancelled</Option>
             <Option value="archived">Archived</Option>
           </Select>
           {/* <Button
@@ -203,11 +232,13 @@ const ViewDeliveryReceipt = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -253,7 +284,9 @@ const ViewDeliveryReceipt = ({
                   {/* <td>{deliveryReceipt.supplier_id}</td> */}
                   <td>{deliveryReceipt.reference_number}</td>
 
-                  <td className="capitalize">{deliveryReceipt.status}</td>
+                  <td>
+                    <StatusChip status={deliveryReceipt.status} />
+                  </td>
 
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
@@ -274,7 +307,7 @@ const ViewDeliveryReceipt = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"
@@ -282,11 +315,29 @@ const ViewDeliveryReceipt = ({
                           setOpenEdit(true);
                           setSelectedRow(deliveryReceipt);
                         }}
+                        disabled={isTransactionCancelled(
+                          deliveryReceipt.status,
+                        )}
                       >
                         {deliveryReceipt.status !== "unposted"
                           ? "View"
                           : "Edit"}
                       </Button>
+
+                      {canCancelTransaction(deliveryReceipt.status) && (
+                        <Button
+                          size="sm"
+                          variant="soft"
+                          color="warning"
+                          onClick={() => {
+                            setOpenCancel(true);
+                            setSelectedRow(deliveryReceipt);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+
                       <Button
                         size="sm"
                         variant="soft"
@@ -298,7 +349,7 @@ const ViewDeliveryReceipt = ({
                         }}
                         disabled={deliveryReceipt.status !== "unposted"}
                       >
-                        Archive
+                        Delete
                       </Button>
                     </Box>
                   </td>
@@ -322,6 +373,14 @@ const ViewDeliveryReceipt = ({
         setOpen={setOpenDelete}
         title="Archive Delivery Receipt"
         onDelete={handleDeleteDeliveryReceipt}
+      />
+      <CancelTransactionModal
+        open={openCancel}
+        setOpen={setOpenCancel}
+        title="Cancel Delivery Receipt"
+        transactionType="Delivery Receipt"
+        transactionId={selectedRow?.id ?? ""}
+        onCancel={handleCancelDeliveryReceipt}
       />
     </>
   );

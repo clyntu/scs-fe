@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Button, Table, Sheet, Input, Select, Option } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeletePurchaseOrderModal from "./DeletePurchaseOrderModal";
+import CancelTransactionModal from "../shared/CancelTransactionModal";
 import { toast } from "react-toastify";
 import type {
   ViewPurchaseOrderProps,
@@ -15,6 +16,11 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
+import {
+  StatusChip,
+  canCancelTransaction,
+  isTransactionCancelled,
+} from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -29,6 +35,7 @@ const ViewPurchaseOrder = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -106,6 +113,27 @@ const ViewPurchaseOrder = ({
     }
   };
 
+  const handleCancelPurchaseOrder = async (reason: string): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/purchase_orders/${selectedRow.id}`;
+      try {
+        await axiosInstance.delete(url, {
+          data: { cancellation_reason: reason },
+        });
+        toast.success("Purchase Order cancelled successfully!");
+        setPurchaseOrders((prevPO) => ({
+          ...prevPO,
+          items: prevPO.items.map((PO) =>
+            PO.id === selectedRow.id ? { ...PO, status: "cancelled" } : PO,
+          ),
+          total: prevPO.total,
+        }));
+      } catch (error: any) {
+        toast.error(`Error message: ${error.response.data.detail}`);
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -144,6 +172,7 @@ const ViewPurchaseOrder = ({
             <Option value="all">All</Option>
             <Option value="posted">Posted</Option>
             <Option value="unposted">Unposted</Option>
+            <Option value="cancelled">Cancelled</Option>
             <Option value="archived">Archived</Option>
           </Select>
           {/* <Button
@@ -204,11 +233,13 @@ const ViewPurchaseOrder = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -253,7 +284,9 @@ const ViewPurchaseOrder = ({
                 >
                   <td>{purchaseOrder.id}</td>
                   <td>{purchaseOrder.reference_number}</td>
-                  <td className="capitalize">{purchaseOrder.status}</td>
+                  <td>
+                    <StatusChip status={purchaseOrder.status} />
+                  </td>
                   <td>{purchaseOrder?.supplier?.name}</td>
                   <td>{purchaseOrder.transaction_date}</td>
                   <td>{purchaseOrder.currency_used}</td>
@@ -277,7 +310,7 @@ const ViewPurchaseOrder = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"
@@ -285,9 +318,25 @@ const ViewPurchaseOrder = ({
                           setOpenEdit(true);
                           setSelectedRow(purchaseOrder);
                         }}
+                        disabled={isTransactionCancelled(purchaseOrder.status)}
                       >
                         {purchaseOrder.status !== "unposted" ? "View" : "Edit"}
                       </Button>
+
+                      {canCancelTransaction(purchaseOrder.status) && (
+                        <Button
+                          size="sm"
+                          variant="soft"
+                          color="warning"
+                          onClick={() => {
+                            setOpenCancel(true);
+                            setSelectedRow(purchaseOrder);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+
                       <Button
                         size="sm"
                         variant="soft"
@@ -299,7 +348,7 @@ const ViewPurchaseOrder = ({
                         }}
                         disabled={purchaseOrder.status !== "unposted"}
                       >
-                        Archive
+                        Delete
                       </Button>
                     </Box>
                   </td>
@@ -323,6 +372,14 @@ const ViewPurchaseOrder = ({
         setOpen={setOpenDelete}
         title="Archive Purchase Order"
         onDelete={handleDeletePurchaseOrder}
+      />
+      <CancelTransactionModal
+        open={openCancel}
+        setOpen={setOpenCancel}
+        title="Cancel Purchase Order"
+        transactionType="Purchase Order"
+        transactionId={selectedRow?.id ?? ""}
+        onCancel={handleCancelPurchaseOrder}
       />
     </>
   );

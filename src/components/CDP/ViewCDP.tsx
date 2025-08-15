@@ -15,6 +15,7 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -202,11 +203,13 @@ const ViewCDP = ({
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
               "& tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
@@ -249,7 +252,9 @@ const ViewCDP = ({
                 >
                   <td>{CDP.id}</td>
                   <td>{CDP.reference_number}</td>
-                  <td className="capitalize">{CDP.status}</td>
+                  <td>
+                    <StatusChip status={CDP.status} />
+                  </td>
                   <td>{CDP.customer.name}</td>
                   <td>{CDP.transaction_date}</td>
                   <td style={{ textAlign: "right" }}>{CDP.total_items}</td>
@@ -267,7 +272,7 @@ const ViewCDP = ({
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
-                        className="w-[80px]"
+                        sx={{ minWidth: 60 }}
                         size="sm"
                         variant="plain"
                         color="neutral"
