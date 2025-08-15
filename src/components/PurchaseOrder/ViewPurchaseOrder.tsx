@@ -16,11 +16,7 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
-import {
-  StatusChip,
-  canCancelTransaction,
-  isTransactionCancelled,
-} from "../../utils/statusUtils";
+import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -318,7 +314,6 @@ const ViewPurchaseOrder = ({
                           setOpenEdit(true);
                           setSelectedRow(purchaseOrder);
                         }}
-                        disabled={isTransactionCancelled(purchaseOrder.status)}
                       >
                         {purchaseOrder.status !== "unposted" ? "View" : "Edit"}
                       </Button>

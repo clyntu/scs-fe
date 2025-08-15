@@ -17,11 +17,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../helper";
-import {
-  StatusChip,
-  canCancelTransaction,
-  isTransactionCancelled,
-} from "../../utils/statusUtils";
+import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 
 const PAGE_LIMIT = 10;
 
@@ -315,9 +311,6 @@ const ViewDeliveryReceipt = ({
                           setOpenEdit(true);
                           setSelectedRow(deliveryReceipt);
                         }}
-                        disabled={isTransactionCancelled(
-                          deliveryReceipt.status,
-                        )}
                       >
                         {deliveryReceipt.status !== "unposted"
                           ? "View"
