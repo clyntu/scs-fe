@@ -182,7 +182,11 @@ const StockTransferForm = ({
     return receivingReports;
   }, [selectedSupplier, receivingReports]);
 
-  const adjustOnStock = (warehouseItemFE: WarehouseItemsFE, isRRTransfer: boolean = false, rrId?: number) => {
+  const adjustOnStock = (
+    warehouseItemFE: WarehouseItemsFE,
+    isRRTransfer: boolean = false,
+    rrId?: number,
+  ) => {
     if (isRRTransfer && rrId) {
       // For RR transfers, use the RR-specific available stock endpoint
       const params = new URLSearchParams({
@@ -196,7 +200,7 @@ const StockTransferForm = ({
         .then((response): void => {
           const rrStockData = response.data;
           const item = rrStockData.items.find(
-            (stockItem) => stockItem.item_id === warehouseItemFE.item_id
+            (stockItem) => stockItem.item_id === warehouseItemFE.item_id,
           );
           warehouseItemFE.on_stock = item?.available_stock ?? 0;
         })

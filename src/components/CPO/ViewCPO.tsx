@@ -86,21 +86,51 @@ const ViewCPO = ({
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
   }, [searchTerm, status]);
 
-  const handleDeleteCPO = async (): Promise<void> => {
+  const handleDeleteCPO = async (
+    reason?: string,
+    forceDeallocation?: boolean,
+  ): Promise<void> => {
     if (selectedRow !== undefined) {
       const url = `/api/customer_purchase_orders/${selectedRow.id}`;
-      try {
-        await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+
+      // Prepare request body based on parameters
+      const requestBody: any = {};
+      if (reason !== undefined && reason.trim() !== "") {
+        requestBody.cancellation_reason = reason;
+      }
+      if (forceDeallocation !== undefined) {
+        requestBody.force_deallocate = forceDeallocation;
+      }
+
+      const response = await axiosInstance.delete(url, {
+        data: requestBody,
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.status === 204) {
+        // Hard delete (unposted CPO)
+        toast.success("CPO deleted successfully!");
+        setCPOs((prevCPO) => ({
+          ...prevCPO,
+          items: prevCPO.items.filter((CPO) => CPO.id !== selectedRow.id),
+          total: prevCPO.total - 1,
+        }));
+      } else if (response.status === 200) {
+        // Soft cancel (posted CPO)
+        const cancelledCPO = response.data;
+        if (forceDeallocation === true) {
+          toast.success(
+            "CPO cancelled and allocations automatically deallocated!",
+          );
+        } else {
+          toast.success("CPO cancelled successfully!");
+        }
         setCPOs((prevCPO) => ({
           ...prevCPO,
           items: prevCPO.items.map((CPO) =>
-            CPO.id === selectedRow.id ? { ...CPO, status: "archived" } : CPO,
+            CPO.id === selectedRow.id ? { ...CPO, ...cancelledCPO } : CPO,
           ),
-          total: prevCPO.total,
         }));
-      } catch (error: any) {
-        toast.error(`Error message: ${error.response.data.detail}`);
       }
     }
   };
@@ -143,6 +173,7 @@ const ViewCPO = ({
             <Option value="all">All</Option>
             <Option value="posted">Posted</Option>
             <Option value="unposted">Unposted</Option>
+            <Option value="cancelled">Cancelled</Option>
             <Option value="archived">Archived</Option>
           </Select>
           {/* <Button
@@ -282,6 +313,7 @@ const ViewCPO = ({
                         {CPO.status !== "unposted" ? "View" : "Edit"}
                       </Button>
                       <Button
+                        sx={{ minWidth: 70 }}
                         size="sm"
                         variant="soft"
                         color="danger"
@@ -290,9 +322,9 @@ const ViewCPO = ({
                           setOpenDelete(true);
                           setSelectedRow(CPO);
                         }}
-                        disabled={CPO.status !== "unposted"}
+                        disabled={CPO.status === "cancelled"}
                       >
-                        Archive
+                        {CPO.status === "unposted" ? "Delete" : "Cancel"}
                       </Button>
                     </Box>
                   </td>
@@ -314,7 +346,7 @@ const ViewCPO = ({
       <DeleteCPOModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Customer Purchase Order"
+        selectedCPO={selectedRow ?? null}
         onDelete={handleDeleteCPO}
       />
     </>

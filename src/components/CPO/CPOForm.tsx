@@ -393,7 +393,6 @@ const CPOForm = ({
                 ml: 2,
                 width: "130px",
               }}
-              className="w-[130px]"
               size="sm"
               variant="outlined"
               onClick={() => {
