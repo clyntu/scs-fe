@@ -27,6 +27,37 @@ const AllocFormTable = ({
     return stockInfo?.allocatable_qty ?? 0;
   };
 
+  // Helper function to calculate total allocated quantity for an item row
+  const calculateTotalAllocQty = (item: any): number => {
+    let total = 0;
+
+    if (
+      item.warehouse_1_qty !== undefined &&
+      item.warehouse_1_qty !== "" &&
+      !isNaN(Number(item.warehouse_1_qty))
+    ) {
+      total += Number(item.warehouse_1_qty);
+    }
+
+    if (
+      item.warehouse_2_qty !== undefined &&
+      item.warehouse_2_qty !== "" &&
+      !isNaN(Number(item.warehouse_2_qty))
+    ) {
+      total += Number(item.warehouse_2_qty);
+    }
+
+    if (
+      item.warehouse_3_qty !== undefined &&
+      item.warehouse_3_qty !== "" &&
+      !isNaN(Number(item.warehouse_3_qty))
+    ) {
+      total += Number(item.warehouse_3_qty);
+    }
+
+    return total;
+  };
+
   return (
     <>
       {isLoadingItems ? (
@@ -118,10 +149,10 @@ const AllocFormTable = ({
                       <td>{item.name}</td>
                       <td>{item.volume}</td>
                       <td>
-                        {selectedRow !== undefined &&
-                        selectedRow.status !== "unposted"
-                          ? item.cpo_existing_allocated
-                          : item.alloc_qty}
+                        {isEditDisabled
+                          ? (item.cpo_existing_allocated ?? 0) +
+                            calculateTotalAllocQty(item)
+                          : item.volume - item.alloc_qty}
                       </td>
                       <td>
                         <Autocomplete
