@@ -152,7 +152,7 @@ const AllocFormTable = ({
                         {isEditDisabled
                           ? (item.cpo_existing_allocated ?? 0) +
                             calculateTotalAllocQty(item)
-                          : item.volume - item.alloc_qty}
+                          : item.alloc_qty}
                       </td>
                       <td>
                         <Autocomplete
