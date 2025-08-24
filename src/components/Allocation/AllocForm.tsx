@@ -264,7 +264,15 @@ const AllocForm = ({
         )
         .then(async (response) => {
           // Get all unique CPO numbers
-          setCPONumbers([...new Set(response.data.items.map((CPO) => CPO.id))]);
+          const cpoNumbers = [
+            ...new Set(response.data.items.map((CPO) => CPO.id)),
+          ];
+          setCPONumbers(cpoNumbers);
+
+          // Auto-select the first CPO when customer changes (except when editing existing allocation)
+          if (cpoNumbers.length > 0 && !selectedRow) {
+            setSelectedCPO(cpoNumbers[0]);
+          }
 
           // Get all CPO items
           if (!noSet) {
