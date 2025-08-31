@@ -258,7 +258,7 @@ const POFormDetails = ({
                   disabled={isEditDisabled}
                 />
               </FormControl>
-              <FormControl size="sm" sx={{ width: "22%" }}>
+              {/* <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Supp Disc. 3</FormLabel>
                 <Input
                   value={discounts.supplier[2]}
@@ -279,7 +279,7 @@ const POFormDetails = ({
                   placeholder="% or Fixed Amt"
                   disabled={isEditDisabled}
                 />
-              </FormControl>
+              </FormControl> */}
             </Stack>
           </Stack>
         </div>

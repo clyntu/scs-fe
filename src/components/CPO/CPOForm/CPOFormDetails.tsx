@@ -170,7 +170,7 @@ const CPOFormDetails = ({
               />
             </FormControl>
           </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
+          {/* <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
             <FormControl size="sm" sx={{ width: "22%" }}>
               <FormLabel>Cust Disc. 3 (%)</FormLabel>
               <Input
@@ -193,7 +193,7 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-          </Stack>
+          </Stack> */}
         </div>
       </Card>
       <Card className="w-[40%]">
