@@ -72,10 +72,10 @@ const CDRFormTable = ({
             <th style={{ width: 150 }}>Gross Amount</th>
             <th style={{ width: 150 }}>Cust. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Cust. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Cust. Disc. 3 (%)</th>
+            {/* <th style={{ width: 150 }}>Cust. Disc. 3 (%)</th> */}
             <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
             <th style={{ width: 150 }}>NET Amount</th>
           </tr>
         </thead>
@@ -104,11 +104,11 @@ const CDRFormTable = ({
                     ? item.customer_discount_2
                     : 0}
                 </td>
-                <td style={{ textAlign: "right" }}>
+                {/* <td style={{ textAlign: "right" }}>
                   {item.customer_discount_3.includes("%")
                     ? item.customer_discount_3
                     : 0}
-                </td>
+                </td> */}
                 <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_1.includes("%")
                     ? item.transaction_discount_1
@@ -119,11 +119,11 @@ const CDRFormTable = ({
                     ? item.transaction_discount_2
                     : 0}
                 </td>
-                <td style={{ textAlign: "right" }}>
+                {/* <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_3.includes("%")
                     ? item.transaction_discount_3
                     : 0}
-                </td>
+                </td> */}
                 <td style={{ textAlign: "right" }}>
                   {addCommaToNumberWithTwoPlaces(item.net_amount)}
                 </td>

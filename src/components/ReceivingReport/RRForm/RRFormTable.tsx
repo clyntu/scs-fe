@@ -181,10 +181,10 @@ const RRFormTable = ({
             <th style={{ width: 150 }}>Gross Amount</th>
             <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th>
+            {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
             <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
             <th style={{ width: 150 }}>NET Price</th>
             <th style={{ width: 150 }}>Currency</th>
             <th style={{ width: 150 }}>Peso Rate</th>
@@ -232,11 +232,11 @@ const RRFormTable = ({
                         ? PO.supplier_discount_2
                         : 0}
                     </td>
-                    <td style={{ textAlign: "right" }}>
+                    {/* <td style={{ textAlign: "right" }}>
                       {PO.supplier_discount_3.includes("%")
                         ? PO.supplier_discount_3
                         : 0}
-                    </td>
+                    </td> */}
                     <td style={{ textAlign: "right" }}>
                       {PO.transaction_discount_1.includes("%")
                         ? PO.transaction_discount_1
@@ -247,11 +247,11 @@ const RRFormTable = ({
                         ? PO.transaction_discount_2
                         : 0}
                     </td>
-                    <td style={{ textAlign: "right" }}>
+                    {/* <td style={{ textAlign: "right" }}>
                       {PO.transaction_discount_3.includes("%")
                         ? PO.transaction_discount_3
                         : 0}
-                    </td>
+                    </td> */}
                     <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithTwoPlaces(netPerRow[key])}
                     </td>

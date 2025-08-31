@@ -117,10 +117,10 @@ const CRFormTable = ({
             <th style={{ width: 150 }}>Gross Amount</th>
             <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th>
+            {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
             <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
           </tr>
         </thead>
         <tbody>
@@ -244,11 +244,11 @@ const CRFormTable = ({
                     ? item.customer_discount_2
                     : 0}
                 </td>
-                <td style={{ textAlign: "right" }}>
+                {/* <td style={{ textAlign: "right" }}>
                   {item.customer_discount_3.includes("%")
                     ? item.customer_discount_3
                     : 0}
-                </td>
+                </td> */}
                 <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_1.includes("%")
                     ? item.transaction_discount_1
@@ -259,11 +259,11 @@ const CRFormTable = ({
                     ? item.transaction_discount_2
                     : 0}
                 </td>
-                <td style={{ textAlign: "right" }}>
+                {/* <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_3.includes("%")
                     ? item.transaction_discount_3
                     : 0}
-                </td>
+                </td> */}
               </tr>
             );
           })}
