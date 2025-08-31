@@ -225,10 +225,10 @@ const StockHistory = ({
                               {[
                                 history.supplier_discount_1,
                                 history.supplier_discount_2,
-                                history.supplier_discount_3,
+                                // history.supplier_discount_3,
                                 history.transaction_discount_1,
                                 history.transaction_discount_2,
-                                history.transaction_discount_3,
+                                // history.transaction_discount_3,
                               ]
                                 .map((d) =>
                                   d != null && d.trim() !== "" ? d : "-",
