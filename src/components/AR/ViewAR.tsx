@@ -195,7 +195,7 @@ const ViewAR = ({
         <Box className="flex items-center mb-6">
           <Input
             size="sm"
-            placeholder="Rec No. / Ref No. / Remarks"
+            placeholder="Rec No. / Check No. / Remarks"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -303,7 +303,7 @@ const ViewAR = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   Receipt No.
                 </th>
-                <th style={{ width: 150 }}>Ref No.</th>
+                <th style={{ width: 150 }}>Check No.</th>
                 <th style={{ width: 150 }}>Status</th>
                 <th style={{ width: 150 }}>Payment Status</th>
                 <th style={{ width: 250 }}>Customer</th>

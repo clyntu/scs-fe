@@ -236,7 +236,7 @@ const ARFormDetails = ({
             )}
 
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Ref No.</FormLabel>
+              <FormLabel>Check No.</FormLabel>
               <Input
                 type="text"
                 value={refNo}
