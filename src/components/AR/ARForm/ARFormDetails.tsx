@@ -246,7 +246,7 @@ const ARFormDetails = ({
               />
             </FormControl>
 
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            {/* <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>DR No. Filter</FormLabel>
               <div className="flex">
                 <Autocomplete
@@ -260,7 +260,7 @@ const ARFormDetails = ({
                   disabled={isEditDisabled}
                 />
               </div>
-            </FormControl>
+            </FormControl> */}
           </Stack>
         </div>
       </Card>

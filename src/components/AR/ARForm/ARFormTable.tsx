@@ -1,8 +1,8 @@
-import { Sheet, Input } from "@mui/joy";
+import { Sheet, Input, Checkbox } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { ARFormTableProps } from "../interface";
-import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces, addTwoPlaces } from "../../../helper";
 import CircularProgress from "@mui/joy/CircularProgress";
 
 const ARFormTable = ({
@@ -74,7 +74,8 @@ const ARFormTable = ({
                 >
                   Source
                 </th>
-                <th style={{ width: 150 }}>Tran No.</th>
+                <th style={{ width: 130 }}>Tran No.</th>
+                <th style={{ width: 50 }}>Pay?</th>
                 <th style={{ width: 150 }}>Tran Date</th>
                 <th style={{ width: 150 }}>Original Amt</th>
                 <th style={{ width: 150 }}>Tran Amt</th>
@@ -92,7 +93,21 @@ const ARFormTable = ({
                       String(selectedCDR),
                     ),
                 )
+                .sort((a, b) => {
+                  // First sort by source type: Customer DR first, Sales Return last
+                  if (a.source_type !== b.source_type) {
+                    if (a.source_type === "customer_dr") return -1;
+                    if (b.source_type === "customer_dr") return 1;
+                  }
+                  // Then sort by transaction date within each group
+                  return (
+                    new Date(a.transaction_date).getTime() -
+                    new Date(b.transaction_date).getTime()
+                  );
+                })
                 .map((trans) => {
+                  const isChecked = Number(trans.payment ?? "0") !== 0;
+
                   return (
                     <tr key={trans.id}>
                       <td>
@@ -100,7 +115,31 @@ const ARFormTable = ({
                           ? "Customer DR"
                           : "Sales Return"}
                       </td>
+
                       <td>{trans.transaction_number}</td>
+                      <td style={{ textAlign: "center" }}>
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const newPayment = e.target.checked
+                              ? addTwoPlaces(Number(trans.transaction_amount))
+                              : 0;
+
+                            setOutstandingTrans(
+                              outstandingTrans.map((trans2) =>
+                                trans.id === trans2.id &&
+                                trans.source_type === trans2.source_type
+                                  ? {
+                                      ...trans2,
+                                      payment: newPayment,
+                                    }
+                                  : trans2,
+                              ),
+                            );
+                          }}
+                          disabled={isEditDisabled}
+                        />
+                      </td>
                       <td>{trans.transaction_date}</td>
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(
