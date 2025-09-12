@@ -2,7 +2,7 @@ import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { AllocItemsFE, CDPFormTableProps } from "../interface";
-import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces, removeCommas } from "../../../helper";
 
 const CDPFormTable = ({
   selectedRow,
@@ -147,7 +147,8 @@ const CDPFormTable = ({
                             ? {
                                 ...allocItem,
                                 dp_qty: e.target.value,
-                                gross_amount: price * Number(e.target.value),
+                                gross_amount:
+                                  Number(item.price) * Number(e.target.value),
                                 net_amount: calculateNetForRow(
                                   Number(e.target.value),
                                   allocItem,
