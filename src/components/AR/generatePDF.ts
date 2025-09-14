@@ -25,11 +25,11 @@ const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   doc.text("Summary of Receivables", pageWidth - 193.5, 40);
-  
+
   // Bottom border line - just below the title
   doc.setLineWidth(0.5);
   doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
-  
+
   // Date info below the line - properly right-aligned
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");

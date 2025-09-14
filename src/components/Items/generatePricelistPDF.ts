@@ -31,10 +31,10 @@ const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
 
-  // "PRICELIST" aligned to the right
+  // "Total Cost Detail" aligned to the right
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("PRICELIST", pageWidth - 110, 40); // Adjust 80 as needed
+  doc.text("Total Cost Detail", pageWidth - 150, 40); // Adjust position as needed
 
   // Bottom border line - just below the title
   doc.setLineWidth(0.5);
@@ -124,5 +124,5 @@ export const generatePricelistPDF = (data: any[], companyId: string): void => {
   });
 
   // 5. Save or download the PDF
-  doc.save("pricelist.pdf");
+  doc.save("total_cost_detail.pdf");
 };
