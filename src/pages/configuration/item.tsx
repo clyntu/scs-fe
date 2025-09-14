@@ -4,7 +4,7 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input, Select, Option } from "@mui/joy";
+import { Input, Autocomplete, FormControl, FormLabel } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
 import CurrencyModal from "../../components/Items/CurrencyModal";
 import PrintStocksModal from "../../components/Items/PrintStocksModal";
@@ -17,6 +17,7 @@ import type {
   Item,
   PaginatedItems,
   Currency,
+  PaginatedWarehouse,
 } from "../../interface";
 import {
   convertToQueryParams,
@@ -43,6 +44,10 @@ const ItemForm = (): JSX.Element => {
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
+  const [warehouses, setWarehouses] = useState<PaginatedWarehouse>({
+    total: 0,
+    items: [],
+  });
   const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   const [selectedBrand, setSelectedBrand] = useState("");
@@ -105,6 +110,14 @@ const ItemForm = (): JSX.Element => {
       .get<Brand[]>(`/api/brands`)
       .then((response) => {
         setBrands(response.data.map((brand) => brand.normalized_name));
+      })
+      .catch((error) => console.error("Error:", error));
+
+    // Fetch warehouses
+    axiosInstance
+      .get<PaginatedWarehouse>("/api/warehouses/")
+      .then((response) => {
+        setWarehouses(response.data);
       })
       .catch((error) => console.error("Error:", error));
 
@@ -295,58 +308,72 @@ const ItemForm = (): JSX.Element => {
         </Box>
 
         <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Stock Code or Description"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Select
-            sx={{ ml: 2, width: 130 }}
-            onChange={(event, value) => {
-              if (value !== null) setSelectedCategory(value);
-            }}
-            size="sm"
-            value={selectedCategory}
-          >
-            <Option value="">All</Option>
-            {categories.map((category) => {
-              return (
-                <Option key={category} value={category}>
-                  {category.toUpperCase()}
-                </Option>
-              );
-            })}
-          </Select>
-          <Select
-            sx={{ ml: 2, width: 130 }}
-            onChange={(event, value) => {
-              if (value !== null) setSelectedBrand(value);
-            }}
-            size="sm"
-            value={selectedBrand}
-          >
-            <Option value="">All</Option>
-            {brands.map((brand) => {
-              return (
-                <Option key={brand} value={brand}>
-                  {brand.toUpperCase()}
-                </Option>
-              );
-            })}
-          </Select>
-          <Select
-            className="ml-4 w-[130px]"
-            onChange={(event, value) => {
-              if (value !== null) setSelectedStatus(value);
-            }}
-            size="sm"
-            value={selectedStatus}
-          >
-            <Option value="">All</Option>
-            <Option value="active">ACTIVE</Option>
-            <Option value="inactive">INACTIVE</Option>
-          </Select>
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Stock Code or Description"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
+          <FormControl sx={{ ml: 2, width: 130 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Category</FormLabel>
+            <Autocomplete
+              placeholder="All"
+              options={["", ...categories]}
+              value={selectedCategory}
+              onChange={(event, value) => {
+                setSelectedCategory(value ?? "");
+              }}
+              getOptionLabel={(option) => {
+                if (option === "") return "All";
+                return option.toUpperCase();
+              }}
+              size="sm"
+            />
+          </FormControl>
+          <FormControl sx={{ ml: 2, width: 130 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Brand</FormLabel>
+            <Autocomplete
+              placeholder="All"
+              options={["", ...brands]}
+              value={selectedBrand}
+              onChange={(event, value) => {
+                setSelectedBrand(value ?? "");
+              }}
+              getOptionLabel={(option) => {
+                if (option === "") return "All";
+                return option.toUpperCase();
+              }}
+              size="sm"
+            />
+          </FormControl>
+          <FormControl className="ml-4 w-[130px]">
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
+            <Autocomplete
+              placeholder="All"
+              options={[
+                { value: "", label: "All" },
+                { value: "active", label: "ACTIVE" },
+                { value: "inactive", label: "INACTIVE" },
+              ]}
+              value={
+                selectedStatus !== ""
+                  ? {
+                      value: selectedStatus,
+                      label:
+                        selectedStatus === "active" ? "ACTIVE" : "INACTIVE",
+                    }
+                  : { value: "", label: "All" }
+              }
+              onChange={(event, value) => {
+                setSelectedStatus(value?.value ?? "");
+              }}
+              getOptionLabel={(option) => option.label}
+              size="sm"
+            />
+          </FormControl>
           {/* <Button
             onClick={() => {
               getAllStocks(1, searchTerm);
@@ -559,6 +586,7 @@ const ItemForm = (): JSX.Element => {
         setOpen={setOpenPrintStocksModal}
         categories={categories}
         brands={brands}
+        warehouses={warehouses}
       />
     </>
   );

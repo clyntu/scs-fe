@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
-import { Button, Box, FormControl, FormLabel, Select, Option } from "@mui/joy";
+import { Button, Box, FormControl, FormLabel, Autocomplete } from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { convertToQueryParams } from "../../helper";
 import { generateStocksPDF } from "./generateStocksPDF";
-import type { PrintInventoryResponse } from "../../interface";
+import type {
+  PaginatedWarehouse,
+  PrintInventoryResponse,
+} from "../../interface";
 
 interface PrintStocksModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   categories: string[];
   brands: string[];
+  warehouses: PaginatedWarehouse;
 }
 
 const PrintStocksModal = ({
@@ -20,26 +24,35 @@ const PrintStocksModal = ({
   setOpen,
   categories,
   brands,
+  warehouses,
 }: PrintStocksModalProps): JSX.Element => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
   const companyId = getCompanyId();
 
   const handlePrint = (): void => {
     setIsPrinting(true);
+
+    const queryParams: Record<string, any> = {
+      sort_by: "stock_code",
+      sort_order: "asc",
+      stock_filter: selectedLocation !== null ? "with_stock" : stockFilter,
+      brand: selectedBrand,
+      category: selectedCategory,
+      status: "active", // Only print active items
+    };
+
+    if (selectedLocation !== null) {
+      queryParams.warehouse_id = selectedLocation;
+    }
+
     axiosInstance
       .get<PrintInventoryResponse>(
-        `/api/inventory/?${convertToQueryParams({
-          sort_by: "stock_code",
-          sort_order: "asc",
-          stock_filter: stockFilter,
-          brand: selectedBrand,
-          category: selectedCategory,
-          status: "active", // Only print active items
-        })}`,
+        `/api/inventory/?${convertToQueryParams(queryParams)}`,
       )
       .then((response) => {
         const items = response.data.items;
@@ -50,6 +63,7 @@ const PrintStocksModal = ({
         setSelectedCategory("");
         setSelectedBrand("");
         setStockFilter("all");
+        setSelectedLocation(null);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -63,6 +77,7 @@ const PrintStocksModal = ({
     setSelectedCategory("");
     setSelectedBrand("");
     setStockFilter("all");
+    setSelectedLocation(null);
   };
 
   return (
@@ -79,7 +94,7 @@ const PrintStocksModal = ({
       <Sheet
         variant="outlined"
         sx={{
-          width: 500,
+          width: 700,
           borderRadius: "md",
           p: 3,
           boxShadow: "lg",
@@ -99,53 +114,104 @@ const PrintStocksModal = ({
           >
             <FormControl size="sm">
               <FormLabel>Brand</FormLabel>
-              <Select
+              <Autocomplete
+                placeholder="All Brands"
+                options={["", ...brands]}
                 value={selectedBrand}
                 onChange={(event, value) => {
-                  if (value !== null) setSelectedBrand(value);
+                  setSelectedBrand(value ?? "");
                 }}
-                placeholder="All Brands"
-              >
-                <Option value="">All Brands</Option>
-                {brands.map((brand) => (
-                  <Option key={brand} value={brand}>
-                    {brand.toUpperCase()}
-                  </Option>
-                ))}
-              </Select>
+                getOptionLabel={(option) => {
+                  if (option === "") return "All Brands";
+                  return option.toUpperCase();
+                }}
+                size="sm"
+                slotProps={{
+                  listbox: {
+                    sx: {
+                      fontSize: "13px",
+                      "& li": {
+                        padding: "6px 12px",
+                        margin: "1px 0",
+                        borderRadius: "4px",
+                        "&:hover": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
             </FormControl>
 
             <FormControl size="sm">
               <FormLabel>Category</FormLabel>
-              <Select
+              <Autocomplete
+                placeholder="All Categories"
+                options={["", ...categories]}
                 value={selectedCategory}
                 onChange={(event, value) => {
-                  if (value !== null) setSelectedCategory(value);
+                  setSelectedCategory(value ?? "");
                 }}
-                placeholder="All Categories"
-              >
-                <Option value="">All Categories</Option>
-                {categories.map((category) => (
-                  <Option key={category} value={category}>
-                    {category.toUpperCase()}
-                  </Option>
-                ))}
-              </Select>
+                getOptionLabel={(option) => {
+                  if (option === "") return "All Categories";
+                  return option.toUpperCase();
+                }}
+                size="sm"
+              />
             </FormControl>
 
             <FormControl size="sm">
               <FormLabel>Stock Filter</FormLabel>
-              <Select
-                value={stockFilter}
-                onChange={(event, value) => {
-                  if (value !== null) setStockFilter(value);
-                }}
+              <Autocomplete
                 placeholder="Select Filter"
-              >
-                <Option value="all">All</Option>
-                <Option value="with_stock">With Stock Only</Option>
-                <Option value="without_stock">Without Stock Only</Option>
-              </Select>
+                options={[
+                  { value: "all", label: "All" },
+                  { value: "with_stock", label: "With Stock Only" },
+                  { value: "without_stock", label: "Without Stock Only" },
+                ]}
+                value={
+                  stockFilter !== ""
+                    ? {
+                        value: stockFilter,
+                        label:
+                          stockFilter === "all"
+                            ? "All"
+                            : stockFilter === "with_stock"
+                              ? "With Stock Only"
+                              : "Without Stock Only",
+                      }
+                    : null
+                }
+                onChange={(event, value) => {
+                  setStockFilter(value?.value ?? "all");
+                }}
+                getOptionLabel={(option) => option.label}
+                disabled={selectedLocation !== null}
+                size="sm"
+              />
+            </FormControl>
+
+            <FormControl size="sm">
+              <FormLabel>Location</FormLabel>
+              <Autocomplete
+                placeholder="None"
+                options={[{ id: null, name: "None" }, ...warehouses.items]}
+                value={
+                  selectedLocation !== null
+                    ? warehouses.items.find((w) => w.id === selectedLocation) ??
+                      null
+                    : { id: null, name: "None" }
+                }
+                onChange={(event, value) => {
+                  setSelectedLocation(value?.id ?? null);
+                  if (value?.id !== null) {
+                    setStockFilter("with_stock");
+                  }
+                }}
+                getOptionLabel={(option) => option.name}
+                size="sm"
+              />
             </FormControl>
           </Box>
 

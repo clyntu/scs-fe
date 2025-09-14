@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Table, Sheet, Input, Select, Option } from "@mui/joy";
+import {
+  Box,
+  Button,
+  Table,
+  Sheet,
+  Input,
+  Select,
+  Option,
+  FormControl,
+  FormLabel,
+} from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteDeliveryReceiptModal from "./DeleteDeliveryReceiptModal";
 import CancelTransactionModal from "../shared/CancelTransactionModal";
@@ -150,26 +160,32 @@ const ViewDeliveryReceipt = ({
           </Button>
         </Box>
         <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Ref No."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Select
-            sx={{ ml: 2, width: 130 }}
-            onChange={(event, value) => {
-              if (value !== null) setStatus(value);
-            }}
-            size="sm"
-            value={status}
-          >
-            <Option value="all">All</Option>
-            <Option value="unposted">Unposted</Option>
-            <Option value="posted">Posted</Option>
-            <Option value="cancelled">Cancelled</Option>
-            <Option value="archived">Archived</Option>
-          </Select>
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Ref No."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
+          <FormControl sx={{ ml: 2 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
+            <Select
+              sx={{ width: 130 }}
+              onChange={(event, value) => {
+                if (value !== null) setStatus(value);
+              }}
+              size="sm"
+              value={status}
+            >
+              <Option value="all">All</Option>
+              <Option value="unposted">Unposted</Option>
+              <Option value="posted">Posted</Option>
+              <Option value="cancelled">Cancelled</Option>
+              <Option value="archived">Archived</Option>
+            </Select>
+          </FormControl>
           {/* <Button
             onClick={getAllSDR}
             sx={{

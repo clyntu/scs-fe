@@ -3,7 +3,7 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input } from "@mui/joy";
+import { Input, FormControl, FormLabel } from "@mui/joy";
 import CustomersModal from "../../components/Customers/CustomersModal";
 import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../Login";
@@ -164,12 +164,15 @@ const CustomerForm = (): JSX.Element => {
         </Box>
 
         <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Name"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
         </Box>
         <Sheet
           sx={{

@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Table, Sheet, Input, Select, Option } from "@mui/joy";
+import {
+  Box,
+  Button,
+  Table,
+  Sheet,
+  Input,
+  Select,
+  Option,
+  FormControl,
+  FormLabel,
+} from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import DeleteARModal from "./DeleteARModal";
 import { toast } from "react-toastify";
@@ -193,38 +203,47 @@ const ViewAR = ({
           </div>
         </Box>
         <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Rec No. / Check No. / Remarks"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Select
-            sx={{ ml: 2, width: 130 }}
-            onChange={(event, value) => {
-              if (value !== null) setStatus(value);
-            }}
-            size="sm"
-            value={status}
-          >
-            <Option value="all">All</Option>
-            <Option value="posted">Posted</Option>
-            <Option value="unposted">Unposted</Option>
-          </Select>
-          <Select
-            sx={{ ml: 2, width: 130 }}
-            onChange={(event, value) => {
-              if (value !== null) setPaymentStatus(value);
-            }}
-            size="sm"
-            value={paymentStatus}
-          >
-            <Option value="all">All</Option>
-            <Option value="pending">Pending</Option>
-            <Option value="cleared">Cleared</Option>
-            <Option value="reversed">Reversed</Option>
-            <Option value="cancelled">Cancelled</Option>
-          </Select>
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Rec No. / Check No. / Remarks"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
+          <FormControl sx={{ ml: 2 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
+            <Select
+              sx={{ width: 130 }}
+              onChange={(event, value) => {
+                if (value !== null) setStatus(value);
+              }}
+              size="sm"
+              value={status}
+            >
+              <Option value="all">All</Option>
+              <Option value="posted">Posted</Option>
+              <Option value="unposted">Unposted</Option>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ ml: 2 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Payment Status</FormLabel>
+            <Select
+              sx={{ width: 130 }}
+              onChange={(event, value) => {
+                if (value !== null) setPaymentStatus(value);
+              }}
+              size="sm"
+              value={paymentStatus}
+            >
+              <Option value="all">All</Option>
+              <Option value="pending">Pending</Option>
+              <Option value="cleared">Cleared</Option>
+              <Option value="reversed">Reversed</Option>
+              <Option value="cancelled">Cancelled</Option>
+            </Select>
+          </FormControl>
           {/* <Button
             onClick={getAllAR}
             sx={{
