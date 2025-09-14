@@ -143,5 +143,7 @@ export const generateStocksPDF = (
   });
 
   // 5. Save or download the PDF
-  doc.save("stocks.pdf");
+  const today = new Date();
+  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
+  doc.save(`stocks_${dateString}.pdf`);
 };

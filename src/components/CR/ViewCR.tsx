@@ -123,7 +123,7 @@ const ViewCR = ({
         >
           <h2>Customer Return</h2>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="mt-2 bg-button-primary"
             color="primary"
             onClick={() => {
               setOpenCreate(true);

@@ -154,7 +154,7 @@ const SupplierForm = (): JSX.Element => {
         >
           <h2>Suppliers</h2>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="mt-2 bg-button-primary"
             color="primary"
             onClick={() => {
               setOpenAdd(true);

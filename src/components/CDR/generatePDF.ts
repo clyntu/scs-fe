@@ -246,5 +246,7 @@ export const generateDeliveryReceiptPDF = (
   doc.line(pageWidth - 130, footerY + 53, pageWidth - 40, footerY + 53); // line under date
 
   // 9. Save or download
-  doc.save("delivery-receipt.pdf");
+  const today = new Date();
+  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
+  doc.save(`delivery-receipt_${dateString}.pdf`);
 };

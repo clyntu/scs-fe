@@ -150,7 +150,7 @@ const WarehouseForm = (): JSX.Element => {
         >
           <h2>Warehouses</h2>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="mt-2 bg-button-primary"
             color="primary"
             onClick={() => {
               setOpenAdd(true);

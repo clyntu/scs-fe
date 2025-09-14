@@ -127,7 +127,7 @@ const ViewReceivingReport = ({
         >
           <h2>Receiving Report</h2>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="mt-2 bg-button-primary"
             color="primary"
             onClick={() => {
               setOpenCreate(true);

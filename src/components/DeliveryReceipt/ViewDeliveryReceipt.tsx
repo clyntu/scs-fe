@@ -150,7 +150,7 @@ const ViewDeliveryReceipt = ({
         >
           <h2>Supplier Delivery Receipt</h2>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="mt-2 bg-button-primary"
             color="primary"
             onClick={() => {
               setOpenCreate(true);

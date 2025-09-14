@@ -140,5 +140,7 @@ export const generatePDF = (
   });
 
   // 5. Save or download the PDF
-  doc.save("summary_of_receivables.pdf");
+  const today = new Date();
+  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
+  doc.save(`summary_of_receivables_${dateString}.pdf`);
 };

@@ -4,11 +4,21 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input, Autocomplete, FormControl, FormLabel } from "@mui/joy";
+import {
+  Input,
+  Autocomplete,
+  FormControl,
+  FormLabel,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
+} from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
 import CurrencyModal from "../../components/Items/CurrencyModal";
 import PrintStocksModal from "../../components/Items/PrintStocksModal";
 import PrintTotalCostDetailModal from "../../components/Items/PrintTotalCostDetailModal";
+import { generateTotalCostPDF } from "../../components/Items/generateTotalCostPDF";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
@@ -215,49 +225,113 @@ const ItemForm = (): JSX.Element => {
     return error.isAxiosError !== undefined;
   }
 
+  const handlePrintTotalCost = async (): Promise<void> => {
+    try {
+      // Fetch all items to calculate totals
+      const response = await axiosInstance.get<PaginatedItems>("/api/items/");
+
+      const allItems = response.data.items;
+
+      // Calculate totals for items with and without net cost
+      const withNetCost = allItems.filter(
+        (item) => (item.net_cost_before_tax ?? 0) > 0,
+      );
+      const withoutNetCost = allItems.filter(
+        (item) => (item.net_cost_before_tax ?? 0) <= 0,
+      );
+
+      const withNetCostTotal = withNetCost.reduce((sum, item) => {
+        const totalOnStock = item.total_on_stock ?? 0;
+        const netCost = item.net_cost_before_tax ?? 0;
+        return sum + totalOnStock * netCost;
+      }, 0);
+
+      const withoutNetCostTotal = withoutNetCost.reduce((sum, item) => {
+        const totalOnStock = item.total_on_stock ?? 0;
+        const netCost = item.net_cost_before_tax ?? 0;
+        return sum + totalOnStock * netCost;
+      }, 0);
+
+      const totalCostData = {
+        withNetCost: {
+          totalCost: withNetCostTotal,
+          productCount: withNetCost.length,
+        },
+        withoutNetCost: {
+          totalCost: withoutNetCostTotal,
+          productCount: withoutNetCost.length,
+        },
+      };
+
+      // Get company ID (you may need to adjust this based on how company ID is determined)
+      const companyId = "company-a"; // or get from context/state
+
+      generateTotalCostPDF(totalCostData, companyId);
+    } catch (error) {
+      console.error("Error generating Total Cost PDF:", error);
+      toast.error("Failed to generate Total Cost PDF");
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between">
+        <Box
+          className="flex justify-between"
+          sx={{
+            mb: 4,
+          }}
+        >
           <h2>Stocks</h2>
 
-          <div>
+          <div className="flex items-center gap-3">
+            {/* Print Reports Dropdown */}
+            <Dropdown>
+              <MenuButton
+                variant="soft"
+                sx={{
+                  width: "140px",
+                  height: "36px",
+                }}
+                className="bg-button-soft-primary"
+              >
+                Print Reports
+              </MenuButton>
+              <Menu>
+                <MenuItem
+                  onClick={() => setOpenPrintStocksModal(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Print Stocks
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setOpenPrintTotalCostModal(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Print Total Cost Detail
+                </MenuItem>
+                <MenuItem
+                  onClick={handlePrintTotalCost}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Print Total Cost
+                </MenuItem>
+              </Menu>
+            </Dropdown>
+
+            {/* Manage Currencies Button */}
             <Button
-              variant="soft"
-              sx={{
-                mr: 2,
-                mt: 2,
-                mb: 4,
-                width: "140px",
-              }}
-              className="bg-button-soft-primary"
-              onClick={() => setOpenPrintStocksModal(true)}
-            >
-              Print Stocks
-            </Button>
-            <Button
-              variant="soft"
-              sx={{
-                mr: 2,
-                mt: 2,
-                mb: 4,
-                width: "180px",
-              }}
-              className="bg-button-soft-primary"
-              onClick={() => setOpenPrintTotalCostModal(true)}
-            >
-              Print Total Cost Detail
-            </Button>
-            <Button
-              sx={{ mr: 2, mt: 2, mb: 4, width: "180px" }}
+              sx={{ width: "140px", height: "36px" }}
               variant="outlined"
               color="primary"
               onClick={() => setOpenCurrencyModal(true)}
             >
-              Manage Currencies
+              Currencies
             </Button>
+
+            {/* Add Stock Button */}
             <Button
-              sx={{ mt: 2, mb: 4, width: "140px" }}
+              sx={{ width: "120px", height: "36px" }}
               className="bg-button-primary"
               color="primary"
               onClick={() => {
