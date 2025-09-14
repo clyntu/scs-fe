@@ -212,9 +212,7 @@ const CRForm = ({
       status,
       transaction_date: transactionDate,
       reference_number: referenceNumber,
-      discount_return_amount: addCommaToNumberWithTwoPlaces(
-        Number(discountReturn),
-      ),
+      discount_return_amount: discountReturn,
       remarks,
       customer_id: selectedCustomer?.customer_id,
       items: formattedDRs
@@ -225,7 +223,7 @@ const CRForm = ({
             warehouse_id: DRItem?.return_warehouse?.id ?? null,
             item_id: DRItem.item_id,
             return_qty: DRItem.return_qty,
-            price: addCommaToNumberWithTwoPlaces(Number(DRItem.price)),
+            price: DRItem.price,
           };
         }),
     };
