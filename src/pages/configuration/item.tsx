@@ -7,6 +7,7 @@ import Sheet from "@mui/joy/Sheet";
 import { Input, Select, Option } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
 import CurrencyModal from "../../components/Items/CurrencyModal";
+import PrintStocksModal from "../../components/Items/PrintStocksModal";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
@@ -15,7 +16,6 @@ import type {
   Category,
   Item,
   PaginatedItems,
-  PrintInventoryResponse,
   Currency,
 } from "../../interface";
 import {
@@ -24,7 +24,6 @@ import {
 } from "../../helper";
 import { Pagination } from "@mui/material";
 import { generatePricelistPDF } from "../../components/Items/generatePricelistPDF";
-import { generateStocksPDF } from "../../components/Items/generateStocksPDF";
 
 const PAGE_LIMIT = 10;
 
@@ -37,6 +36,7 @@ const ItemForm = (): JSX.Element => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openCurrencyModal, setOpenCurrencyModal] = useState(false);
+  const [openPrintStocksModal, setOpenPrintStocksModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Item>();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,7 +48,6 @@ const ItemForm = (): JSX.Element => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
-  const [isPrintingStocks, setIsPrintingStocks] = useState(false);
   const [isPrintingPricelist, setIsPrintingPricelist] = useState(false);
 
   const companyId = getCompanyId();
@@ -204,30 +203,6 @@ const ItemForm = (): JSX.Element => {
   function isAxiosError(error: any): error is AxiosError {
     return error.isAxiosError !== undefined;
   }
-  const handleStocksPDFCreate = (): void => {
-    // Fetch data
-    setIsPrintingStocks(true);
-    axiosInstance
-      .get<PrintInventoryResponse>(
-        `/api/inventory/?${convertToQueryParams({
-          sort_by: "stock_code",
-          sort_order: "asc",
-          search_term: searchTerm,
-          brand: selectedBrand,
-          category: selectedCategory,
-          status: selectedStatus,
-        })}`,
-      )
-      .then((response) => {
-        const items = response.data.items;
-        generateStocksPDF(items, companyId);
-        setIsPrintingStocks(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setIsPrintingStocks(false);
-      });
-  };
 
   const handlePricelistPDFCreate = (): void => {
     // Fetch data
@@ -280,8 +255,7 @@ const ItemForm = (): JSX.Element => {
                 width: "140px",
               }}
               className="bg-button-soft-primary"
-              onClick={handleStocksPDFCreate}
-              loading={isPrintingStocks}
+              onClick={() => setOpenPrintStocksModal(true)}
             >
               Print Stocks
             </Button>
@@ -579,6 +553,12 @@ const ItemForm = (): JSX.Element => {
             .get<Currency[]>("/api/currencies")
             .then((res) => setCurrencies(res.data));
         }}
+      />
+      <PrintStocksModal
+        open={openPrintStocksModal}
+        setOpen={setOpenPrintStocksModal}
+        categories={categories}
+        brands={brands}
       />
     </>
   );
