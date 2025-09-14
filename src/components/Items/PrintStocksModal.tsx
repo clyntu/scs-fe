@@ -23,7 +23,7 @@ const PrintStocksModal = ({
 }: PrintStocksModalProps): JSX.Element => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
-  const [includeZeroStock, setIncludeZeroStock] = useState(false);
+  const [stockFilter, setStockFilter] = useState("all");
   const [isPrinting, setIsPrinting] = useState(false);
 
   const companyId = getCompanyId();
@@ -35,7 +35,7 @@ const PrintStocksModal = ({
         `/api/inventory/?${convertToQueryParams({
           sort_by: "stock_code",
           sort_order: "asc",
-          include_zero_stock: includeZeroStock,
+          stock_filter: stockFilter,
           brand: selectedBrand,
           category: selectedCategory,
           status: "active", // Only print active items
@@ -49,7 +49,7 @@ const PrintStocksModal = ({
         // Reset filters after printing
         setSelectedCategory("");
         setSelectedBrand("");
-        setIncludeZeroStock(false);
+        setStockFilter("all");
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -62,7 +62,7 @@ const PrintStocksModal = ({
     // Reset filters when closing
     setSelectedCategory("");
     setSelectedBrand("");
-    setIncludeZeroStock(false);
+    setStockFilter("all");
   };
 
   return (
@@ -89,55 +89,65 @@ const PrintStocksModal = ({
         <Box>
           <h3 className="mb-6">Print Stocks</h3>
 
-          <FormControl size="sm" sx={{ mb: 2 }}>
-            <FormLabel>Print Zero Stocks?</FormLabel>
-            <Select
-              value={includeZeroStock}
-              onChange={(event, value) => {
-                if (value !== null) setIncludeZeroStock(value);
-              }}
-              placeholder="Select Option"
-            >
-              <Option value={true}>Yes</Option>
-              <Option value={false}>No</Option>
-            </Select>
-          </FormControl>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 2,
+              mb: 2,
+            }}
+          >
+            <FormControl size="sm">
+              <FormLabel>Brand</FormLabel>
+              <Select
+                value={selectedBrand}
+                onChange={(event, value) => {
+                  if (value !== null) setSelectedBrand(value);
+                }}
+                placeholder="All Brands"
+              >
+                <Option value="">All Brands</Option>
+                {brands.map((brand) => (
+                  <Option key={brand} value={brand}>
+                    {brand.toUpperCase()}
+                  </Option>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl size="sm" sx={{ mb: 2 }}>
-            <FormLabel>Category</FormLabel>
-            <Select
-              value={selectedCategory}
-              onChange={(event, value) => {
-                if (value !== null) setSelectedCategory(value);
-              }}
-              placeholder="All Categories"
-            >
-              <Option value="">All Categories</Option>
-              {categories.map((category) => (
-                <Option key={category} value={category}>
-                  {category.toUpperCase()}
-                </Option>
-              ))}
-            </Select>
-          </FormControl>
+            <FormControl size="sm">
+              <FormLabel>Category</FormLabel>
+              <Select
+                value={selectedCategory}
+                onChange={(event, value) => {
+                  if (value !== null) setSelectedCategory(value);
+                }}
+                placeholder="All Categories"
+              >
+                <Option value="">All Categories</Option>
+                {categories.map((category) => (
+                  <Option key={category} value={category}>
+                    {category.toUpperCase()}
+                  </Option>
+                ))}
+              </Select>
+            </FormControl>
 
-          <FormControl size="sm" sx={{ mb: 2 }}>
-            <FormLabel>Brand</FormLabel>
-            <Select
-              value={selectedBrand}
-              onChange={(event, value) => {
-                if (value !== null) setSelectedBrand(value);
-              }}
-              placeholder="All Brands"
-            >
-              <Option value="">All Brands</Option>
-              {brands.map((brand) => (
-                <Option key={brand} value={brand}>
-                  {brand.toUpperCase()}
-                </Option>
-              ))}
-            </Select>
-          </FormControl>
+            <FormControl size="sm">
+              <FormLabel>Stock Filter</FormLabel>
+              <Select
+                value={stockFilter}
+                onChange={(event, value) => {
+                  if (value !== null) setStockFilter(value);
+                }}
+                placeholder="Select Filter"
+              >
+                <Option value="all">All</Option>
+                <Option value="with_stock">With Stock Only</Option>
+                <Option value="without_stock">Without Stock Only</Option>
+              </Select>
+            </FormControl>
+          </Box>
 
           <div className="flex justify-end mt-6">
             <Button
