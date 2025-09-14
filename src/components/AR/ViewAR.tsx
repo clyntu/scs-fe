@@ -228,7 +228,9 @@ const ViewAR = ({
             </Select>
           </FormControl>
           <FormControl sx={{ ml: 2 }}>
-            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Payment Status</FormLabel>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>
+              Payment Status
+            </FormLabel>
             <Select
               sx={{ width: 130 }}
               onChange={(event, value) => {

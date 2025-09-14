@@ -193,7 +193,7 @@ export default function Login(): JSX.Element {
               sx={{ width: "100%" }}
             >
               <Option value="company-a">Peterson Parts Trading</Option>
-              <Option value="company-b">Company B</Option>
+              <Option value="company-b">Medstore Inc.</Option>
             </Select>
           </FormControl>
           <FormControl sx={{ mt: 2 }}>

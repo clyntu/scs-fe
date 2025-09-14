@@ -32,7 +32,7 @@ import SidebarLink from "./SidebarLink";
 
 export const COMPANY_CONFIGS: Record<string, string> = {
   "company-a": "Peterson Parts Trading",
-  "company-b": "CompanyB",
+  "company-b": "Medstore Inc.",
 };
 
 export default function Sidebar(): JSX.Element | null {

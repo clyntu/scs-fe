@@ -18,34 +18,22 @@ const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
 
-  const companyTitle =
-    companyId === "company-a" ? "Peterson Parts Trading" : "Company B";
+  const companyTitle = companyId === "company-a" ? "P.P.T." : "MA Inc.";
   doc.text(companyTitle, 40, 40);
 
-  // Address and contact info (normal)
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-
-  if (companyId === "company-a") {
-    doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-    doc.text("FAX#: 724-8680", 40, 70);
-    doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
-  } else {
-    doc.text("COMPANY B ADDRESS", 40, 50);
-    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-    doc.text("FAX#: 724-8680", 40, 70);
-    doc.text("E-MAIL: companyb@yahoo.com", 40, 80);
-  }
-
-  // "PRICELIST" aligned to the right
+  // "Summary of Receivables" aligned to the right (same Y position as company title)
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("Summary of Receivables", pageWidth - 193.5, 50); // Adjust 80 as needed
-  doc.text(`as of ${formatDate(new Date())}`, pageWidth - 140, 70); // Adjust 80 as needed
-  // Bottom border line
+  doc.text("Summary of Receivables", pageWidth - 193.5, 40);
+  
+  // Bottom border line - just below the title
   doc.setLineWidth(0.5);
-  doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
+  doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
+  
+  // Date info below the line
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.text(`as of ${formatDate(new Date())}`, pageWidth - 140, 70);
 };
 
 export const generatePDF = (
@@ -87,7 +75,7 @@ export const generatePDF = (
   const marginX = (pageWidth - tableWidth) / 2; // center horizontally
 
   autoTable(doc, {
-    startY: 100,
+    startY: 85,
     head: [tableColumnHeaders],
     body: tableRows,
     margin: { top: 50, left: marginX },

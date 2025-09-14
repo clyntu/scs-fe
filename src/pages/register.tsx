@@ -108,7 +108,7 @@ export default function Register(): JSX.Element {
 
   // Helper function to get company name from company ID
   const getCompanyName = (id: string): string => {
-    return id === "company-a" ? "Peterson Parts Trading" : "Company B";
+    return id === "company-a" ? "Peterson Parts Trading" : "Medstore Inc.";
   };
 
   return (

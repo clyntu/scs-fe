@@ -63,27 +63,10 @@ export const generateDeliveryReceiptPDF = (
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
 
-  const title =
-    companyId === "company-a" ? "Peterson Parts Trading" : "Company B";
+  const title = companyId === "company-a" ? "P.P.T." : "MA Inc.";
   doc.text(title, 40, 40);
 
-  // Address and contact info (normal)
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-
-  if (companyId === "company-a") {
-    doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-    doc.text("FAX#: 724-8680", 40, 70);
-    doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
-  } else {
-    doc.text("COMPANY B ADDRESS", 40, 50);
-    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-    doc.text("FAX#: 724-8680", 40, 70);
-    doc.text("E-MAIL: companyb@yahoo.com", 40, 80);
-  }
-
-  // "PRICELIST" aligned to the right
+  // D.R. No. aligned to the right (same Y position as company title)
   const headerText = `D.R. No.: ${selectedRow.id}`;
   const rightMargin = pageWidth - 40;
   doc.setFontSize(13);
@@ -96,17 +79,17 @@ export const generateDeliveryReceiptPDF = (
   const xPos = rightMargin - headerTextWidth;
 
   // Add text at the right-aligned position
-  doc.text(headerText, xPos, 80);
+  doc.text(headerText, xPos, 40);
 
-  // Bottom border line
+  // Bottom border line - just below the title
   doc.setLineWidth(0.5);
-  doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
+  doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
 
   // 3. Customer and Date
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(`Customer: ${selectedRow.customer.name}`, 40, 110);
-  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 130);
+  doc.text(`Customer: ${selectedRow.customer.name}`, 40, 70);
+  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 85);
   doc.text(
     `Date: ${new Date(selectedRow.transaction_date).toLocaleDateString(
       "en-US",
@@ -117,12 +100,12 @@ export const generateDeliveryReceiptPDF = (
       },
     )}`,
     pageWidth - 125,
-    110,
+    70,
   ); // top-right area
 
   // 4. Draw a horizontal line below header if you like (optional)
   doc.setLineWidth(0.5);
-  doc.line(40, 140, pageWidth - 40, 140);
+  doc.line(40, 100, pageWidth - 40, 100);
 
   // 5. Table columns and data
   const columns = [
@@ -168,7 +151,7 @@ export const generateDeliveryReceiptPDF = (
 
   // 6. Render the table
   autoTable(doc, {
-    startY: 150,
+    startY: 110,
     head: [columns],
     body: bodyData,
     theme: "plain",

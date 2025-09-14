@@ -4,32 +4,29 @@ import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box, FormControl, FormLabel, Autocomplete } from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
-import { convertToQueryParams } from "../../helper";
-import { generateStocksPDF } from "./generateStocksPDF";
-import type {
-  PaginatedWarehouse,
-  PrintInventoryResponse,
-} from "../../interface";
+import {
+  convertToQueryParams,
+  addCommaToNumberWithTwoPlaces,
+} from "../../helper";
+import { generatePricelistPDF } from "./generatePricelistPDF";
+import type { PaginatedItems } from "../../interface";
 
-interface PrintStocksModalProps {
+interface PrintTotalCostDetailModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   categories: string[];
   brands: string[];
-  warehouses: PaginatedWarehouse;
 }
 
-const PrintStocksModal = ({
+const PrintTotalCostDetailModal = ({
   open,
   setOpen,
   categories,
   brands,
-  warehouses,
-}: PrintStocksModalProps): JSX.Element => {
+}: PrintTotalCostDetailModalProps): JSX.Element => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
   const [stockFilter, setStockFilter] = useState("all");
-  const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
   const companyId = getCompanyId();
@@ -40,30 +37,34 @@ const PrintStocksModal = ({
     const queryParams: Record<string, any> = {
       sort_by: "stock_code",
       sort_order: "asc",
-      stock_filter: selectedLocation !== null ? "with_stock" : stockFilter,
+      stock_filter: stockFilter,
       brand: selectedBrand,
       category: selectedCategory,
       status: "active", // Only print active items
     };
 
-    if (selectedLocation !== null) {
-      queryParams.warehouse_id = selectedLocation;
-    }
-
     axiosInstance
-      .get<PrintInventoryResponse>(
-        `/api/inventory/?${convertToQueryParams(queryParams)}`,
-      )
+      .get<PaginatedItems>(`/api/items/?${convertToQueryParams(queryParams)}`)
       .then((response) => {
         const items = response.data.items;
-        generateStocksPDF(items, companyId);
+        const data = items.map((item) => {
+          return {
+            availableQty: item.total_on_stock,
+            stockCode: item.stock_code,
+            stock: item.name,
+            netCostTotal: addCommaToNumberWithTwoPlaces(
+              Number(item?.total_on_stock ?? 0) *
+                Number(item.net_cost_before_tax),
+            ),
+          };
+        });
+        generatePricelistPDF(data, companyId);
         setIsPrinting(false);
         setOpen(false);
         // Reset filters after printing
         setSelectedCategory("");
         setSelectedBrand("");
         setStockFilter("all");
-        setSelectedLocation(null);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -77,7 +78,6 @@ const PrintStocksModal = ({
     setSelectedCategory("");
     setSelectedBrand("");
     setStockFilter("all");
-    setSelectedLocation(null);
   };
 
   return (
@@ -102,7 +102,7 @@ const PrintStocksModal = ({
       >
         <ModalClose variant="plain" sx={{ m: 1 }} />
         <Box>
-          <h3 className="mb-6">Print Stocks</h3>
+          <h3 className="mb-6">Print Total Cost Detail</h3>
 
           <Box
             sx={{
@@ -126,21 +126,6 @@ const PrintStocksModal = ({
                   return option.toUpperCase();
                 }}
                 size="sm"
-                slotProps={{
-                  listbox: {
-                    sx: {
-                      fontSize: "13px",
-                      "& li": {
-                        padding: "6px 12px",
-                        margin: "1px 0",
-                        borderRadius: "4px",
-                        "&:hover": {
-                          backgroundColor: "#f5f5f5",
-                        },
-                      },
-                    },
-                  },
-                }}
               />
             </FormControl>
 
@@ -190,30 +175,6 @@ const PrintStocksModal = ({
                 isOptionEqualToValue={(option, value) =>
                   option.value === value.value
                 }
-                disabled={selectedLocation !== null}
-                size="sm"
-              />
-            </FormControl>
-
-            <FormControl size="sm">
-              <FormLabel>Location</FormLabel>
-              <Autocomplete
-                placeholder="None"
-                options={[{ id: null, name: "None" }, ...warehouses.items]}
-                value={
-                  selectedLocation !== null
-                    ? warehouses.items.find((w) => w.id === selectedLocation) ??
-                      null
-                    : { id: null, name: "None" }
-                }
-                onChange={(event, value) => {
-                  setSelectedLocation(value?.id ?? null);
-                  if (value?.id !== null) {
-                    setStockFilter("with_stock");
-                  }
-                }}
-                getOptionLabel={(option) => option.name}
-                isOptionEqualToValue={(option, value) => option.id === value.id}
                 size="sm"
               />
             </FormControl>
@@ -245,4 +206,4 @@ const PrintStocksModal = ({
   );
 };
 
-export default PrintStocksModal;
+export default PrintTotalCostDetailModal;

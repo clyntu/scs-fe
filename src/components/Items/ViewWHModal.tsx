@@ -23,6 +23,8 @@ const ViewWHModal = ({
   >([]);
 
   useEffect(() => {
+    if (row === undefined) return;
+
     setIsLoading(true);
     if (type === "warehouse") {
       axiosInstance

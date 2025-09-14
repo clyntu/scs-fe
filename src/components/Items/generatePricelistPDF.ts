@@ -24,34 +24,21 @@ const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
 
-  const title =
-    companyId === "company-a" ? "Peterson Parts Trading" : "Company B";
+  const title = companyId === "company-a" ? "P.P.T." : "MA";
   doc.text(title, 40, 40);
 
   // Address and contact info (normal)
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
 
-  if (companyId === "company-a") {
-    doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-    doc.text("FAX#: 724-8680", 40, 70);
-    doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
-  } else {
-    doc.text("COMPANY B ADDRESS", 40, 50);
-    doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-    doc.text("FAX#: 724-8680", 40, 70);
-    doc.text("E-MAIL: companyb@yahoo.com", 40, 80);
-  }
-
   // "PRICELIST" aligned to the right
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   doc.text("PRICELIST", pageWidth - 110, 40); // Adjust 80 as needed
 
-  // Bottom border line
+  // Bottom border line - just below the title
   doc.setLineWidth(0.5);
-  doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
+  doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
 };
 
 export const generatePricelistPDF = (data: any[], companyId: string): void => {
@@ -67,7 +54,7 @@ export const generatePricelistPDF = (data: any[], companyId: string): void => {
 
   // 2. Define columns and rows
   const tableColumnHeaders = [
-    "Stock Qty",
+    "Avail. Qty",
     "Stock Code",
     "Stock",
     "Net Cost Total",
@@ -85,7 +72,7 @@ export const generatePricelistPDF = (data: any[], companyId: string): void => {
   const marginX = (pageWidth - tableWidth) / 2; // center horizontally
 
   autoTable(doc, {
-    startY: 100,
+    startY: 60,
     head: [tableColumnHeaders],
     body: tableRows,
     margin: { top: 50, left: marginX },

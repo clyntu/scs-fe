@@ -8,7 +8,8 @@ import { Input, Autocomplete, FormControl, FormLabel } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
 import CurrencyModal from "../../components/Items/CurrencyModal";
 import PrintStocksModal from "../../components/Items/PrintStocksModal";
-import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
+import PrintTotalCostDetailModal from "../../components/Items/PrintTotalCostDetailModal";
+import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import type {
@@ -24,7 +25,6 @@ import {
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 import { Pagination } from "@mui/material";
-import { generatePricelistPDF } from "../../components/Items/generatePricelistPDF";
 
 const PAGE_LIMIT = 10;
 
@@ -38,6 +38,7 @@ const ItemForm = (): JSX.Element => {
   const [openDelete, setOpenDelete] = useState(false);
   const [openCurrencyModal, setOpenCurrencyModal] = useState(false);
   const [openPrintStocksModal, setOpenPrintStocksModal] = useState(false);
+  const [openPrintTotalCostModal, setOpenPrintTotalCostModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Item>();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,9 +54,6 @@ const ItemForm = (): JSX.Element => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
-  const [isPrintingPricelist, setIsPrintingPricelist] = useState(false);
-
-  const companyId = getCompanyId();
 
   const getAllStocks = (page: number, searchTerm: string): void => {
     axiosInstance
@@ -217,41 +215,6 @@ const ItemForm = (): JSX.Element => {
     return error.isAxiosError !== undefined;
   }
 
-  const handlePricelistPDFCreate = (): void => {
-    // Fetch data
-    setIsPrintingPricelist(true);
-    axiosInstance
-      .get<PaginatedItems>(
-        `/api/items/?${convertToQueryParams({
-          sort_by: "stock_code",
-          sort_order: "asc",
-          search_term: searchTerm,
-          brand: selectedBrand,
-          category: selectedCategory,
-          status: selectedStatus,
-        })}`,
-      )
-      .then((response) => {
-        const items = response.data.items;
-        const data = items.map((item) => {
-          return {
-            availableQty: item.total_on_stock,
-            stockCode: item.stock_code,
-            stock: item.name,
-            netCostTotal: addCommaToNumberWithTwoPlaces(
-              Number(item?.total_on_stock ?? 0) * Number(item.acquisition_cost),
-            ),
-          };
-        });
-        generatePricelistPDF(data, companyId);
-        setIsPrintingPricelist(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setIsPrintingPricelist(true);
-      });
-  };
-
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -278,13 +241,12 @@ const ItemForm = (): JSX.Element => {
                 mr: 2,
                 mt: 2,
                 mb: 4,
-                width: "140px",
+                width: "180px",
               }}
               className="bg-button-soft-primary"
-              onClick={handlePricelistPDFCreate}
-              loading={isPrintingPricelist}
+              onClick={() => setOpenPrintTotalCostModal(true)}
             >
-              Print Pricelist
+              Print Total Cost Detail
             </Button>
             <Button
               sx={{ mr: 2, mt: 2, mb: 4, width: "180px" }}
@@ -371,6 +333,9 @@ const ItemForm = (): JSX.Element => {
                 setSelectedStatus(value?.value ?? "");
               }}
               getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, value) =>
+                option.value === value.value
+              }
               size="sm"
             />
           </FormControl>
@@ -587,6 +552,12 @@ const ItemForm = (): JSX.Element => {
         categories={categories}
         brands={brands}
         warehouses={warehouses}
+      />
+      <PrintTotalCostDetailModal
+        open={openPrintTotalCostModal}
+        setOpen={setOpenPrintTotalCostModal}
+        categories={categories}
+        brands={brands}
       />
     </>
   );
