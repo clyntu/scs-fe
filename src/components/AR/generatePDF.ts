@@ -30,10 +30,14 @@ const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   doc.setLineWidth(0.5);
   doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
   
-  // Date info below the line
+  // Date info below the line - properly right-aligned
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(`as of ${formatDate(new Date())}`, pageWidth - 140, 70);
+  const dateText = `As of ${formatDate(new Date())}`;
+  const dateTextWidth = doc.getTextWidth(dateText);
+  const rightMargin = pageWidth - 40;
+  const dateXPos = rightMargin - dateTextWidth;
+  doc.text(dateText, dateXPos, 70);
 };
 
 export const generatePDF = (
