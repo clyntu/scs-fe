@@ -64,18 +64,16 @@ export const generatePDF = (
     "Customer",
     "Amount Receivable",
     "Uncleared Payment",
-    "Bounced Payment",
   ];
   const tableRows = data.map((customer) => [
     customer.customer_name,
     addCommaToNumberWithTwoPlaces(Number(customer.amount_receivable)),
     addCommaToNumberWithTwoPlaces(Number(customer.uncleared_payment)),
-    addCommaToNumberWithTwoPlaces(Number(customer.bounced_payment)),
   ]);
 
   // 3. Table setup
   const pageWidth = doc.internal.pageSize.getWidth();
-  const tableWidth = 420; // sum of your column widths
+  const tableWidth = 340; // sum of your column widths (180 + 80 + 80)
   const marginX = (pageWidth - tableWidth) / 2; // center horizontally
 
   autoTable(doc, {
@@ -88,7 +86,6 @@ export const generatePDF = (
       0: { cellWidth: 180, halign: "left" },
       1: { cellWidth: 80, halign: "right" },
       2: { cellWidth: 80, halign: "right" },
-      3: { cellWidth: 80, halign: "right" },
     },
     styles: {
       fontSize: 10,
@@ -97,9 +94,7 @@ export const generatePDF = (
     didParseCell: (hookData) => {
       if (
         hookData.section === "head" &&
-        (hookData.column.index === 1 ||
-          hookData.column.index === 2 ||
-          hookData.column.index === 3)
+        (hookData.column.index === 1 || hookData.column.index === 2)
       ) {
         hookData.cell.styles.halign = "right";
       }
@@ -118,10 +113,6 @@ export const generatePDF = (
         },
         {
           content: addCommaToNumberWithTwoPlaces(Number(total.total_uncleared)),
-          styles: { halign: "right", fontStyle: "bold" },
-        },
-        {
-          content: addCommaToNumberWithTwoPlaces(Number(total.total_bounced)),
           styles: { halign: "right", fontStyle: "bold" },
         },
       ],
