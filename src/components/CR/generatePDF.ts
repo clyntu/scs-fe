@@ -221,8 +221,10 @@ export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
     },
   );
 
-  // 9. Save or download
+  // 9. Open PDF in new tab for preview
   const today = new Date();
   const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-  doc.save(`customer-return_${dateString}.pdf`);
+  doc.output("dataurlnewwindow", {
+    filename: `customer-return_${dateString}.pdf`,
+  });
 };

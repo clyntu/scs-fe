@@ -152,8 +152,12 @@ export const generateTotalCostPDF = (
     },
   });
 
-  // 4. Save or download the PDF
+  // 4. Open PDF in new tab for preview
   const today = new Date();
   const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-  doc.save(`total_cost_${dateString}.pdf`);
+
+  // Open in new tab instead of downloading
+  doc.output("dataurlnewwindow", {
+    filename: `total_cost_${dateString}.pdf`,
+  });
 };

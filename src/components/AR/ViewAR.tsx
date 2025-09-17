@@ -179,17 +179,16 @@ const ViewAR = ({
           <div>
             <Button
               variant="soft"
-              className="bg-button-soft-primary"
-              sx={{ mt: 2, width: 140 }}
+              className="mt-2 bg-button-soft-primary"
+              sx={{ width: 140 }}
               onClick={handleGeneratePDF}
               loading={isPrinting}
             >
               Print Summary
             </Button>
             <Button
-              className="bg-button-primary"
+              className="mt-2 bg-button-primary"
               sx={{
-                mt: 2,
                 ml: 2,
                 width: 140,
               }}

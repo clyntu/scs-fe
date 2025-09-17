@@ -139,8 +139,10 @@ export const generatePDF = (
     },
   });
 
-  // 5. Save or download the PDF
+  // 5. Open PDF in new tab for preview
   const today = new Date();
   const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-  doc.save(`summary_of_receivables_${dateString}.pdf`);
+  doc.output("dataurlnewwindow", {
+    filename: `summary_of_receivables_${dateString}.pdf`,
+  });
 };
