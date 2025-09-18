@@ -68,16 +68,22 @@ const ViewAlloc = ({
     value: number,
   ): void => {
     setPage(value);
+    
+    const payload: PaginationQueryParams = {
+      page: value,
+      limit: PAGE_LIMIT,
+      sort_by: "id",
+      sort_order: "desc",
+      search_term: searchTerm,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedAlloc>(
-        `/api/allocations/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-          status,
-        })}`,
+        `/api/allocations/?${convertToQueryParams(payload)}`,
       )
       .then((response) => setAllocs(response.data))
       .catch((error) => console.error("Error:", error));

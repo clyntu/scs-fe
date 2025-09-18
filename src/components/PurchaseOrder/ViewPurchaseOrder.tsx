@@ -75,16 +75,22 @@ const ViewPurchaseOrder = ({
     value: number,
   ): void => {
     setPage(value);
+    
+    const payload: PaginationQueryParams = {
+      page: value,
+      limit: PAGE_LIMIT,
+      sort_by: "id",
+      sort_order: "desc",
+      search_term: searchTerm,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedPO>(
-        `/api/purchase_orders/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-          status,
-        })}`,
+        `/api/purchase_orders/?${convertToQueryParams(payload)}`,
       )
       .then((response) => {
         setPurchaseOrders(response.data);

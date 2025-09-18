@@ -70,16 +70,22 @@ const ViewStockTransfer = ({
     value: number,
   ): void => {
     setPage(value);
+    
+    const payload: PaginationQueryParams = {
+      page: value,
+      limit: PAGE_LIMIT,
+      sort_by: "id",
+      sort_order: "desc",
+      search_term: searchTerm,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedST>(
-        `/api/stock-transfers/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-          status,
-        })}`,
+        `/api/stock-transfers/?${convertToQueryParams(payload)}`,
       )
       .then((response) => setStockTransfers(response.data))
       .catch((error) => console.error("Error:", error));

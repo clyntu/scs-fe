@@ -74,16 +74,22 @@ const ViewReceivingReport = ({
     value: number,
   ): void => {
     setPage(value);
+    
+    const payload: PaginationQueryParams = {
+      page: value,
+      limit: PAGE_LIMIT,
+      sort_by: "id",
+      sort_order: "desc",
+      search_term: searchTerm,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedRR>(
-        `/api/receiving-reports/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-          status,
-        })}`,
+        `/api/receiving-reports/?${convertToQueryParams(payload)}`,
       )
       .then((response) => setReceivingReports(response.data))
       .catch((error) => console.error("Error:", error));

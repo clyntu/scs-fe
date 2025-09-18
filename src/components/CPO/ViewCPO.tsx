@@ -73,16 +73,22 @@ const ViewCPO = ({
     value: number,
   ): void => {
     setPage(value);
+    
+    const payload: PaginationQueryParams = {
+      page: value,
+      limit: PAGE_LIMIT,
+      sort_by: "id",
+      sort_order: "desc",
+      search_term: searchTerm,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedCPO>(
-        `/api/customer_purchase_orders/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-          status,
-        })}`,
+        `/api/customer_purchase_orders/?${convertToQueryParams(payload)}`,
       )
       .then((response) => setCPOs(response.data))
       .catch((error) => console.error("Error:", error));

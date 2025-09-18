@@ -76,16 +76,22 @@ const ViewDeliveryReceipt = ({
     value: number,
   ): void => {
     setPage(value);
+    
+    const payload: PaginationQueryParams = {
+      page: value,
+      limit: PAGE_LIMIT,
+      sort_by: "id",
+      sort_order: "desc",
+      search_term: searchTerm,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedSDR>(
-        `/api/supplier-delivery-receipts/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-          status,
-        })}`,
+        `/api/supplier-delivery-receipts/?${convertToQueryParams(payload)}`,
       )
       .then((response) => setDeliveryReceipts(response.data))
       .catch((error) => console.error("Error:", error));
