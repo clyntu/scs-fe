@@ -111,6 +111,9 @@ const CDRFormDetails = ({
     if (newValue !== null) {
       setReferenceNumber(String(newValue.reference_number));
       setAmountDiscount(Number(newValue?.discount_amount ?? 0));
+      // Set transaction date from selected CDP
+      setTransactionDate(newValue.transaction_date);
+
       const formattedAllocs = newValue.delivery_plan_items.map((DPItem) => {
         const allocItem = DPItem.allocation_item;
 
@@ -159,6 +162,9 @@ const CDRFormDetails = ({
       setFormattedAllocs(formattedAllocsWithNet);
     } else {
       setReferenceNumber("");
+      // Clear transaction date when no CDP is selected
+      setTransactionDate("");
+      setFormattedAllocs([]);
     }
   };
 
@@ -187,6 +193,8 @@ const CDRFormDetails = ({
                     setSelectedCustomer(newValue);
                     setFormattedAllocs([]);
                     setSelectedDP(null);
+                    // Clear transaction date when customer changes
+                    setTransactionDate("");
                   }}
                   size="sm"
                   className="w-[100%]"
@@ -233,7 +241,7 @@ const CDRFormDetails = ({
                 type="date"
                 value={transactionDate}
                 onChange={(e) => setTransactionDate(e.target.value)}
-                disabled={isEditDisabled}
+                disabled
                 required
               />
             </FormControl>

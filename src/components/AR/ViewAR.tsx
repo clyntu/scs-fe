@@ -77,7 +77,7 @@ const ViewAR = ({
     value: number,
   ): void => {
     setPage(value);
-    
+
     const payload: PaginationQueryParams = {
       page: value,
       limit: PAGE_LIMIT,
@@ -91,9 +91,7 @@ const ViewAR = ({
     }
 
     axiosInstance
-      .get<PaginatedAR>(
-        `/api/ar-receipts/?${convertToQueryParams(payload)}`,
-      )
+      .get<PaginatedAR>(`/api/ar-receipts/?${convertToQueryParams(payload)}`)
       .then((response) => setARs(response.data))
       .catch((error) => console.error("Error:", error));
   };

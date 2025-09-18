@@ -73,7 +73,7 @@ const ViewCPO = ({
     value: number,
   ): void => {
     setPage(value);
-    
+
     const payload: PaginationQueryParams = {
       page: value,
       limit: PAGE_LIMIT,

@@ -86,7 +86,7 @@ const CDRForm = ({
 
     const fetchValues = (selectedRow: CDR) => {
       setStatus(selectedRow?.status ?? "unposted");
-      setTransactionDate(selectedRow?.transaction_date ?? currentDate);
+      // setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
       setAmountDiscount(Number(selectedRow?.discount_amount));

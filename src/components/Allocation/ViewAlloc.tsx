@@ -68,7 +68,7 @@ const ViewAlloc = ({
     value: number,
   ): void => {
     setPage(value);
-    
+
     const payload: PaginationQueryParams = {
       page: value,
       limit: PAGE_LIMIT,
@@ -82,9 +82,7 @@ const ViewAlloc = ({
     }
 
     axiosInstance
-      .get<PaginatedAlloc>(
-        `/api/allocations/?${convertToQueryParams(payload)}`,
-      )
+      .get<PaginatedAlloc>(`/api/allocations/?${convertToQueryParams(payload)}`)
       .then((response) => setAllocs(response.data))
       .catch((error) => console.error("Error:", error));
   };
