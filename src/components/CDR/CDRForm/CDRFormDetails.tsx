@@ -209,7 +209,66 @@ const CDRFormDetails = ({
               <div className="flex">
                 <Autocomplete
                   options={unservedDPs}
-                  getOptionLabel={(option) => String(option.id)}
+                  getOptionLabel={(option) =>
+                    `${String(option.id)} - Ref: ${option.reference_number}`
+                  }
+                  renderOption={(props, option) => (
+                    <li
+                      {...props}
+                      key={option.id}
+                      style={{
+                        ...props.style,
+                        cursor: "pointer",
+                        borderRadius: "var(--joy-radius-sm, 8px)",
+                        margin:
+                          "var(--ListItem-paddingY, 2px) var(--ListItem-paddingX, 4px)",
+                        padding: 0,
+                        transition:
+                          "background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#F0F4F8";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          width: "100%",
+                          padding:
+                            "var(--ListItem-paddingBlock, 8px) var(--ListItem-paddingInline, 12px)",
+                          minHeight: "var(--ListItem-minHeight, 40px)",
+                          alignItems: "flex-start",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "var(--joy-fontSize-sm, 0.875rem)",
+                            fontWeight: "var(--joy-fontWeight-md, 500)",
+                            lineHeight: "var(--joy-lineHeight-sm, 1.25)",
+                            color: "var(--joy-palette-text-primary, #0B0D0E)",
+                          }}
+                        >
+                          CDP-{String(option.id)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "var(--joy-fontSize-xs, 0.75rem)",
+                            color: "var(--joy-palette-text-secondary, #5A6169)",
+                            marginTop: "2px",
+                            lineHeight: "var(--joy-lineHeight-sm, 1.25)",
+                          }}
+                        >
+                          Ref: {option.reference_number}
+                        </span>
+                      </div>
+                    </li>
+                  )}
                   onChange={(e, newValue) => handleCDPChange(newValue)}
                   value={selectedDP}
                   size="sm"
