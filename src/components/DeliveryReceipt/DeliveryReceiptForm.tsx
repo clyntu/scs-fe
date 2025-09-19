@@ -61,7 +61,9 @@ const DeliveryReceiptForm = ({
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/?with_active_po=True&sort_by=name")
+      .get<PaginatedSuppliers>(
+        "/api/suppliers/?with_active_po=True&sort_by=name",
+      )
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 
@@ -166,7 +168,7 @@ const DeliveryReceiptForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }
@@ -222,7 +224,7 @@ const DeliveryReceiptForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }

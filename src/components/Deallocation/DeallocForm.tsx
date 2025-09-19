@@ -279,7 +279,7 @@ const DeallocForm = ({
     } catch (error: any) {
       console.log(error);
       toast.error(
-        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }
@@ -299,7 +299,7 @@ const DeallocForm = ({
     } catch (error: any) {
       console.log(error);
       toast.error(
-        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }

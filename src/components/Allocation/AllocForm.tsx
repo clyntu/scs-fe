@@ -373,7 +373,7 @@ const AllocForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }
@@ -393,7 +393,7 @@ const AllocForm = ({
     } catch (error: any) {
       console.log(error);
       toast.error(
-        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }
