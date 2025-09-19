@@ -20,9 +20,10 @@ import type {
 
 import { Pagination } from "@mui/material";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToDate } from "../../helper";
 import DeleteAllocModal from "./DeleteAllocModal";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -242,8 +243,8 @@ const ViewAlloc = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -261,15 +262,15 @@ const ViewAlloc = ({
                 >
                   <td>{alloc?.id}</td>
                   <td>{alloc?.transaction_date}</td>
-                  <td>{alloc?.customer.name}</td>
+                  <td>{withTooltip(alloc?.customer.name, "280px")}</td>
                   <td>
                     <StatusChip status={alloc.status} />
                   </td>
-                  <td>{alloc?.remarks}</td>
-                  <td>{alloc?.creator?.username}</td>
-                  <td>{alloc?.modifier?.username}</td>
-                  <td>{alloc.date_created}</td>
-                  <td>{alloc.date_modified}</td>
+                  <td>{withTooltip(alloc?.remarks, "180px")}</td>
+                  <td>{withTooltip(alloc?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(alloc?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(alloc.date_created)}</td>
+                  <td>{formatToDate(alloc.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

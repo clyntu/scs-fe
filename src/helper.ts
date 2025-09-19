@@ -19,6 +19,19 @@ export const convertToQueryParams = (queryParams: any): string => {
   return queryString;
 };
 
+export function formatToDate(dateStr: string | undefined): string {
+  if (dateStr === undefined || dateStr === null) return "-";
+  const date = new Date(dateStr);
+
+  // Extract year, month, day
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // Return the formatted date as YYYY-MM-DD
+  return `${year}-${month}-${day}`;
+}
+
 export function formatToDateTime(dateStr: string | undefined): string {
   if (dateStr === undefined || dateStr === null) return "-";
   const date = new Date(dateStr);
@@ -34,7 +47,7 @@ export function formatToDateTime(dateStr: string | undefined): string {
   // Determine AM or PM and convert hours to 12-hour format
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12; // Convert hour '0' to '12'
+  hours = hours === 0 ? 12 : hours; // Convert hour '0' to '12'
 
   // Return the formatted date and time as MM/DD/YYYY HH:MM AM/PM
   return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;

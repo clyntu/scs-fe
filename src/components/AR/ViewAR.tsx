@@ -22,9 +22,10 @@ import { generatePDF } from "./generatePDF";
 
 import { Pagination } from "@mui/material";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToDate } from "../../helper";
 import { CustomerReceivableResponse } from "./interface";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -336,8 +337,8 @@ const ViewAR = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -355,18 +356,18 @@ const ViewAR = ({
                 >
                   <td>{AR.id}</td>
                   <td>{AR.transaction_date}</td>
-                  <td>{AR.customer.name}</td>
-                  <td>{AR.reference_number}</td>
+                  <td>{withTooltip(AR.customer.name, "280px")}</td>
+                  <td>{withTooltip(AR.reference_number, "160px")}</td>
                   <td>
                     <StatusChip status={AR.status} />
                   </td>
                   <td className="capitalize">{AR.payment_status}</td>
                   <td className="capitalize">{AR.payment_method}</td>
-                  <td>{AR.remarks}</td>
-                  <td>{AR?.creator?.username}</td>
-                  <td>{AR?.modifier?.username}</td>
-                  <td>{AR.date_created}</td>
-                  <td>{AR.date_modified}</td>
+                  <td>{withTooltip(AR.remarks, "180px")}</td>
+                  <td>{withTooltip(AR?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(AR?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(AR.date_created)}</td>
+                  <td>{formatToDate(AR.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

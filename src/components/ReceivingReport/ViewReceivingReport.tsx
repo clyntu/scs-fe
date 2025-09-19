@@ -25,8 +25,10 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
+  formatToDate,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -258,8 +260,8 @@ const ViewReceivingReport = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -277,8 +279,10 @@ const ViewReceivingReport = ({
                 >
                   <td>{receivingReport.id}</td>
                   <td>{receivingReport.transaction_date}</td>
-                  <td>{receivingReport.supplier.name}</td>
-                  <td>{receivingReport.reference_number}</td>
+                  <td>{withTooltip(receivingReport.supplier.name, "280px")}</td>
+                  <td>
+                    {withTooltip(receivingReport.reference_number, "160px")}
+                  </td>
                   <td>
                     <StatusChip status={receivingReport.status} />
                   </td>
@@ -295,11 +299,15 @@ const ViewReceivingReport = ({
                   </td>
                   <td>{receivingReport.currency}</td>
                   <td style={{ textAlign: "right" }}>{receivingReport.rate}</td>
-                  <td>{receivingReport.remarks}</td>
-                  <td>{receivingReport?.creator?.username}</td>
-                  <td>{receivingReport?.modifier?.username}</td>
-                  <td>{receivingReport.date_created}</td>
-                  <td>{receivingReport.date_modified}</td>
+                  <td>{withTooltip(receivingReport.remarks, "180px")}</td>
+                  <td>
+                    {withTooltip(receivingReport?.creator?.username, "130px")}
+                  </td>
+                  <td>
+                    {withTooltip(receivingReport?.modifier?.username, "130px")}
+                  </td>
+                  <td>{formatToDate(receivingReport.date_created)}</td>
+                  <td>{formatToDate(receivingReport.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

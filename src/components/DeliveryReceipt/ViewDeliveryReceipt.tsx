@@ -26,6 +26,7 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
+  formatToDate,
 } from "../../helper";
 import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 
@@ -279,8 +280,8 @@ const ViewDeliveryReceipt = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -316,8 +317,8 @@ const ViewDeliveryReceipt = ({
                   <td>{deliveryReceipt.remarks}</td>
                   <td>{deliveryReceipt?.creator?.username}</td>
                   <td>{deliveryReceipt?.modifier?.username}</td>
-                  <td>{deliveryReceipt.date_created}</td>
-                  <td>{deliveryReceipt.date_modified}</td>
+                  <td>{formatToDate(deliveryReceipt.date_created)}</td>
+                  <td>{formatToDate(deliveryReceipt.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

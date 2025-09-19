@@ -20,9 +20,10 @@ import type {
 
 import { Pagination } from "@mui/material";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToDate } from "../../helper";
 import DeleteDeallocModal from "./DeleteDeallocModal";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -247,8 +248,8 @@ const ViewDealloc = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -270,11 +271,11 @@ const ViewDealloc = ({
                     <StatusChip status={dealloc.status} />
                   </td>
                   <td>{dealloc?.allocation_id}</td>
-                  <td>{dealloc?.remarks}</td>
-                  <td>{dealloc?.creator?.username}</td>
-                  <td>{dealloc?.modifier?.username}</td>
-                  <td>{dealloc.date_created}</td>
-                  <td>{dealloc.date_modified}</td>
+                  <td>{withTooltip(dealloc?.remarks, "180px")}</td>
+                  <td>{withTooltip(dealloc?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(dealloc?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(dealloc.date_created)}</td>
+                  <td>{formatToDate(dealloc.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

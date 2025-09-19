@@ -24,8 +24,10 @@ import { Pagination } from "@mui/material";
 import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
+  formatToDate,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -255,8 +257,8 @@ const ViewCDP = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -274,8 +276,8 @@ const ViewCDP = ({
                 >
                   <td>{CDP.id}</td>
                   <td>{CDP.transaction_date}</td>
-                  <td>{CDP.customer.name}</td>
-                  <td>{CDP.reference_number}</td>
+                  <td>{withTooltip(CDP.customer.name, "280px")}</td>
+                  <td>{withTooltip(CDP.reference_number, "160px")}</td>
                   <td>
                     <StatusChip status={CDP.status} />
                   </td>
@@ -286,11 +288,11 @@ const ViewCDP = ({
                     {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
                   </td>
                   <td style={{ textAlign: "right" }}>{CDP.total_items}</td>
-                  <td>{CDP.remarks}</td>
-                  <td>{CDP?.creator?.username}</td>
-                  <td>{CDP?.modifier?.username}</td>
-                  <td>{CDP.date_created}</td>
-                  <td>{CDP.date_modified}</td>
+                  <td>{withTooltip(CDP.remarks, "180px")}</td>
+                  <td>{withTooltip(CDP?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(CDP?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(CDP.date_created)}</td>
+                  <td>{formatToDate(CDP.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

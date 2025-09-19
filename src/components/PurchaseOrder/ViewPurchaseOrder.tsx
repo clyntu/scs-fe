@@ -13,6 +13,7 @@ import {
 import axiosInstance from "../../utils/axiosConfig";
 import DeletePurchaseOrderModal from "./DeletePurchaseOrderModal";
 import CancelTransactionModal from "../shared/CancelTransactionModal";
+import { withTooltip } from "../shared/withTooltip";
 import { toast } from "react-toastify";
 import type {
   ViewPurchaseOrderProps,
@@ -25,6 +26,7 @@ import { Pagination } from "@mui/material";
 import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
+  formatToDate,
 } from "../../helper";
 import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 
@@ -283,8 +285,8 @@ const ViewPurchaseOrder = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -302,8 +304,10 @@ const ViewPurchaseOrder = ({
                 >
                   <td>{purchaseOrder.id}</td>
                   <td>{purchaseOrder.transaction_date}</td>
-                  <td>{purchaseOrder?.supplier?.name}</td>
-                  <td>{purchaseOrder.reference_number}</td>
+                  <td>{withTooltip(purchaseOrder?.supplier?.name, "280px")}</td>
+                  <td>
+                    {withTooltip(purchaseOrder.reference_number, "160px")}
+                  </td>
                   <td>
                     <StatusChip status={purchaseOrder.status} />
                   </td>
@@ -320,11 +324,15 @@ const ViewPurchaseOrder = ({
                   <td style={{ textAlign: "right" }}>
                     {purchaseOrder.peso_rate}
                   </td>
-                  <td>{purchaseOrder.remarks}</td>
-                  <td>{purchaseOrder?.creator?.username}</td>
-                  <td>{purchaseOrder?.modifier?.username}</td>
-                  <td>{purchaseOrder.date_created}</td>
-                  <td>{purchaseOrder.date_modified}</td>
+                  <td>{withTooltip(purchaseOrder.remarks, "180px")}</td>
+                  <td>
+                    {withTooltip(purchaseOrder?.creator?.username, "130px")}
+                  </td>
+                  <td>
+                    {withTooltip(purchaseOrder?.modifier?.username, "130px")}
+                  </td>
+                  <td>{formatToDate(purchaseOrder.date_created)}</td>
+                  <td>{formatToDate(purchaseOrder.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

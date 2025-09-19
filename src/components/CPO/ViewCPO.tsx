@@ -24,8 +24,10 @@ import { Pagination } from "@mui/material";
 import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
+  formatToDate,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -285,8 +287,8 @@ const ViewCPO = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -304,8 +306,8 @@ const ViewCPO = ({
                 >
                   <td>{CPO.id}</td>
                   <td>{CPO.transaction_date}</td>
-                  <td>{CPO?.customer?.name}</td>
-                  <td>{CPO.reference_number}</td>
+                  <td>{withTooltip(CPO?.customer?.name, "280px")}</td>
+                  <td>{withTooltip(CPO.reference_number, "160px")}</td>
                   <td>
                     <StatusChip status={CPO.status} />
                   </td>
@@ -315,11 +317,11 @@ const ViewCPO = ({
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(CPO.gross_total)}
                   </td>
-                  <td>{CPO.remarks}</td>
-                  <td>{CPO?.creator?.username}</td>
-                  <td>{CPO?.modifier?.username}</td>
-                  <td>{CPO.date_created}</td>
-                  <td>{CPO.date_modified}</td>
+                  <td>{withTooltip(CPO.remarks, "180px")}</td>
+                  <td>{withTooltip(CPO?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(CPO?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(CPO.date_created)}</td>
+                  <td>{formatToDate(CPO.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

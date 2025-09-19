@@ -24,8 +24,10 @@ import { Pagination } from "@mui/material";
 import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
+  formatToDate,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -256,8 +258,8 @@ const ViewCDR = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -275,8 +277,8 @@ const ViewCDR = ({
                 >
                   <td>{CDR.id}</td>
                   <td>{CDR.transaction_date}</td>
-                  <td>{CDR.customer.name}</td>
-                  <td>{CDR.reference_number}</td>
+                  <td>{withTooltip(CDR.customer.name, "280px")}</td>
+                  <td>{withTooltip(CDR.reference_number, "160px")}</td>
                   <td>
                     <StatusChip status={CDR.status} />
                   </td>
@@ -288,11 +290,11 @@ const ViewCDR = ({
                   </td>
                   <td>{CDR.delivery_plan_id}</td>
                   <td style={{ textAlign: "right" }}>{CDR.total_items}</td>
-                  <td>{CDR.remarks}</td>
-                  <td>{CDR?.creator?.username}</td>
-                  <td>{CDR?.modifier?.username}</td>
-                  <td>{CDR.date_created}</td>
-                  <td>{CDR.date_modified}</td>
+                  <td>{withTooltip(CDR.remarks, "180px")}</td>
+                  <td>{withTooltip(CDR?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(CDR?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(CDR.date_created)}</td>
+                  <td>{formatToDate(CDR.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

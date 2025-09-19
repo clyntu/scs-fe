@@ -21,8 +21,9 @@ import type {
 
 import { Pagination } from "@mui/material";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToDate } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -249,8 +250,8 @@ const ViewCR = ({
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -268,16 +269,16 @@ const ViewCR = ({
                 >
                   <td>{CR.id}</td>
                   <td>{CR.transaction_date}</td>
-                  <td>{CR.customer.name}</td>
-                  <td>{CR.reference_number}</td>
+                  <td>{withTooltip(CR.customer.name, "280px")}</td>
+                  <td>{withTooltip(CR.reference_number, "160px")}</td>
                   <td>
                     <StatusChip status={CR.status} />
                   </td>
-                  <td>{CR.remarks}</td>
-                  <td>{CR?.creator?.username}</td>
-                  <td>{CR?.modifier?.username}</td>
-                  <td>{CR.date_created}</td>
-                  <td>{CR.date_modified}</td>
+                  <td>{withTooltip(CR.remarks, "180px")}</td>
+                  <td>{withTooltip(CR?.creator?.username, "130px")}</td>
+                  <td>{withTooltip(CR?.modifier?.username, "130px")}</td>
+                  <td>{formatToDate(CR.date_created)}</td>
+                  <td>{formatToDate(CR.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
