@@ -267,7 +267,7 @@ const ViewAR = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -327,15 +327,15 @@ const ViewAR = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   Receipt No.
                 </th>
-                <th style={{ width: 150 }}>Check No.</th>
-                <th style={{ width: 150 }}>Status</th>
-                <th style={{ width: 150 }}>Payment Status</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
                 <th style={{ width: 250 }}>Customer</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 250 }}>Payment Method</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 150 }}>Check No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 150 }}>Payment Status</th>
+                <th style={{ width: 100 }}>Method</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -354,13 +354,13 @@ const ViewAR = ({
                   }}
                 >
                   <td>{AR.id}</td>
+                  <td>{AR.transaction_date}</td>
+                  <td>{AR.customer.name}</td>
                   <td>{AR.reference_number}</td>
                   <td>
                     <StatusChip status={AR.status} />
                   </td>
                   <td className="capitalize">{AR.payment_status}</td>
-                  <td>{AR.customer.name}</td>
-                  <td>{AR.transaction_date}</td>
                   <td className="capitalize">{AR.payment_method}</td>
                   <td>{AR.remarks}</td>
                   <td>{AR?.creator?.username}</td>

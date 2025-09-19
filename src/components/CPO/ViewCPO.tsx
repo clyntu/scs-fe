@@ -216,7 +216,7 @@ const ViewCPO = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -276,15 +276,15 @@ const ViewCPO = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   PO No.
                 </th>
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 150 }}>Status</th>
-                <th style={{ width: 300 }}>Customer</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Gross Total</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
                 <th style={{ width: 150 }}>Net Total</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 150 }}>Gross Total</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -303,17 +303,17 @@ const ViewCPO = ({
                   }}
                 >
                   <td>{CPO.id}</td>
+                  <td>{CPO.transaction_date}</td>
+                  <td>{CPO?.customer?.name}</td>
                   <td>{CPO.reference_number}</td>
                   <td>
                     <StatusChip status={CPO.status} />
                   </td>
-                  <td>{CPO?.customer?.name}</td>
-                  <td>{CPO.transaction_date}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(CPO.gross_total)}
-                  </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(CPO.net_total)}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(CPO.gross_total)}
                   </td>
                   <td>{CPO.remarks}</td>
                   <td>{CPO?.creator?.username}</td>

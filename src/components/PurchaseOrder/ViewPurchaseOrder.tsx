@@ -211,7 +211,7 @@ const ViewPurchaseOrder = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -271,18 +271,18 @@ const ViewPurchaseOrder = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   PO No.
                 </th>
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 150 }}>Status</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
                 <th style={{ width: 300 }}>Supplier</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130 }}>Net Amount</th>
+                <th style={{ width: 130 }}>FOB Total</th>
+                <th style={{ width: 130 }}>Landed Total</th>
                 <th style={{ width: 150 }}>Currency Used</th>
                 <th style={{ width: 150 }}>Peso Rate</th>
-                <th style={{ width: 150 }}>Net Amount (₱)</th>
-                <th style={{ width: 150 }}>FOB Total (₱)</th>
-                <th style={{ width: 150 }}>Landed Total (₱)</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -301,15 +301,11 @@ const ViewPurchaseOrder = ({
                   }}
                 >
                   <td>{purchaseOrder.id}</td>
+                  <td>{purchaseOrder.transaction_date}</td>
+                  <td>{purchaseOrder?.supplier?.name}</td>
                   <td>{purchaseOrder.reference_number}</td>
                   <td>
                     <StatusChip status={purchaseOrder.status} />
-                  </td>
-                  <td>{purchaseOrder?.supplier?.name}</td>
-                  <td>{purchaseOrder.transaction_date}</td>
-                  <td>{purchaseOrder.currency_used}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {purchaseOrder.peso_rate}
                   </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(purchaseOrder.net_amount)}
@@ -319,6 +315,10 @@ const ViewPurchaseOrder = ({
                   </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(purchaseOrder.landed_total)}
+                  </td>
+                  <td>{purchaseOrder.currency_used}</td>
+                  <td style={{ textAlign: "right" }}>
+                    {purchaseOrder.peso_rate}
                   </td>
                   <td>{purchaseOrder.remarks}</td>
                   <td>{purchaseOrder?.creator?.username}</td>

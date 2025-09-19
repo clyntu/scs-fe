@@ -186,7 +186,7 @@ const ViewReceivingReport = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -246,18 +246,18 @@ const ViewReceivingReport = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   RR No.
                 </th>
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 150 }}>Status</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
                 <th style={{ width: 320 }}>Supplier</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>FOB Total</th>
-                <th style={{ width: 150 }}>Net Price</th>
-                <th style={{ width: 150 }}>Landed Total (₱)</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130 }}>Net Amount</th>
+                <th style={{ width: 130 }}>FOB Total</th>
+                <th style={{ width: 130 }}>Landed Total (₱)</th>
                 <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 100 }}>Rate</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 70 }}>Rate</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -276,25 +276,23 @@ const ViewReceivingReport = ({
                   }}
                 >
                   <td>{receivingReport.id}</td>
+                  <td>{receivingReport.transaction_date}</td>
+                  <td>{receivingReport.supplier.name}</td>
                   <td>{receivingReport.reference_number}</td>
                   <td>
                     <StatusChip status={receivingReport.status} />
                   </td>
-                  <td>{receivingReport.supplier.name}</td>
-                  <td>{receivingReport.transaction_date}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}
-                  </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(receivingReport.net_amount)}
                   </td>
-
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}
+                  </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithFourPlaces(
                       receivingReport.landed_total,
                     )}
                   </td>
-
                   <td>{receivingReport.currency}</td>
                   <td style={{ textAlign: "right" }}>{receivingReport.rate}</td>
                   <td>{receivingReport.remarks}</td>

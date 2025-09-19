@@ -185,7 +185,7 @@ const ViewCDR = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -245,17 +245,17 @@ const ViewCDR = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   CDR No.
                 </th>
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 200 }}>CDP No.</th>
-                <th style={{ width: 300 }}>Status</th>
-                <th style={{ width: 300 }}>Customer</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Total Items</th>
-                <th style={{ width: 150 }}>Total Gross</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
                 <th style={{ width: 150 }}>Total NET</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 150 }}>Total Gross</th>
+                <th style={{ width: 100 }}>CDP No.</th>
+                <th style={{ width: 100 }}>Total Items</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -274,20 +274,20 @@ const ViewCDR = ({
                   }}
                 >
                   <td>{CDR.id}</td>
+                  <td>{CDR.transaction_date}</td>
+                  <td>{CDR.customer.name}</td>
                   <td>{CDR.reference_number}</td>
-                  <td>{CDR.delivery_plan_id}</td>
                   <td>
                     <StatusChip status={CDR.status} />
-                  </td>
-                  <td>{CDR.customer.name}</td>
-                  <td>{CDR.transaction_date}</td>
-                  <td style={{ textAlign: "right" }}>{CDR.total_items}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
                   </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(Number(CDR.total_net))}
                   </td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
+                  </td>
+                  <td>{CDR.delivery_plan_id}</td>
+                  <td style={{ textAlign: "right" }}>{CDR.total_items}</td>
                   <td>{CDR.remarks}</td>
                   <td>{CDR?.creator?.username}</td>
                   <td>{CDR?.modifier?.username}</td>

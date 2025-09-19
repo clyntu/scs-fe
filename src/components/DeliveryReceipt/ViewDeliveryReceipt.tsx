@@ -210,7 +210,7 @@ const ViewDeliveryReceipt = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -270,16 +270,15 @@ const ViewDeliveryReceipt = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   SDR No.
                 </th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                {/* <th style={{ width: 300 }}>Supplier</th> */}
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 300 }}>Status</th>
-                <th style={{ width: 150 }}>FOB Total</th>
-                <th style={{ width: 150 }}>Net Amount</th>
-                <th style={{ width: 150 }}>Landed Total (₱)</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130 }}>Net Amount</th>
+                <th style={{ width: 130 }}>FOB Total</th>
+                <th style={{ width: 130 }}>Landed Total (₱)</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -299,18 +298,15 @@ const ViewDeliveryReceipt = ({
                 >
                   <td>{deliveryReceipt.id}</td>
                   <td>{deliveryReceipt.transaction_date}</td>
-                  {/* <td>{deliveryReceipt.supplier_id}</td> */}
                   <td>{deliveryReceipt.reference_number}</td>
-
                   <td>
                     <StatusChip status={deliveryReceipt.status} />
                   </td>
-
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
-                  </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(deliveryReceipt.net_amount)}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
                   </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithFourPlaces(

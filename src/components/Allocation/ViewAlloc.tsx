@@ -176,7 +176,7 @@ const ViewAlloc = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -236,12 +236,12 @@ const ViewAlloc = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   Alloc No.
                 </th>
-                <th style={{ width: 150 }}>Status</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
                 <th style={{ width: 150 }}>Customer</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -260,11 +260,11 @@ const ViewAlloc = ({
                   }}
                 >
                   <td>{alloc?.id}</td>
+                  <td>{alloc?.transaction_date}</td>
+                  <td>{alloc?.customer.name}</td>
                   <td>
                     <StatusChip status={alloc.status} />
                   </td>
-                  <td>{alloc?.transaction_date}</td>
-                  <td>{alloc?.customer.name}</td>
                   <td>{alloc?.remarks}</td>
                   <td>{alloc?.creator?.username}</td>
                   <td>{alloc?.modifier?.username}</td>

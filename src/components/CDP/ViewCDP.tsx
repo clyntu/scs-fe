@@ -185,7 +185,7 @@ const ViewCDP = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
@@ -245,16 +245,16 @@ const ViewCDP = ({
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                   CDP No.
                 </th>
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 300 }}>Status</th>
-                <th style={{ width: 300 }}>Customer</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Total Items</th>
-                <th style={{ width: 150 }}>Total Gross</th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
                 <th style={{ width: 150 }}>Total NET</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
+                <th style={{ width: 150 }}>Total Gross</th>
+                <th style={{ width: 100 }}>Total Items</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 250 }}>Date Modified</th>
                 <th
@@ -273,19 +273,19 @@ const ViewCDP = ({
                   }}
                 >
                   <td>{CDP.id}</td>
+                  <td>{CDP.transaction_date}</td>
+                  <td>{CDP.customer.name}</td>
                   <td>{CDP.reference_number}</td>
                   <td>
                     <StatusChip status={CDP.status} />
                   </td>
-                  <td>{CDP.customer.name}</td>
-                  <td>{CDP.transaction_date}</td>
-                  <td style={{ textAlign: "right" }}>{CDP.total_items}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
-                  </td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(Number(CDP.total_net))}
                   </td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
+                  </td>
+                  <td style={{ textAlign: "right" }}>{CDP.total_items}</td>
                   <td>{CDP.remarks}</td>
                   <td>{CDP?.creator?.username}</td>
                   <td>{CDP?.modifier?.username}</td>

@@ -505,7 +505,7 @@ const ItemForm = (): JSX.Element => {
                 <th style={{ width: 150 }}>Net B/F Tax (₱)</th>
                 <th style={{ width: 100 }}>Category</th>
                 <th style={{ width: 100 }}>Brand</th>
-                <th style={{ width: 100 }}>Status</th>
+                <th style={{ width: 110 }}>Status</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
