@@ -14,6 +14,7 @@ import type { CDRFormDetailsProps, AllocItemsFE } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import TooltipInput from "../../shared/TooltipInput";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
@@ -312,7 +313,7 @@ const CDRFormDetails = ({
           >
             <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
               <FormLabel>Ref No.</FormLabel>
-              <Input
+              <TooltipInput
                 size="sm"
                 placeholder="Ref No."
                 // onChange={(e) => setReferenceNumber(e.target.value)}

@@ -13,6 +13,7 @@ import {
 } from "@mui/joy";
 import type { CDPFormDetailsProps, UnplannedAlloc } from "../interface";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import TooltipInput from "../../shared/TooltipInput";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
@@ -134,7 +135,7 @@ const CDPFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Ref No.</FormLabel>
-              <Input
+              <TooltipInput
                 size="sm"
                 placeholder="Search"
                 onChange={(e) => setReferenceNumber(e.target.value)}
