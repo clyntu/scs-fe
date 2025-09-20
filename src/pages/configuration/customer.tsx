@@ -15,6 +15,7 @@ import type { Customer, PaginatedCustomers } from "../../interface";
 import { convertToQueryParams, formatToCP, formatToDate } from "../../helper";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
+import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
 
 const PAGE_LIMIT = 10;
 
@@ -26,6 +27,7 @@ const CustomerForm = (): JSX.Element => {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openPrint, setOpenPrint] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Customer>();
   const [userId, setUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -153,15 +155,27 @@ const CustomerForm = (): JSX.Element => {
           className="flex justify-between"
         >
           <h2>Customers</h2>
-          <Button
-            className="mt-2 bg-button-primary"
-            color="primary"
-            onClick={() => {
-              setOpenAdd(true);
-            }}
-          >
-            Add Customers
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              className="mt-2 bg-button-secondary"
+              color="primary"
+              variant="outlined"
+              onClick={() => {
+                setOpenPrint(true);
+              }}
+            >
+              Print Payment History
+            </Button>
+            <Button
+              className="mt-2 bg-button-primary"
+              color="primary"
+              onClick={() => {
+                setOpenAdd(true);
+              }}
+            >
+              Add Customers
+            </Button>
+          </Box>
         </Box>
 
         <Box className="flex items-center mb-6">
@@ -299,7 +313,7 @@ const CustomerForm = (): JSX.Element => {
                       {customer?.modifier?.full_name}
                     </TooltipTableCell>
                   </td>
-                  <td>{formatToDate(customer.date_modified)}</td>
+                  <td>{formatToDate(customer.date_modified ?? undefined)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
@@ -360,6 +374,10 @@ const CustomerForm = (): JSX.Element => {
         setOpen={setOpenDelete}
         title="Delete Customers"
         onDelete={handleDeleteCustomer}
+      />
+      <PrintCustomerPaymentHistoryModal
+        open={openPrint}
+        setOpen={setOpenPrint}
       />
     </>
   );
