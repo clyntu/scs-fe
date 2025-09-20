@@ -277,7 +277,11 @@ const CustomerForm = (): JSX.Element => {
                       {customer.contact_person}
                     </TooltipTableCell>
                   </td>
-                  <td>{customer.contact_number}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="150px">
+                      {customer.contact_number}
+                    </TooltipTableCell>
+                  </td>
                   <td>
                     <TooltipTableCell maxWidth="300px">
                       {customer.email}

@@ -279,7 +279,11 @@ const SupplierForm = (): JSX.Element => {
                       {supplier.contact_person}
                     </TooltipTableCell>
                   </td>
-                  <td>{supplier.contact_number}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="150px">
+                      {supplier.contact_number}
+                    </TooltipTableCell>
+                  </td>
                   <td>
                     <TooltipTableCell maxWidth="300px">
                       {supplier.email}
