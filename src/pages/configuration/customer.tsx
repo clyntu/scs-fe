@@ -3,7 +3,15 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input, FormControl, FormLabel } from "@mui/joy";
+import {
+  Input,
+  FormControl,
+  FormLabel,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
+} from "@mui/joy";
 import CustomersModal from "../../components/Customers/CustomersModal";
 import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../Login";
@@ -16,6 +24,7 @@ import { convertToQueryParams, formatToCP, formatToDate } from "../../helper";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
+import PrintCustomerReceivablesModal from "../../components/Customers/PrintCustomerReceivablesModal";
 
 const PAGE_LIMIT = 10;
 
@@ -28,6 +37,7 @@ const CustomerForm = (): JSX.Element => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openPrint, setOpenPrint] = useState(false);
+  const [openPrintReceivables, setOpenPrintReceivables] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Customer>();
   const [userId, setUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -149,25 +159,46 @@ const CustomerForm = (): JSX.Element => {
     <>
       <Box sx={{ width: "100%" }}>
         <Box
+          className="flex justify-between"
           sx={{
             mb: 4,
           }}
-          className="flex justify-between"
         >
           <h2>Customers</h2>
-          <Box sx={{ display: "flex", gap: 2 }}>
+
+          <div className="flex items-center gap-3">
+            {/* Print Reports Dropdown */}
+            <Dropdown>
+              <MenuButton
+                variant="soft"
+                sx={{
+                  width: "140px",
+                  height: "36px",
+                }}
+                className="bg-button-soft-primary"
+              >
+                Print Reports
+              </MenuButton>
+              <Menu>
+                <MenuItem
+                  onClick={() => setOpenPrint(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Payment History
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setOpenPrintReceivables(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Customer Receivables
+                </MenuItem>
+              </Menu>
+            </Dropdown>
+
+            {/* Add Customers Button */}
             <Button
-              className="mt-2 bg-button-secondary"
-              color="primary"
-              variant="outlined"
-              onClick={() => {
-                setOpenPrint(true);
-              }}
-            >
-              Print Payment History
-            </Button>
-            <Button
-              className="mt-2 bg-button-primary"
+              sx={{ width: "140px", height: "36px" }}
+              className="bg-button-primary"
               color="primary"
               onClick={() => {
                 setOpenAdd(true);
@@ -175,7 +206,7 @@ const CustomerForm = (): JSX.Element => {
             >
               Add Customers
             </Button>
-          </Box>
+          </div>
         </Box>
 
         <Box className="flex items-center mb-6">
@@ -378,6 +409,10 @@ const CustomerForm = (): JSX.Element => {
       <PrintCustomerPaymentHistoryModal
         open={openPrint}
         setOpen={setOpenPrint}
+      />
+      <PrintCustomerReceivablesModal
+        open={openPrintReceivables}
+        onClose={() => setOpenPrintReceivables(false)}
       />
     </>
   );

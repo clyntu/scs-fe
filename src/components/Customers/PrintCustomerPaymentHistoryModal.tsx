@@ -1,14 +1,16 @@
 import { useState } from "react";
-import Modal from "@mui/joy/Modal";
-import ModalClose from "@mui/joy/ModalClose";
-import Sheet from "@mui/joy/Sheet";
 import {
+  Modal,
+  ModalDialog,
+  ModalClose,
   Button,
   Box,
   FormControl,
   FormLabel,
   Autocomplete,
   Input,
+  Typography,
+  Divider,
 } from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { convertToQueryParams } from "../../helper";
@@ -174,28 +176,15 @@ const PrintCustomerPaymentHistoryModal = ({
   };
 
   return (
-    <Modal
-      aria-labelledby="modal-title"
-      aria-describedby="modal-desc"
-      open={open}
-      onClose={(event, reason) => {
-        if (reason === "backdropClick") return;
-        handleClose();
-      }}
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-    >
-      <Sheet
-        variant="outlined"
-        sx={{
-          width: 700,
-          borderRadius: "md",
-          p: 3,
-          boxShadow: "lg",
-        }}
-      >
-        <ModalClose variant="plain" sx={{ m: 1 }} />
+    <Modal open={open} onClose={handleClose}>
+      <ModalDialog size="lg" sx={{ minWidth: 700 }}>
+        <ModalClose />
+        <Typography level="h4" component="h2">
+          Print Customer Payment History
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+
         <Box>
-          <h3 className="mb-6">Print Customer Payment History</h3>
           {selectedCustomer !== null && (
             <p className="mb-4 text-sm text-gray-600">
               Selected Customer: <strong>{selectedCustomer.name}</strong>
@@ -213,7 +202,7 @@ const PrintCustomerPaymentHistoryModal = ({
             <FormControl size="sm" sx={{ gridColumn: "1 / -1" }}>
               <FormLabel>Customer</FormLabel>
               <Autocomplete
-                placeholder="Select Customer"
+                placeholder="Search and select a customer..."
                 options={customers}
                 value={selectedCustomer}
                 loading={customersLoading}
@@ -225,22 +214,70 @@ const PrintCustomerPaymentHistoryModal = ({
                 isOptionEqualToValue={(option, value) =>
                   option.customer_id === value.customer_id
                 }
+                renderOption={(props, option) => (
+                  <li {...props} key={option.customer_id}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "100%",
+                      }}
+                    >
+                      <div style={{ fontWeight: 500, fontSize: "14px" }}>
+                        {option.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#666",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>ID: {option.customer_id}</span>
+                        {option.customer_balance !== null &&
+                          option.customer_balance !== undefined &&
+                          option.customer_balance > 0 && (
+                            <span style={{ fontWeight: 500 }}>
+                              Balance: ₱
+                              {option.customer_balance.toLocaleString()}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  </li>
+                )}
                 size="sm"
                 slotProps={{
                   listbox: {
                     sx: {
-                      fontSize: "13px",
+                      maxHeight: "300px",
                       "& li": {
-                        padding: "6px 12px",
-                        margin: "1px 0",
-                        borderRadius: "4px",
+                        padding: "8px 12px",
+                        margin: "2px 4px",
+                        borderRadius: "6px",
+                        border: "1px solid transparent",
                         "&:hover": {
-                          backgroundColor: "#f5f5f5",
+                          backgroundColor: "#f8f9fa",
+                          border: "1px solid #e9ecef",
+                        },
+                        "&[aria-selected='true']": {
+                          backgroundColor: "#e3f2fd",
+                          border: "1px solid #2196f3",
                         },
                       },
                     },
                   },
+                  input: {
+                    autoComplete: "new-password",
+                  },
                 }}
+                noOptionsText={
+                  customersLoading
+                    ? "Loading customers..."
+                    : "No customers found"
+                }
               />
             </FormControl>
             <FormControl size="sm">
@@ -360,7 +397,7 @@ const PrintCustomerPaymentHistoryModal = ({
             </Button>
           </div>
         </Box>
-      </Sheet>
+      </ModalDialog>
     </Modal>
   );
 };
