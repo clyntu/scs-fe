@@ -14,7 +14,7 @@ import { Pagination } from "@mui/material";
 
 import type { Warehouse, PaginatedWarehouse } from "../../interface";
 
-import { convertToQueryParams, formatToWH } from "../../helper";
+import { convertToQueryParams, formatToWH, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const PAGE_LIMIT = 10;
@@ -248,9 +248,9 @@ const WarehouseForm = (): JSX.Element => {
                 <th style={{ width: 300 }}>Name</th>
                 <th style={{ width: 100 }}>Type</th>
                 <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 250 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -278,13 +278,13 @@ const WarehouseForm = (): JSX.Element => {
                       {warehouse?.creator?.username}
                     </TooltipTableCell>
                   </td>
-                  <td>{warehouse.date_created}</td>
+                  <td>{formatToDate(warehouse.date_created)}</td>
                   <td>
                     <TooltipTableCell maxWidth="200px">
                       {warehouse?.modifier?.username}
                     </TooltipTableCell>
                   </td>
-                  <td>{warehouse.date_modified}</td>
+                  <td>{formatToDate(warehouse.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

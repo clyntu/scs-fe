@@ -13,7 +13,7 @@ import { Pagination } from "@mui/material";
 
 import type { Supplier, PaginatedSuppliers } from "../../interface";
 
-import { convertToQueryParams, formatToSP } from "../../helper";
+import { convertToQueryParams, formatToSP, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const PAGE_LIMIT = 10;
@@ -245,9 +245,9 @@ const SupplierForm = (): JSX.Element => {
                 <th style={{ width: 100 }}>Currency</th>
                 <th style={{ width: 150 }}>Supplier Balance</th>
                 <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 250 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -298,13 +298,13 @@ const SupplierForm = (): JSX.Element => {
                       {supplier?.creator?.full_name}
                     </TooltipTableCell>
                   </td>
-                  <td>{supplier.date_created}</td>
+                  <td>{formatToDate(supplier.date_created)}</td>
                   <td>
                     <TooltipTableCell maxWidth="200px">
                       {supplier?.modifier?.full_name}
                     </TooltipTableCell>
                   </td>
-                  <td>{supplier.date_modified}</td>
+                  <td>{formatToDate(supplier.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button

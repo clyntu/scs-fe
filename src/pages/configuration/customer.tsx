@@ -12,7 +12,7 @@ import { Pagination } from "@mui/material";
 
 import type { Customer, PaginatedCustomers } from "../../interface";
 
-import { convertToQueryParams, formatToCP } from "../../helper";
+import { convertToQueryParams, formatToCP, formatToDate } from "../../helper";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
@@ -243,9 +243,9 @@ const CustomerForm = (): JSX.Element => {
                 <th style={{ width: 300 }}>Email</th>
                 <th style={{ width: 150 }}>Customer Balance</th>
                 <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 250 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Modified</th>
+                <th style={{ width: 120 }}>Date Modified</th>
                 <th
                   aria-label="last"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -293,13 +293,13 @@ const CustomerForm = (): JSX.Element => {
                       {customer?.creator?.full_name}
                     </TooltipTableCell>
                   </td>
-                  <td>{customer.date_created}</td>
+                  <td>{formatToDate(customer.date_created)}</td>
                   <td>
                     <TooltipTableCell maxWidth="200px">
                       {customer?.modifier?.full_name}
                     </TooltipTableCell>
                   </td>
-                  <td>{customer.date_modified}</td>
+                  <td>{formatToDate(customer.date_modified)}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
                       <Button
