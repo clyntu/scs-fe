@@ -300,7 +300,7 @@ const ViewDeliveryReceipt = ({
                 >
                   <td>{deliveryReceipt.id}</td>
                   <td>{deliveryReceipt.transaction_date}</td>
-                  <td>{deliveryReceipt?.purchase_orders[0].supplier.name}</td>
+                  <td>{deliveryReceipt.supplier.name}</td>
                   <td>{deliveryReceipt.reference_number}</td>
                   <td>
                     <StatusChip status={deliveryReceipt.status} />
