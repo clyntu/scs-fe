@@ -4,6 +4,7 @@ import Table from "@mui/joy/Table";
 import type { ARFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces, addTwoPlaces } from "../../../helper";
 import CircularProgress from "@mui/joy/CircularProgress";
+import TooltipTableCell from "../../shared/TooltipTableCell";
 
 const ARFormTable = ({
   outstandingTrans,
@@ -194,7 +195,11 @@ const ARFormTable = ({
                             Number(trans.payment),
                         )}
                       </td>
-                      <td>{trans.reference}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {trans.reference}
+                        </TooltipTableCell>
+                      </td>
                     </tr>
                   );
                 })}
