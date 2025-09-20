@@ -22,16 +22,40 @@ const TooltipTableCell: React.FC<TooltipTableCellProps> = ({
   useEffect(() => {
     const checkOverflow = (): void => {
       if (textRef.current !== null) {
-        const isOverflow =
-          textRef.current.scrollWidth > textRef.current.clientWidth;
-        setIsOverflowing(isOverflow);
+        // Add small delay to ensure DOM is fully rendered
+        requestAnimationFrame(() => {
+          if (textRef.current !== null) {
+            const element = textRef.current;
+            
+            // Create a temporary element to measure natural text width
+            const testElement = element.cloneNode(true) as HTMLElement;
+            testElement.style.position = "absolute";
+            testElement.style.visibility = "hidden";
+            testElement.style.width = "auto";
+            testElement.style.maxWidth = "none";
+            testElement.style.whiteSpace = "nowrap";
+            
+            document.body.appendChild(testElement);
+            const naturalWidth = testElement.offsetWidth;
+            document.body.removeChild(testElement);
+            
+            // Compare natural width with current element width
+            const actualOverflow = naturalWidth > element.clientWidth;
+            
+            setIsOverflowing(actualOverflow);
+          }
+        });
       }
     };
 
-    checkOverflow();
+    // Initial check with delay
+    const timer = setTimeout(checkOverflow, 100);
+    
+    // Check on resize
     window.addEventListener("resize", checkOverflow);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener("resize", checkOverflow);
     };
   }, [children]);

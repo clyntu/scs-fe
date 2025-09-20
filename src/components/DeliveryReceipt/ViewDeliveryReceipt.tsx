@@ -272,6 +272,7 @@ const ViewDeliveryReceipt = ({
                   SDR No.
                 </th>
                 <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Supplier</th>
                 <th style={{ width: 180 }}>Ref No.</th>
                 <th style={{ width: 110 }}>Status</th>
                 <th style={{ width: 130 }}>Net Amount</th>
@@ -299,6 +300,7 @@ const ViewDeliveryReceipt = ({
                 >
                   <td>{deliveryReceipt.id}</td>
                   <td>{deliveryReceipt.transaction_date}</td>
+                  <td>{deliveryReceipt?.purchase_orders[0].supplier.name}</td>
                   <td>{deliveryReceipt.reference_number}</td>
                   <td>
                     <StatusChip status={deliveryReceipt.status} />

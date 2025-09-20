@@ -249,12 +249,12 @@ const ViewCDR = ({
                 </th>
                 <th style={{ width: 120 }}>Tx. Date</th>
                 <th style={{ width: 250 }}>Customer</th>
-                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 220 }}>Ref No.</th>
                 <th style={{ width: 110 }}>Status</th>
-                <th style={{ width: 150 }}>Total NET</th>
-                <th style={{ width: 150 }}>Total Gross</th>
+                <th style={{ width: 150 }}>Net Amount</th>
+                <th style={{ width: 150 }}>Gross Amount</th>
+                <th style={{ width: 100 }}>Items Total</th>
                 <th style={{ width: 100 }}>CDP No.</th>
-                <th style={{ width: 100 }}>Total Items</th>
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 150 }}>Modified By</th>
@@ -278,7 +278,7 @@ const ViewCDR = ({
                   <td>{CDR.id}</td>
                   <td>{CDR.transaction_date}</td>
                   <td>{withTooltip(CDR.customer.name, "280px")}</td>
-                  <td>{withTooltip(CDR.reference_number, "160px")}</td>
+                  <td>{withTooltip(CDR.reference_number, "200px")}</td>
                   <td>
                     <StatusChip status={CDR.status} />
                   </td>

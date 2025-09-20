@@ -243,6 +243,7 @@ const ViewDealloc = ({
                   Dealloc No.
                 </th>
                 <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
                 <th style={{ width: 110 }}>Status</th>
                 <th style={{ width: 80 }}>Alloc No.</th>
                 <th style={{ width: 200 }}>Remarks</th>
@@ -267,6 +268,7 @@ const ViewDealloc = ({
                 >
                   <td>{dealloc?.id}</td>
                   <td>{dealloc?.transaction_date}</td>
+                  <td>{dealloc?.customer?.name}</td>
                   <td>
                     <StatusChip status={dealloc.status} />
                   </td>
