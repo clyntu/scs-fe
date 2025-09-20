@@ -1,10 +1,11 @@
-import { Input, Button, Sheet, Autocomplete } from "@mui/joy";
+import { Input, Button, Sheet } from "@mui/joy";
 import ConfirmationModal from "../ConfirmationModal";
 import Table from "@mui/joy/Table";
 
 import type { Item } from "../../../interface";
 import type { POFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const POFormTable = ({
   items,
@@ -188,7 +189,7 @@ const POFormTable = ({
               )}
 
               <td style={{ zIndex: 1 }}>
-                <Autocomplete
+                <TooltipAutocomplete
                   placeholder="Select Stock Code"
                   options={items}
                   getOptionLabel={(item) => item.stock_code ?? ""}
@@ -211,7 +212,7 @@ const POFormTable = ({
                 />
               </td>
               <td>
-                <Autocomplete
+                <TooltipAutocomplete
                   placeholder="Select Stock Name"
                   options={items}
                   getOptionLabel={(item) => item.name ?? ""}

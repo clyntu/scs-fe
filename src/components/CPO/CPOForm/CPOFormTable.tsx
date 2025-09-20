@@ -1,9 +1,10 @@
-import { Input, Button, Sheet, Autocomplete, Select, Option } from "@mui/joy";
+import { Input, Button, Sheet, Select, Option } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { Item } from "../../../interface";
 import type { CPOFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const CPOFormTable = ({
   items,
@@ -153,7 +154,7 @@ const CPOFormTable = ({
             return (
               <tr key={`${selectedItem.id}-${index}`}>
                 <td>
-                  <Autocomplete
+                  <TooltipAutocomplete
                     placeholder="Select Stock"
                     options={items}
                     getOptionLabel={(item) => item.stock_code ?? ""}
@@ -176,7 +177,7 @@ const CPOFormTable = ({
                   />
                 </td>
                 <td style={{ zIndex: 1 }}>
-                  <Autocomplete
+                  <TooltipAutocomplete
                     placeholder="Select Stock"
                     options={items}
                     getOptionLabel={(item) => item.name ?? ""}

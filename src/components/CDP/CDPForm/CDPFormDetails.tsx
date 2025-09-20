@@ -10,9 +10,9 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
 } from "@mui/joy";
 import type { CDPFormDetailsProps, UnplannedAlloc } from "../interface";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
@@ -92,7 +92,7 @@ const CDPFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}

@@ -9,11 +9,11 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
 } from "@mui/joy";
 import type { CDRFormDetailsProps, AllocItemsFE } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
@@ -185,7 +185,7 @@ const CDRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22.5%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
@@ -207,7 +207,7 @@ const CDRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22.5%" }}>
               <FormLabel>CDP No.</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={unservedDPs}
                   getOptionLabel={(option) =>
                     `${String(option.id)} - Ref: ${option.reference_number}`

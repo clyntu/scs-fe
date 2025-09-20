@@ -9,7 +9,6 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
 } from "@mui/joy";
 import type { ARFormDetailsProps } from "../interface";
 import {
@@ -17,6 +16,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   addTwoPlaces,
 } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const ARFormDetails = ({
   openEdit,
@@ -127,7 +127,7 @@ const ARFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}

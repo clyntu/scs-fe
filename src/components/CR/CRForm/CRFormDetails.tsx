@@ -9,12 +9,12 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
   Button,
 } from "@mui/joy";
 import type { CRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
@@ -96,7 +96,7 @@ const CRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
