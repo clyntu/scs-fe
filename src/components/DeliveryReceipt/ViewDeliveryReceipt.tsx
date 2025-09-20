@@ -29,6 +29,7 @@ import {
   formatToDate,
 } from "../../helper";
 import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
 
 const PAGE_LIMIT = 10;
 
@@ -300,8 +301,10 @@ const ViewDeliveryReceipt = ({
                 >
                   <td>{deliveryReceipt.id}</td>
                   <td>{deliveryReceipt.transaction_date}</td>
-                  <td>{deliveryReceipt.supplier.name}</td>
-                  <td>{deliveryReceipt.reference_number}</td>
+                  <td>{withTooltip(deliveryReceipt.supplier.name, "230px")}</td>
+                  <td>
+                    {withTooltip(deliveryReceipt.reference_number, "160px")}
+                  </td>
                   <td>
                     <StatusChip status={deliveryReceipt.status} />
                   </td>
@@ -316,7 +319,7 @@ const ViewDeliveryReceipt = ({
                       deliveryReceipt.landed_total,
                     )}
                   </td>
-                  <td>{deliveryReceipt.remarks}</td>
+                  <td>{withTooltip(deliveryReceipt.remarks, "180px")}</td>
                   <td>{deliveryReceipt?.creator?.username}</td>
                   <td>{deliveryReceipt?.modifier?.username}</td>
                   <td>{formatToDate(deliveryReceipt.date_created)}</td>

@@ -3,6 +3,7 @@ import Table from "@mui/joy/Table";
 
 import type { CDRFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const CDRFormTable = ({
   selectedRow,
@@ -87,8 +88,8 @@ const CDRFormTable = ({
             return (
               <tr key={key}>
                 <td style={{ zIndex: 1 }}>{item.id}</td>
-                <td>{item?.stock_code}</td>
-                <td>{item?.name}</td>
+                <td>{withTooltip(item?.stock_code, "120px")}</td>
+                <td>{withTooltip(item?.name, "180px")}</td>
                 <td style={{ textAlign: "right" }}>{price}</td>
                 <td style={{ textAlign: "right" }}>{item.dp_qty}</td>
                 <td style={{ textAlign: "right" }}>

@@ -8,11 +8,11 @@ import {
   Select,
   Option,
   Box,
-  Autocomplete,
 } from "@mui/joy";
 import type { STFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
 import { type Warehouse } from "../../../interface";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const STFormDetails = ({
   openEdit,
@@ -89,7 +89,7 @@ const STFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={suppliers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedSupplier}
@@ -108,7 +108,7 @@ const STFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "46.5%" }}>
               <FormLabel>RR Ref No.</FormLabel>
-              <Autocomplete
+              <TooltipAutocomplete
                 options={receivingReports.items}
                 getOptionLabel={(option) => option.reference_number}
                 value={selectedRR}
@@ -159,7 +159,7 @@ const STFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "46.5%" }}>
               <FormLabel>From Warehouse</FormLabel>
-              <Autocomplete
+              <TooltipAutocomplete
                 options={warehouses.items}
                 getOptionLabel={(option) => option.name}
                 value={selectedWarehouse}

@@ -12,6 +12,7 @@ import {
 } from "@mui/joy";
 import type { AllocFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const AllocFormDetails = ({
   openEdit,
@@ -52,7 +53,7 @@ const AllocFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}

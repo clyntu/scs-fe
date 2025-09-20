@@ -64,12 +64,13 @@ const TooltipTableCell: React.FC<TooltipTableCellProps> = ({
     <Box
       ref={textRef}
       sx={{
-        maxWidth,
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
         textAlign: align,
         width: "100%",
+        // Don't use maxWidth for layout - let it use the full cell width
+        // maxWidth is only used for Tooltip sizing, not for text truncation
         ...style,
       }}
       className={className}

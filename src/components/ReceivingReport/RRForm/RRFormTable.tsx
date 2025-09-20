@@ -8,6 +8,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const RRFormTable = ({
   selectedRow,
@@ -211,8 +212,8 @@ const RRFormTable = ({
                   <tr key={key}>
                     <td style={{ zIndex: 1 }}>{SDR.id}</td>
                     <td>{PO.id}</td>
-                    <td>{POItem?.item.stock_code}</td>
-                    <td>{POItem?.item.name}</td>
+                    <td>{withTooltip(POItem?.item.stock_code, "120px")}</td>
+                    <td>{withTooltip(POItem?.item.name, "180px")}</td>
                     <td style={{ textAlign: "right" }}>
                       {status === "posted"
                         ? POItem.on_stock

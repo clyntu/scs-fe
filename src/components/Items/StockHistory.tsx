@@ -5,6 +5,7 @@ import { Card, Box, Table } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { withTooltip } from "../shared/withTooltip";
 
 import { type IStockHistory, type ViewStockHistory } from "../../interface";
 
@@ -201,8 +202,18 @@ const StockHistory = ({
                             }}
                           >
                             <td>{history.transaction_type}</td>
-                            <td>{history?.supplier_name ?? "-"}</td>
-                            <td>{history?.customer_name ?? "-"}</td>
+                            <td>
+                              {withTooltip(
+                                history?.supplier_name ?? "-",
+                                "230px",
+                              )}
+                            </td>
+                            <td>
+                              {withTooltip(
+                                history?.customer_name ?? "-",
+                                "230px",
+                              )}
+                            </td>
                             <td>{history.transaction_date}</td>
                             <td style={{ textAlign: "right" }}>
                               {history.transaction_number}
@@ -243,7 +254,9 @@ const StockHistory = ({
                                     history.net_cost,
                                   )}
                             </td>
-                            <td>{history?.reference_number}</td>
+                            <td>
+                              {withTooltip(history?.reference_number, "180px")}
+                            </td>
                           </tr>
                         );
                       })}

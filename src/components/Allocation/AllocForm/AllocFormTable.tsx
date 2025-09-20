@@ -1,7 +1,9 @@
-import { Sheet, Autocomplete, Input } from "@mui/joy";
+import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 import { type AllocFormTableProps } from "../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { withTooltip } from "../../shared/withTooltip";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const AllocFormTable = ({
   selectedRow,
@@ -146,7 +148,7 @@ const AllocFormTable = ({
                       >
                         {item.id}
                       </td>
-                      <td>{item.name}</td>
+                      <td>{withTooltip(item.name, "180px")}</td>
                       <td>{item.volume}</td>
                       <td>
                         {isEditDisabled
@@ -155,7 +157,7 @@ const AllocFormTable = ({
                           : item.alloc_qty ?? 0}
                       </td>
                       <td>
-                        <Autocomplete
+                        <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
                             if (warehouse.id === 1) return false;
 
@@ -294,7 +296,7 @@ const AllocFormTable = ({
                         />
                       </td>
                       <td style={{ width: 200 }}>
-                        <Autocomplete
+                        <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
                             if (warehouse.id === 1) return false;
 
@@ -433,7 +435,7 @@ const AllocFormTable = ({
                         />
                       </td>
                       <td style={{ width: 200 }}>
-                        <Autocomplete
+                        <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
                             if (warehouse.id === 1) return false;
 

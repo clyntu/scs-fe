@@ -2,6 +2,8 @@ import { Sheet, Autocomplete, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 import { type WarehouseItemsFE, type STFormTableProps } from "../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { withTooltip } from "../../shared/withTooltip";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const STFormTable = ({
   selectedRow,
@@ -89,8 +91,10 @@ const STFormTable = ({
               {warehouseItems.map((item: WarehouseItemsFE, index: number) => {
                 return (
                   <tr key={item.id}>
-                    <td style={{ zIndex: 10 }}>{item.name}</td>
-                    <td>{item.stock_code}</td>
+                    <td style={{ zIndex: 10 }}>
+                      {withTooltip(item.name, "180px")}
+                    </td>
+                    <td>{withTooltip(item.stock_code, "120px")}</td>
                     {!isEditDisabled && <td>{item.on_stock}</td>}
                     <td>
                       {Number(item.warehouse_1_qty ?? 0) +
@@ -98,7 +102,7 @@ const STFormTable = ({
                         Number(item.warehouse_3_qty ?? 0)}
                     </td>
                     <td>
-                      <Autocomplete
+                      <TooltipAutocomplete
                         options={warehouses.items.filter(
                           (warehouse) => warehouse.id,
                         )}
@@ -145,7 +149,7 @@ const STFormTable = ({
                       />
                     </td>
                     <td>
-                      <Autocomplete
+                      <TooltipAutocomplete
                         options={warehouses.items.filter(
                           (warehouse) => warehouse.id,
                         )}
@@ -192,7 +196,7 @@ const STFormTable = ({
                       />
                     </td>
                     <td>
-                      <Autocomplete
+                      <TooltipAutocomplete
                         options={warehouses.items.filter(
                           (warehouse) => warehouse.id,
                         )}

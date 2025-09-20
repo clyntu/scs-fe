@@ -4,6 +4,7 @@ import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box, ListItem, List, Checkbox, Table } from "@mui/joy";
 import type { PurchaseOrder } from "../../../interface";
+import { withTooltip } from "../../shared/withTooltip";
 
 const SelectPOModal = ({
   open,
@@ -97,7 +98,7 @@ const SelectPOModal = ({
                             </ListItem>
                           </td>
                           <td>{PO.id}</td>
-                          <td>{PO.reference_number}</td>
+                          <td>{withTooltip(PO.reference_number, "120px")}</td>
                           <td>{PO.transaction_date}</td>
                         </tr>
                       ))}

@@ -13,6 +13,7 @@ import {
 import type { DeallocFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
 import { ReceivingReport } from "../../../interface";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const DeallocFormDetails = ({
   openEdit,
@@ -56,7 +57,7 @@ const DeallocFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}

@@ -3,6 +3,7 @@ import Table from "@mui/joy/Table";
 
 import type { AllocItemsFE, CDPFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces, removeCommas } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const CDPFormTable = ({
   selectedRow,
@@ -129,8 +130,8 @@ const CDPFormTable = ({
             return (
               <tr key={key}>
                 <td style={{ zIndex: 1 }}>{item.id}</td>
-                <td>{item?.stock_code}</td>
-                <td>{item?.name}</td>
+                <td>{withTooltip(item?.stock_code, "120px")}</td>
+                <td>{withTooltip(item?.name, "180px")}</td>
                 <td style={{ textAlign: "right" }}>{price}</td>
                 <td style={{ textAlign: "right" }}>{item.alloc_qty}</td>
                 <td style={{ textAlign: "right" }}>

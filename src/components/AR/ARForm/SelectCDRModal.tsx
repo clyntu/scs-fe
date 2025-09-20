@@ -5,6 +5,7 @@ import Sheet from "@mui/joy/Sheet";
 import { Button, Box, ListItem, List, Checkbox, Table } from "@mui/joy";
 import { type DRItemsFE } from "../interface";
 import { type CDR } from "../../../interface";
+import { withTooltip } from "../../shared/withTooltip";
 
 const SelectCDRModal = ({
   open,
@@ -136,7 +137,7 @@ const SelectCDRModal = ({
                             </ListItem>
                           </td>
                           <td>{cdr.id}</td>
-                          <td>{cdr.reference_number}</td>
+                          <td>{withTooltip(cdr.reference_number, "120px")}</td>
                           <td>{cdr.transaction_date}</td>
                         </tr>
                       ))}

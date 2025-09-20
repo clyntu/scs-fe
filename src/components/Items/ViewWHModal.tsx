@@ -10,6 +10,7 @@ import type {
   AggregatedWarehouseItem,
   PaginatedAggregatedWarehouseItems,
 } from "../../interface";
+import { withTooltip } from "../shared/withTooltip";
 
 const ViewWHModal = ({
   open,
@@ -157,8 +158,11 @@ const ViewWHModal = ({
                           >
                             <td>
                               {type === "warehouse"
-                                ? warehouseItem.item_name
-                                : warehouseItem.warehouse_name}
+                                ? withTooltip(warehouseItem.item_name, "200px")
+                                : withTooltip(
+                                    warehouseItem.warehouse_name,
+                                    "200px",
+                                  )}
                             </td>
                             <td>
                               {warehouseItem.total_on_stock +

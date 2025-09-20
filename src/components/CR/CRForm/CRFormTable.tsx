@@ -3,6 +3,8 @@ import Table from "@mui/joy/Table";
 
 import type { DRItemsFE, CRFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const CRFormTable = ({
   selectedRow,
@@ -131,11 +133,11 @@ const CRFormTable = ({
               <tr key={key}>
                 <td style={{ zIndex: 1 }}>{item.id}</td>
                 <td>{item?.alloc_no}</td>
-                <td>{item?.stock_code}</td>
-                <td>{item?.name}</td>
+                <td>{withTooltip(item?.stock_code, "120px")}</td>
+                <td>{withTooltip(item?.name, "180px")}</td>
 
                 <td>
-                  <Autocomplete
+                  <TooltipAutocomplete
                     options={warehouses.items.filter(
                       (warehouse) => warehouse.id,
                     )}

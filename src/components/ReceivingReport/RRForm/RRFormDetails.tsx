@@ -22,6 +22,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const RRFormDetails = ({
   openEdit,
@@ -135,7 +136,7 @@ const RRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={suppliers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedSupplier}

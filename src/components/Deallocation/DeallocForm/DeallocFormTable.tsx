@@ -1,4 +1,4 @@
-import { Sheet, Select, Option, Autocomplete, Input, Button } from "@mui/joy";
+import { Sheet, Select, Option, Input, Button } from "@mui/joy";
 import Table from "@mui/joy/Table";
 import { useState, useEffect } from "react";
 import type { Item, WarehouseItem, Warehouse } from "../../../interface";
@@ -9,6 +9,8 @@ import {
 import axiosInstance from "../../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import { convertToQueryParams } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const DeallocFormTable = ({
   selectedRow,
@@ -101,10 +103,10 @@ const DeallocFormTable = ({
                 {item.id}
               </td>
               <td>{item.customer_purchase_order_id}</td>
-              <td>{item.stock_code}</td>
-              <td>{item.stock_description}</td>
+              <td>{withTooltip(item.stock_code, "120px")}</td>
+              <td>{withTooltip(item.stock_description, "180px")}</td>
               <td>
-                <Autocomplete
+                <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
                   getOptionLabel={(option) => option.name}
                   value={item.warehouse_1}
@@ -153,7 +155,7 @@ const DeallocFormTable = ({
                 />
               </td>
               <td style={{ width: 200 }}>
-                <Autocomplete
+                <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
                   getOptionLabel={(option) => option.name}
                   value={item.warehouse_2}
@@ -202,7 +204,7 @@ const DeallocFormTable = ({
                 />
               </td>
               <td style={{ width: 200 }}>
-                <Autocomplete
+                <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
                   getOptionLabel={(option) => option.name}
                   value={item.warehouse_3}

@@ -5,6 +5,7 @@ import type { SDRFormTableProps } from "../interface";
 import { useEffect, useState } from "react";
 import type { POItems, PurchaseOrder } from "../../../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const SDRFormTable = ({
   selectedRow,
@@ -248,8 +249,8 @@ const SDRFormTable = ({
               return (
                 <tr key={key}>
                   <td style={{ zIndex: 1 }}>{PO.id}</td>
-                  <td>{POItem?.item.stock_code}</td>
-                  <td>{POItem?.item.name}</td>
+                  <td>{withTooltip(POItem?.item.stock_code, "120px")}</td>
+                  <td>{withTooltip(POItem?.item.name, "180px")}</td>
                   {status === "posted" ? (
                     <td style={{ textAlign: "right" }}>{servedAmt[key]}</td>
                   ) : (

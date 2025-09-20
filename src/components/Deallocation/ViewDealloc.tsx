@@ -268,7 +268,7 @@ const ViewDealloc = ({
                 >
                   <td>{dealloc?.id}</td>
                   <td>{dealloc?.transaction_date}</td>
-                  <td>{dealloc?.customer?.name}</td>
+                  <td>{withTooltip(dealloc?.customer?.name, "230px")}</td>
                   <td>
                     <StatusChip status={dealloc.status} />
                   </td>

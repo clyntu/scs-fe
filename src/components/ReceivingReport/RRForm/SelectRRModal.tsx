@@ -4,6 +4,7 @@ import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box, ListItem, List, Checkbox, Table } from "@mui/joy";
 import type { DeliveryReceipt, PaginatedSDR } from "../../../interface";
+import { withTooltip } from "../../shared/withTooltip";
 
 const SelectSDRModal = ({
   open,
@@ -102,7 +103,7 @@ const SelectSDRModal = ({
                             </ListItem>
                           </td>
                           <td>{SDR.id}</td>
-                          <td>{SDR.reference_number}</td>
+                          <td>{withTooltip(SDR.reference_number, "120px")}</td>
                           <td>{SDR.transaction_date}</td>
                         </tr>
                       ))}

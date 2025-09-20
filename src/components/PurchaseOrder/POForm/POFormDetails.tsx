@@ -9,7 +9,6 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
   Button,
 } from "@mui/joy";
 import { useEffect, useState } from "react";
@@ -17,6 +16,7 @@ import { useEffect, useState } from "react";
 import type { POFormProps } from "../interface";
 import type { Currency } from "../../../interface";
 import axiosInstance from "../../../utils/axiosConfig";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
   addCommaToNumberWithTwoPlaces,
@@ -113,7 +113,7 @@ const POFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={suppliers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedSupplier}
