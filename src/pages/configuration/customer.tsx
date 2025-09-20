@@ -14,6 +14,7 @@ import type { Customer, PaginatedCustomers } from "../../interface";
 
 import { convertToQueryParams, formatToCP } from "../../helper";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
+import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const PAGE_LIMIT = 10;
 
@@ -240,7 +241,7 @@ const CustomerForm = (): JSX.Element => {
                 <th style={{ width: 150 }}>Contact Person</th>
                 <th style={{ width: 150 }}>Contact Number</th>
                 <th style={{ width: 300 }}>Email</th>
-                <th style={{ width: 100 }}>Customer Balance</th>
+                <th style={{ width: 150 }}>Customer Balance</th>
                 <th style={{ width: 200 }}>Created By</th>
                 <th style={{ width: 250 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
@@ -261,15 +262,39 @@ const CustomerForm = (): JSX.Element => {
                   }}
                 >
                   <td>{formatToCP(customer.customer_id)}</td>
-                  <td>{customer.name}</td>
-                  <td>{customer.address}</td>
-                  <td>{customer.contact_person}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="300px">
+                      {customer.name}
+                    </TooltipTableCell>
+                  </td>
+                  <td>
+                    <TooltipTableCell maxWidth="400px">
+                      {customer.address}
+                    </TooltipTableCell>
+                  </td>
+                  <td>
+                    <TooltipTableCell maxWidth="150px">
+                      {customer.contact_person}
+                    </TooltipTableCell>
+                  </td>
                   <td>{customer.contact_number}</td>
-                  <td>{customer.email}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="300px">
+                      {customer.email}
+                    </TooltipTableCell>
+                  </td>
                   <td>{customer.customer_balance}</td>
-                  <td>{customer?.creator?.full_name}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="200px">
+                      {customer?.creator?.full_name}
+                    </TooltipTableCell>
+                  </td>
                   <td>{customer.date_created}</td>
-                  <td>{customer?.modifier?.full_name}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="200px">
+                      {customer?.modifier?.full_name}
+                    </TooltipTableCell>
+                  </td>
                   <td>{customer.date_modified}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>

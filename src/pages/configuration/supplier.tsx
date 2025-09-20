@@ -14,6 +14,7 @@ import { Pagination } from "@mui/material";
 import type { Supplier, PaginatedSuppliers } from "../../interface";
 
 import { convertToQueryParams, formatToSP } from "../../helper";
+import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const PAGE_LIMIT = 10;
 
@@ -263,18 +264,42 @@ const SupplierForm = (): JSX.Element => {
                   }}
                 >
                   <td>{formatToSP(supplier.supplier_id)}</td>
-                  <td>{supplier.name}</td>
-                  <td>{supplier.address}</td>
-                  <td>{supplier.contact_person}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="300px">
+                      {supplier.name}
+                    </TooltipTableCell>
+                  </td>
+                  <td>
+                    <TooltipTableCell maxWidth="400px">
+                      {supplier.address}
+                    </TooltipTableCell>
+                  </td>
+                  <td>
+                    <TooltipTableCell maxWidth="150px">
+                      {supplier.contact_person}
+                    </TooltipTableCell>
+                  </td>
                   <td>{supplier.contact_number}</td>
-                  <td>{supplier.email}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="300px">
+                      {supplier.email}
+                    </TooltipTableCell>
+                  </td>
                   <td>{supplier.currency}</td>
                   <td style={{ textAlign: "right" }}>
                     {supplier.supplier_balance}
                   </td>
-                  <td>{supplier?.creator?.full_name}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="200px">
+                      {supplier?.creator?.full_name}
+                    </TooltipTableCell>
+                  </td>
                   <td>{supplier.date_created}</td>
-                  <td>{supplier?.modifier?.full_name}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="200px">
+                      {supplier?.modifier?.full_name}
+                    </TooltipTableCell>
+                  </td>
                   <td>{supplier.date_modified}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>

@@ -35,6 +35,7 @@ import {
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 import { Pagination } from "@mui/material";
+import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const PAGE_LIMIT = 10;
 
@@ -521,8 +522,16 @@ const ItemForm = (): JSX.Element => {
                     setSelectedRow(item);
                   }}
                 >
-                  <td>{item.stock_code}</td>
-                  <td>{item.name}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="150px">
+                      {item.stock_code}
+                    </TooltipTableCell>
+                  </td>
+                  <td>
+                    <TooltipTableCell maxWidth="300px">
+                      {item.name}
+                    </TooltipTableCell>
+                  </td>
                   <td style={{ textAlign: "right" }}>
                     {item.total_on_stock + item.total_allocated}
                   </td>
@@ -545,8 +554,16 @@ const ItemForm = (): JSX.Element => {
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(item.net_cost_before_tax)}
                   </td>
-                  <td>{item.category}</td>
-                  <td>{item.brand}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="100px">
+                      {item.category}
+                    </TooltipTableCell>
+                  </td>
+                  <td>
+                    <TooltipTableCell maxWidth="100px">
+                      {item.brand}
+                    </TooltipTableCell>
+                  </td>
                   <td>{item.status}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>

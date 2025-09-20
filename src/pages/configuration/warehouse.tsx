@@ -14,7 +14,8 @@ import { Pagination } from "@mui/material";
 
 import type { Warehouse, PaginatedWarehouse } from "../../interface";
 
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, formatToWH } from "../../helper";
+import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const PAGE_LIMIT = 10;
 
@@ -266,11 +267,23 @@ const WarehouseForm = (): JSX.Element => {
                   }}
                 >
                   <td>{warehouse.code}</td>
-                  <td>{warehouse.name}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="300px">
+                      {warehouse.name}
+                    </TooltipTableCell>
+                  </td>
                   <td>{warehouse.type}</td>
-                  <td>{warehouse?.creator?.username}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="200px">
+                      {warehouse?.creator?.username}
+                    </TooltipTableCell>
+                  </td>
                   <td>{warehouse.date_created}</td>
-                  <td>{warehouse?.modifier?.username}</td>
+                  <td>
+                    <TooltipTableCell maxWidth="200px">
+                      {warehouse?.modifier?.username}
+                    </TooltipTableCell>
+                  </td>
                   <td>{warehouse.date_modified}</td>
                   <td>
                     <Box sx={{ display: "flex", gap: 1 }}>
