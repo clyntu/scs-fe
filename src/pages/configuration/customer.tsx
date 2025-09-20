@@ -25,6 +25,7 @@ import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModa
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
 import PrintCustomerReceivablesModal from "../../components/Customers/PrintCustomerReceivablesModal";
+import PrintTopCustomersModal from "../../components/Customers/PrintTopCustomersModal";
 
 const PAGE_LIMIT = 10;
 
@@ -38,6 +39,7 @@ const CustomerForm = (): JSX.Element => {
   const [openDelete, setOpenDelete] = useState(false);
   const [openPrint, setOpenPrint] = useState(false);
   const [openPrintReceivables, setOpenPrintReceivables] = useState(false);
+  const [openPrintTopCustomers, setOpenPrintTopCustomers] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Customer>();
   const [userId, setUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -191,6 +193,12 @@ const CustomerForm = (): JSX.Element => {
                   sx={{ fontSize: "14px" }}
                 >
                   Customer Receivables
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setOpenPrintTopCustomers(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Top Customers by Sales
                 </MenuItem>
               </Menu>
             </Dropdown>
@@ -413,6 +421,10 @@ const CustomerForm = (): JSX.Element => {
       <PrintCustomerReceivablesModal
         open={openPrintReceivables}
         onClose={() => setOpenPrintReceivables(false)}
+      />
+      <PrintTopCustomersModal
+        open={openPrintTopCustomers}
+        onClose={() => setOpenPrintTopCustomers(false)}
       />
     </>
   );
