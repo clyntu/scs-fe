@@ -247,7 +247,7 @@ const WarehouseForm = (): JSX.Element => {
                 <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
                 <th style={{ width: 300 }}>Name</th>
                 <th style={{ width: 100 }}>Type</th>
-                <th style={{ width: 200 }}>Created By</th>
+                <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 120 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
                 <th style={{ width: 120 }}>Date Modified</th>

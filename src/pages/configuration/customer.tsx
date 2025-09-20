@@ -242,7 +242,7 @@ const CustomerForm = (): JSX.Element => {
                 <th style={{ width: 150 }}>Contact Number</th>
                 <th style={{ width: 300 }}>Email</th>
                 <th style={{ width: 150 }}>Customer Balance</th>
-                <th style={{ width: 200 }}>Created By</th>
+                <th style={{ width: 150 }}>Created By</th>
                 <th style={{ width: 120 }}>Date Created</th>
                 <th style={{ width: 200 }}>Modified By</th>
                 <th style={{ width: 120 }}>Date Modified</th>
