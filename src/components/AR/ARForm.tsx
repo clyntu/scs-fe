@@ -207,7 +207,6 @@ const ARForm = ({
     setRemarks("");
     setPaymentMode("cash");
     setCheckDate("");
-    setCheckNumber("");
     setAmountPaid("");
     setAddAmount1("");
     setAddAmount2("");
@@ -237,7 +236,6 @@ const ARForm = ({
       transaction_date: transactionDate == "" ? null : transactionDate,
       customer_id: selectedCustomer?.customer_id,
       payment_method: paymentMode,
-      check_number: checkNumber,
       check_amount: amountPaid == "" ? null : Number(amountPaid),
       check_date: checkDate == "" ? null : checkDate,
       less_amount: lessAmount == "" ? 0 : Number(lessAmount),
@@ -287,7 +285,6 @@ const ARForm = ({
       transaction_date: transactionDate == "" ? null : transactionDate,
       customer_id: selectedCustomer?.customer_id,
       payment_method: paymentMode,
-      check_number: checkNumber,
       check_amount: amountPaid == "" ? null : Number(amountPaid),
       check_date: checkDate == "" ? null : checkDate,
       less_amount: lessAmount == "" ? 0 : Number(lessAmount),

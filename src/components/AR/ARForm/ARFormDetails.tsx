@@ -176,7 +176,6 @@ const ARFormDetails = ({
                 onChange={(event, value) => {
                   if (value !== null) setPaymentMode(value);
                   setCheckDate("");
-                  setCheckNumber("");
                 }}
                 size="sm"
                 value={paymentMode}
@@ -207,22 +206,16 @@ const ARFormDetails = ({
                 required
               />
             </FormControl>
-            {paymentMode === "check" && (
-              <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
-                <FormLabel>Check Number</FormLabel>
-                <div className="flex">
-                  <Input
-                    name="checkNumber"
-                    size="sm"
-                    placeholder="Check Number"
-                    value={checkNumber}
-                    onChange={(e) => setCheckNumber(e.target.value)}
-                    disabled={isEditDisabled || paymentMode !== "check"}
-                  />
-                </div>
-              </FormControl>
-            )}
-
+            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+              <FormLabel>Check No.</FormLabel>
+              <Input
+                type="text"
+                value={refNo}
+                placeholder="0"
+                onChange={(e) => setRefNo(e.target.value)}
+                disabled={isEditDisabled}
+              />
+            </FormControl>
             {paymentMode === "check" && (
               <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
                 <FormLabel>Check Date</FormLabel>
@@ -234,17 +227,6 @@ const ARFormDetails = ({
                 />
               </FormControl>
             )}
-
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Check No.</FormLabel>
-              <Input
-                type="text"
-                value={refNo}
-                placeholder="0"
-                onChange={(e) => setRefNo(e.target.value)}
-                disabled={isEditDisabled}
-              />
-            </FormControl>
 
             {/* <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>DR No. Filter</FormLabel>
