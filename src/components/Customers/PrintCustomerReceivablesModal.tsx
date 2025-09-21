@@ -159,7 +159,7 @@ export default function PrintCustomerReceivablesModal({
 
   return (
     <Modal open={open} onClose={handleClose}>
-      <ModalDialog size="md" sx={{ minWidth: 500 }}>
+      <ModalDialog size="lg" sx={{ minWidth: 700 }}>
         <ModalClose />
         <Typography level="h4" component="h2">
           Print Customer Receivables
