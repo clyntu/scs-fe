@@ -35,21 +35,16 @@ export function SupabaseProvider({
 }: {
   children: ReactNode;
 }): JSX.Element {
-  const [company, setCompany] = useState<CompanyId>(
-    () => getCompanyId() as CompanyId,
-  );
-  const [supabase, setSupabase] = useState<SupabaseClient>(() =>
-    getSupabase(company),
-  );
+  const [, setCompany] = useState<CompanyId>(() => getCompanyId() as CompanyId);
+  const [supabase] = useState<SupabaseClient>(() => getSupabase()); // Single instance
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
 
-  /* rebuild client when user switches company */
+  /* switch company context (no need to rebuild client) */
   const switchCompany = useCallback((id: CompanyId) => {
     localStorage.setItem("companyId", id);
     setCompany(id);
-    setSupabase(getSupabase(id));
-    setReady(false); // will re-hydrate below
+    // No need to rebuild client - single instance handles all companies
   }, []);
 
   /* hydrate session + attach token listener */

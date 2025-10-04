@@ -8,14 +8,12 @@ import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
 import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
-import Select from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
-import { getSupabase, authHelpers } from "../supabase/supabaseClient";
+import { getSupabase } from "../supabase/supabaseClient";
 import type { CompanyId } from "../supabase/supabaseClient";
 
 export interface User {
@@ -30,7 +28,6 @@ export default function Login(): JSX.Element {
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
-  const [companyId, setCompanyId] = useState("company-a");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,11 +35,8 @@ export default function Login(): JSX.Element {
 
   // Check if already logged in
   useEffect(() => {
-    const stored = localStorage.getItem("companyId");
-    if (stored != null) setCompanyId(stored);
-
     const company = getCookie("company_id");
-    if (!company) {
+    if (company === null || company === "") {
       return;
     }
 
@@ -80,30 +74,32 @@ export default function Login(): JSX.Element {
     setSuccessMessage("");
 
     try {
-      // Store company ID in localStorage
-      localStorage.setItem("companyId", companyId);
-      setCompany(companyId as CompanyId);
+      // Set default company for login - users can switch via sidebar after login
+      const defaultCompany = "company-a";
+      localStorage.setItem("companyId", defaultCompany);
+      localStorage.setItem("currentCompany", defaultCompany); // For new context system
+      setCompany(defaultCompany as CompanyId);
 
       /* create / fetch the correct client synchronously */
-      const supabase = getSupabase(companyId as "company-a" | "company-b");
+      const supabase = getSupabase();
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
+      if (error !== null) {
         setError(error.message);
         setIsLoading(false);
         return;
       }
-      if (data?.session) {
+      if (data.session !== null) {
         // Sync user with backend
         try {
           await axiosInstance.post(
             "/api/users/sync",
             {},
             {
-              headers: { "X-Company-ID": companyId },
+              headers: { "X-Company-ID": "company-a" },
             },
           );
         } catch (syncError) {
@@ -111,7 +107,7 @@ export default function Login(): JSX.Element {
         }
 
         // Set authentication state
-        localStorage.setItem("companyId", companyId);
+        localStorage.setItem("companyId", "company-a");
 
         // Redirect to main page
         await router.push("/configuration/item");
@@ -143,7 +139,7 @@ export default function Login(): JSX.Element {
     // Pass selected company ID to registration page
     await router.push({
       pathname: "/register",
-      query: { companyId },
+      query: { companyId: "company-a" },
     });
   };
 
@@ -171,13 +167,13 @@ export default function Login(): JSX.Element {
           <Typography level="body-sm">Sign in to continue.</Typography>
         </div>
 
-        {successMessage && (
+        {successMessage !== "" && (
           <Alert color="success" variant="soft" sx={{ mt: 1, mb: 1 }}>
             {successMessage}
           </Alert>
         )}
 
-        {error && (
+        {error !== "" && (
           <Alert color="danger" variant="soft" sx={{ mt: 1, mb: 1 }}>
             {error}
           </Alert>
@@ -185,18 +181,6 @@ export default function Login(): JSX.Element {
 
         <form onSubmit={handleSubmit}>
           <FormControl>
-            <FormLabel>Company</FormLabel>
-            <Select
-              value={companyId}
-              onChange={(_, newValue) => setCompanyId(newValue!)}
-              disabled={isLoading}
-              sx={{ width: "100%" }}
-            >
-              <Option value="company-a">Peterson Parts Trading</Option>
-              <Option value="company-b">Medstore Inc.</Option>
-            </Select>
-          </FormControl>
-          <FormControl sx={{ mt: 2 }}>
             <FormLabel>Email</FormLabel>
             <Input
               type="email"
@@ -248,7 +232,7 @@ export default function Login(): JSX.Element {
           onClick={handleRegisterRedirect}
           disabled={isLoading}
         >
-          Don't have an account? Register
+          Don&apos;t have an account? Register
         </Button>
       </Sheet>
     </main>

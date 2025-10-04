@@ -1,5 +1,5 @@
 // src/pages/register.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import {
   Sheet,
@@ -13,13 +13,12 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
-import axiosInstance, { getCookie } from "../utils/axiosConfig";
+import axiosInstance from "../utils/axiosConfig";
 
 export default function Register(): JSX.Element {
   /* ─────────────────── hooks ─────────────────── */
   const router = useRouter();
 
-  const [companyId, setCompanyId] = useState("company-a");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -30,58 +29,54 @@ export default function Register(): JSX.Element {
   const [generalError, setGeneralError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
-  /* ────────── initialise company (query > cookie > local) ────────── */
-  useEffect(() => {
-    const q = router.query.companyId as string | undefined;
-    const c = getCookie("company_id") || getCookie("company_id_js");
-    const ls =
-      typeof window !== "undefined" ? localStorage.getItem("companyId") : null;
-    const id = q || c || ls || "company-a";
-    setCompanyId(id);
-    if (typeof window !== "undefined") localStorage.setItem("companyId", id);
-  }, [router.query]);
+  // Use default company - users can switch companies after registration
+  const defaultCompany = "company-a";
 
   /* ─────────────────── handlers ─────────────────── */
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRegister = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setGeneralError("");
 
     try {
-      // Get the correct Supabase client for the selected company
-      const { getSupabase } = await import("../supabase/supabaseClient");
-      const companySpecificSupabase = getSupabase(
-        companyId as "company-a" | "company-b",
-      );
+      // Set default company for registration
+      localStorage.setItem("companyId", defaultCompany);
+      localStorage.setItem("currentCompany", defaultCompany);
 
-      // Supabase sign-up (browser) with the company-specific client
-      const { data, error } = await companySpecificSupabase.auth.signUp({
+      // Get the Supabase client (now single instance)
+      const { getSupabase } = await import("../supabase/supabaseClient");
+      const supabase = getSupabase();
+
+      // Supabase sign-up (browser)
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } },
       });
-      if (error) throw error;
+      if (error !== null) throw error;
 
       // Persist user in your own DB (roles)
       await axiosInstance.post(
         "/api/users/sync",
         { username, full_name: fullName }, // body optional
-        { headers: { "X-Company-ID": companyId } },
+        { headers: { "X-Company-ID": defaultCompany } },
       );
 
       //  success -> login page
       await router.push({
         pathname: "/",
-        query: { registered: "success", companyId },
+        query: { registered: "success" },
       });
     } catch (err: any) {
       console.error("Registration error:", err);
 
       /* Supabase error object */
-      if (err?.message) {
-        setGeneralError(err.message);
-      } else if (err.response?.data?.detail) {
+      if (err?.message !== undefined) {
+        setGeneralError(String(err.message));
+      } else if (err.response?.data?.detail !== undefined) {
         /* backend validation format */
         const detail = err.response.data.detail;
         if (Array.isArray(detail)) {
@@ -103,12 +98,8 @@ export default function Register(): JSX.Element {
     }
   };
 
-  const toLogin = async () =>
-    await router.push({ pathname: "/", query: { companyId } });
-
-  // Helper function to get company name from company ID
-  const getCompanyName = (id: string): string => {
-    return id === "company-a" ? "Peterson Parts Trading" : "Medstore Inc.";
+  const toLogin = async (): Promise<void> => {
+    await router.push({ pathname: "/" });
   };
 
   return (
@@ -133,21 +124,16 @@ export default function Register(): JSX.Element {
         </Typography>
         <Typography level="body-sm">Register to get started.</Typography>
 
-        {generalError && (
+        {generalError !== "" && (
           <Alert color="danger" variant="soft" sx={{ mt: 1, mb: 1 }}>
             {generalError}
           </Alert>
         )}
 
         <form onSubmit={handleRegister}>
-          <FormControl>
-            <FormLabel>Company</FormLabel>
-            <Typography level="body-md" sx={{ p: 1 }}>
-              {getCompanyName(companyId)}
-            </Typography>
-          </FormControl>
-
-          <FormControl error={!!errors.username} sx={{ mt: 2 }}>
+          <FormControl
+            error={errors.username !== undefined && errors.username !== ""}
+          >
             <FormLabel>Username</FormLabel>
             <Input
               value={username}
@@ -155,14 +141,17 @@ export default function Register(): JSX.Element {
               disabled={isLoading}
               required
             />
-            {errors.username && (
+            {errors.username !== undefined && errors.username !== "" && (
               <Typography level="body-xs" color="danger">
                 {errors.username}
               </Typography>
             )}
           </FormControl>
 
-          <FormControl error={!!errors.email} sx={{ mt: 2 }}>
+          <FormControl
+            error={errors.email !== undefined && errors.email !== ""}
+            sx={{ mt: 2 }}
+          >
             <FormLabel>Email</FormLabel>
             <Input
               type="email"
@@ -171,14 +160,17 @@ export default function Register(): JSX.Element {
               disabled={isLoading}
               required
             />
-            {errors.email && (
+            {errors.email !== undefined && errors.email !== "" && (
               <Typography level="body-xs" color="danger">
                 {errors.email}
               </Typography>
             )}
           </FormControl>
 
-          <FormControl error={!!errors.full_name} sx={{ mt: 2 }}>
+          <FormControl
+            error={errors.full_name !== undefined && errors.full_name !== ""}
+            sx={{ mt: 2 }}
+          >
             <FormLabel>Full Name</FormLabel>
             <Input
               value={fullName}
@@ -186,14 +178,17 @@ export default function Register(): JSX.Element {
               disabled={isLoading}
               required
             />
-            {errors.full_name && (
+            {errors.full_name !== undefined && errors.full_name !== "" && (
               <Typography level="body-xs" color="danger">
                 {errors.full_name}
               </Typography>
             )}
           </FormControl>
 
-          <FormControl error={!!errors.password} sx={{ mt: 2 }}>
+          <FormControl
+            error={errors.password !== undefined && errors.password !== ""}
+            sx={{ mt: 2 }}
+          >
             <FormLabel>Password</FormLabel>
             <Input
               type={showPassword ? "text" : "password"}
@@ -220,7 +215,7 @@ export default function Register(): JSX.Element {
                 </IconButton>
               }
             />
-            {errors.password && (
+            {errors.password !== undefined && errors.password !== "" && (
               <Typography level="body-xs" color="danger">
                 {errors.password}
               </Typography>

@@ -22,10 +22,12 @@ export function getCookie(name: string): string | null {
 export function getCompanyId(): string {
   if (typeof window === "undefined") return "company-a";
 
+  // Check new company context first, then fallback to legacy
+  const fromNewContext = window.localStorage.getItem("currentCompany");
   const fromCookie = getCookie("company_id");
-  const fromLocalStored = window.localStorage.getItem("companyId");
+  const fromLegacyStorage = window.localStorage.getItem("companyId");
 
-  return fromCookie || fromLocalStored || "company-a";
+  return fromNewContext || fromCookie || fromLegacyStorage || "company-a";
 }
 
 // Create a queue for failed requests
@@ -81,7 +83,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
 
       // Always get a fresh company ID
       const companyId = getCompanyId() as CompanyId;
-      const supabase = getSupabase(companyId);
+      const supabase = getSupabase(); // Single Supabase instance
 
       try {
         const {
@@ -160,7 +162,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
           originalRequest._retry = true;
 
           // Get a fresh token
-          const supabase = getSupabase(companyId);
+          const supabase = getSupabase();
           const { data } = await supabase.auth.getSession();
 
           if (data?.session) {
@@ -191,7 +193,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
         if (!isRefreshing) {
           isRefreshing = true;
 
-          const supabase = getSupabase(companyId);
+          const supabase = getSupabase();
           const newToken = await refreshAuthToken(supabase);
 
           isRefreshing = false;
@@ -250,8 +252,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
         localStorage.removeItem("auth_retry_needed");
 
         // Get fresh tokens
-        const companyId = getCompanyId() as CompanyId;
-        const supabase = getSupabase(companyId);
+        const supabase = getSupabase();
         await supabase.auth.refreshSession();
 
         // Reload page to restore functionality
@@ -263,8 +264,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
     window.addEventListener("storage", (event) => {
       if (event.key?.includes("supabase.auth.token")) {
         // Force refresh of auth state in this tab
-        const companyId = getCompanyId() as CompanyId;
-        const supabase = getSupabase(companyId);
+        const supabase = getSupabase();
         supabase.auth.getSession(); // This will update the in-memory session
       }
     });

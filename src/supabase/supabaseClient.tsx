@@ -3,17 +3,12 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export type CompanyId = "company-a" | "company-b";
 
-const URLS: Record<CompanyId, string> = {
-  "company-a": process.env.NEXT_PUBLIC_SUPABASE_URL_A!,
-  "company-b": process.env.NEXT_PUBLIC_SUPABASE_URL_B!,
-};
-const KEYS: Record<CompanyId, string> = {
-  "company-a": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_A!,
-  "company-b": process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_B!,
-};
+// Single Supabase configuration (migrated from multi-company)
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL_A; // Using company-a as the single instance
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_A;
 
-// Cache so we never create two clients for the same company on the same tab
-const cache: Partial<Record<CompanyId, SupabaseClient>> = {};
+// Single Supabase client instance
+let supabaseInstance: SupabaseClient | null = null;
 
 // Browser-safe storage implementation
 const browserStorage = {
@@ -33,101 +28,95 @@ const browserStorage = {
   },
 };
 
-export function getSupabase(company: CompanyId): SupabaseClient {
-  if (!cache[company]) {
-    if (!URLS[company] || !KEYS[company]) {
-      console.error(`Missing Supabase configuration for ${company}`);
-
-      // Fallback to company-a if configuration is missing
-      if (company !== "company-a" && URLS["company-a"] && KEYS["company-a"]) {
-        company = "company-a";
-      } else {
-        throw new Error(`Cannot initialize Supabase client for ${company}`);
-      }
+export function getSupabase(company?: CompanyId): SupabaseClient {
+  if (supabaseInstance === null) {
+    if (
+      SUPABASE_URL === undefined ||
+      SUPABASE_KEY === undefined ||
+      SUPABASE_URL === "" ||
+      SUPABASE_KEY === ""
+    ) {
+      throw new Error("Missing Supabase configuration");
     }
 
-    cache[company] = createClient(URLS[company], KEYS[company], {
+    supabaseInstance = createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storageKey: `sb-${company}-auth-token`,
+        storageKey: "sb-auth-token", // Single storage key
         storage: browserStorage,
       },
       global: {
         headers: {
-          "X-Client-Info": `scs-fe/next`,
-          // Add company ID to all Supabase requests as well
-          "X-Company-ID": company,
+          "X-Client-Info": "scs-fe/next",
         },
       },
     });
 
-    // // Log client creation in development
-    // if (process.env.NODE_ENV !== "production") {
-    //   console.log(`Created Supabase client for ${company}`);
-    // }
+    // Log client creation in development
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Created single Supabase client instance");
+    }
   }
 
-  return cache[company];
+  return supabaseInstance;
 }
 
 // Add helpers for common auth operations
 export const authHelpers = {
   // Refresh session and handle errors
-  refreshSession: async (company: CompanyId): Promise<boolean> => {
+  refreshSession: async (): Promise<boolean> => {
     try {
-      const supabase = getSupabase(company);
+      const supabase = getSupabase();
       const { data, error } = await supabase.auth.refreshSession();
 
-      if (error) {
-        console.error(`Session refresh failed for ${company}:`, error);
+      if (error !== null) {
+        console.error("Session refresh failed:", error);
         return false;
       }
 
-      return !!data.session;
+      return data.session !== null;
     } catch (e) {
-      console.error(`Error refreshing session for ${company}:`, e);
+      console.error("Error refreshing session:", e);
       return false;
     }
   },
 
-  // Sign out from all companies
-  signOutAll: async (): Promise<void> => {
-    const companies: CompanyId[] = ["company-a", "company-b"];
-
-    for (const company of companies) {
-      try {
-        const supabase = getSupabase(company);
-        await supabase.auth.signOut();
-        localStorage.removeItem(`sb-${company}-auth-token`);
-      } catch (e) {
-        console.error(`Error signing out from ${company}:`, e);
-      }
+  // Sign out from single Supabase instance
+  signOut: async (): Promise<void> => {
+    try {
+      const supabase = getSupabase();
+      await supabase.auth.signOut();
+      localStorage.removeItem("sb-auth-token");
+      localStorage.removeItem("companyId");
+    } catch (e) {
+      console.error("Error signing out:", e);
     }
 
-    // Clear the cache after signing out
-    Object.keys(cache).forEach((key) => {
-      delete cache[key as CompanyId];
-    });
+    // Clear the singleton instance
+    supabaseInstance = null;
   },
 
-  // Get current company's active session
+  // Get current active session
   getCurrentSession: async (): Promise<{
     company: CompanyId;
     session: any;
   } | null> => {
     if (typeof window === "undefined") return null;
 
-    const companyId =
-      (localStorage.getItem("companyId") as CompanyId) || "company-a";
+    const companyId = localStorage.getItem("companyId");
+    const currentCompany =
+      companyId !== null && companyId !== ""
+        ? (companyId as CompanyId)
+        : "company-a";
 
     try {
-      const supabase = getSupabase(companyId);
+      const supabase = getSupabase();
       const { data } = await supabase.auth.getSession();
 
-      if (data?.session) {
-        return { company: companyId, session: data.session };
+      if (data.session !== null) {
+        return { company: currentCompany, session: data.session };
       }
 
       return null;

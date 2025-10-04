@@ -23,28 +23,21 @@ import SwapHorizontalCircleRoundedIcon from "@mui/icons-material/SwapHorizontalC
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
-import { useSupabase } from "../../supabase/SupabaseProvider";
+import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../../pages/Login";
 import { authHelpers } from "../../supabase/supabaseClient";
+import { CompanySelector } from "../CompanySelector";
 
 import SidebarLink from "./SidebarLink";
-
-export const COMPANY_CONFIGS: Record<string, string> = {
-  "company-a": "Peterson Parts Trading",
-  "company-b": "Medstore Inc.",
-};
 
 export default function Sidebar(): JSX.Element | null {
   const router = useRouter();
   const currentPath = router.pathname;
-  const { supabase } = useSupabase();
 
   const [fullName, setFullName] = useState("");
 
   // avoids SSR localStorage errors
   const [mounted, setMounted] = useState(false);
-  const [companyName, setName] = useState("");
 
   const [expanded, setExpanded] = useState({
     configuration: false,
@@ -55,8 +48,6 @@ export default function Sidebar(): JSX.Element | null {
   useEffect(() => {
     if (typeof window === "undefined") return;
     setMounted(true);
-    const id = getCompanyId();
-    setName(COMPANY_CONFIGS[id] ?? id);
 
     axiosInstance
       .get<User>("/api/users/me/")
@@ -69,8 +60,8 @@ export default function Sidebar(): JSX.Element | null {
 
   const handleLogout = async (): Promise<void> => {
     try {
-      // Sign out from all Supabase clients
-      await authHelpers.signOutAll();
+      // Sign out from single Supabase client
+      await authHelpers.signOut();
 
       // Redirect to login page
       await router.push("/");
@@ -107,9 +98,9 @@ export default function Sidebar(): JSX.Element | null {
         Hi, {fullName}!
       </Typography>
 
-      <Typography sx={{ mb: 2, px: 1, fontSize: "15px" }}>
-        {companyName}
-      </Typography>
+      <Box sx={{ mb: 2, px: 1 }}>
+        <CompanySelector />
+      </Box>
       <Divider />
 
       <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
