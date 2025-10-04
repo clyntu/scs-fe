@@ -61,6 +61,8 @@ const StockTransferForm = ({
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
     null,
   );
+  const [receivingAreaWarehouse, setReceivingAreaWarehouse] =
+    useState<Warehouse | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -76,15 +78,20 @@ const StockTransferForm = ({
       .get<PaginatedWarehouse>("/api/warehouses/")
       .then((response) => {
         setWarehouses(response.data);
+      })
+      .catch((error) => console.error("Error:", error));
 
-        const receivingArea = response.data.items.find(
-          (warehouse) => warehouse.id === 1,
-        );
-        if (receivingArea) {
+    // Fetch receiving area warehouse (for RR Transfer = Yes default)
+    axiosInstance
+      .get<PaginatedWarehouse>("/api/warehouses/?type=receiving")
+      .then((response) => {
+        if (response.data.items.length > 0) {
+          const receivingArea = response.data.items[0]; // Get first record
+          setReceivingAreaWarehouse(receivingArea); // Store receiving area separately
           setSelectedWarehouse(receivingArea);
         }
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => console.error("Error fetching receiving area:", error));
 
     // Fetch suppliers
     axiosInstance
@@ -109,10 +116,14 @@ const StockTransferForm = ({
       .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
-
-    // Fetch warehouse items
-    if (openCreate) fetchWarehouseItems(1);
   }, []);
+
+  // Fetch warehouse items when receiving area warehouse is set (for create mode)
+  useEffect(() => {
+    if (openCreate && selectedWarehouse) {
+      fetchWarehouseItems(selectedWarehouse.id);
+    }
+  }, [selectedWarehouse, openCreate]);
 
   useEffect(() => {
     // Fill in fields for Edit
@@ -187,10 +198,10 @@ const StockTransferForm = ({
     isRRTransfer: boolean = false,
     rrId?: number,
   ) => {
-    if (isRRTransfer && rrId) {
-      // For RR transfers, use the RR-specific available stock endpoint
+    if (isRRTransfer && rrId && receivingAreaWarehouse) {
+      // For RR transfers, use the stored receiving area warehouse
       const params = new URLSearchParams({
-        warehouse_id: warehouseItemFE.warehouse_id.toString(),
+        warehouse_id: receivingAreaWarehouse.id.toString(),
       });
 
       axiosInstance
@@ -229,10 +240,10 @@ const StockTransferForm = ({
   ) => {
     setIsLoadingItems(true);
 
-    // For RR Transfer = Yes, use the new RR-specific endpoint
-    if (rr !== null && rr !== undefined) {
+    // For RR Transfer = Yes, use the stored receiving area warehouse
+    if (rr !== null && rr !== undefined && receivingAreaWarehouse) {
       const params = new URLSearchParams({
-        warehouse_id: warehouse_id.toString(),
+        warehouse_id: receivingAreaWarehouse.id.toString(),
       });
 
       axiosInstance
