@@ -182,13 +182,22 @@ const PrintCustomerPaymentHistoryModal = ({
         <Typography level="h4" component="h2">
           Print Customer Payment History
         </Typography>
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 1 }} />
 
-        <Box>
+        <Box sx={{ p: 1 }}>
           {selectedCustomer !== null && (
-            <p className="mb-4 text-sm text-gray-600">
-              Selected Customer: <strong>{selectedCustomer.name}</strong>
-            </p>
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                backgroundColor: "#f8f9fa",
+                borderRadius: 1,
+              }}
+            >
+              <Typography level="body-sm" sx={{ color: "text.secondary" }}>
+                Selected Customer: <strong>{selectedCustomer.name}</strong>
+              </Typography>
+            </Box>
           )}
 
           <Box
@@ -196,7 +205,7 @@ const PrintCustomerPaymentHistoryModal = ({
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: 2,
-              mb: 2,
+              mb: 3,
             }}
           >
             <FormControl size="sm" sx={{ gridColumn: "1 / -1" }}>
@@ -249,6 +258,7 @@ const PrintCustomerPaymentHistoryModal = ({
                   </li>
                 )}
                 size="sm"
+                sx={{ minHeight: 32 }}
                 slotProps={{
                   listbox: {
                     sx: {
@@ -288,6 +298,7 @@ const PrintCustomerPaymentHistoryModal = ({
                 onChange={(e) => setFromDate(e.target.value)}
                 size="sm"
                 placeholder="Select start date"
+                sx={{ minHeight: 32 }}
               />
             </FormControl>
 
@@ -299,6 +310,7 @@ const PrintCustomerPaymentHistoryModal = ({
                 onChange={(e) => setToDate(e.target.value)}
                 size="sm"
                 placeholder="Select end date"
+                sx={{ minHeight: 32 }}
               />
             </FormControl>
 
@@ -320,6 +332,7 @@ const PrintCustomerPaymentHistoryModal = ({
                   option.value === value.value
                 }
                 size="sm"
+                sx={{ minHeight: 32 }}
                 slotProps={{
                   listbox: {
                     sx: {
@@ -356,6 +369,7 @@ const PrintCustomerPaymentHistoryModal = ({
                   option.value === value.value
                 }
                 size="sm"
+                sx={{ minHeight: 32 }}
                 slotProps={{
                   listbox: {
                     sx: {
@@ -375,11 +389,18 @@ const PrintCustomerPaymentHistoryModal = ({
             </FormControl>
           </Box>
 
-          <div className="flex justify-end mt-6">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+              mt: 4,
+            }}
+          >
             <Button
               size="sm"
               variant="outlined"
-              sx={{ mr: 2, width: 100 }}
+              sx={{ width: 100 }}
               onClick={handleClose}
               disabled={isPrinting}
             >
@@ -395,7 +416,7 @@ const PrintCustomerPaymentHistoryModal = ({
             >
               Print
             </Button>
-          </div>
+          </Box>
         </Box>
       </ModalDialog>
     </Modal>

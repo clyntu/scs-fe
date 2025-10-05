@@ -11,6 +11,7 @@ import {
   Input,
   Stack,
   Alert,
+  Box,
 } from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { generateTopCustomersPDF } from "./generateTopCustomersPDF";
@@ -114,78 +115,92 @@ export default function PrintTopCustomersModal({
         <Typography level="h4" component="h2">
           Print Top Customers by Sales
         </Typography>
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 1 }} />
 
         {error !== null && error !== "" && (
-          <Alert color="danger" sx={{ mb: 2 }}>
+          <Alert color="danger" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
 
-        <Stack spacing={3}>
-          {/* Date Range Filters */}
-          <Stack direction="row" spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>From Date</FormLabel>
-              <Input
-                type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
-            </FormControl>
-            <FormControl sx={{ flex: 1 }}>
-              <FormLabel>To Date</FormLabel>
-              <Input
-                type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-              />
-            </FormControl>
-          </Stack>
+        <Box sx={{ p: 1 }}>
+          <Stack spacing={3}>
+            {/* Date Range Filters */}
+            <Stack direction="row" spacing={2}>
+              <FormControl size="sm" sx={{ flex: 1 }}>
+                <FormLabel>From Date</FormLabel>
+                <Input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  size="sm"
+                  sx={{ minHeight: 32 }}
+                />
+              </FormControl>
+              <FormControl size="sm" sx={{ flex: 1 }}>
+                <FormLabel>To Date</FormLabel>
+                <Input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  size="sm"
+                  sx={{ minHeight: 32 }}
+                />
+              </FormControl>
+            </Stack>
 
-          {/* Number of Top Customers */}
-          <FormControl>
-            <FormLabel>Number of Top Customers to Show</FormLabel>
-            <Input
-              type="number"
-              placeholder="50"
-              value={limit}
-              onChange={(e) => setLimit(e.target.value)}
-              slotProps={{
-                input: {
-                  min: 1,
-                  max: 500,
-                },
+            {/* Number of Top Customers */}
+            <FormControl size="sm">
+              <FormLabel>Number of Top Customers to Show</FormLabel>
+              <Input
+                type="number"
+                placeholder="50"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                size="sm"
+                sx={{ minHeight: 32, maxWidth: 200 }}
+                slotProps={{
+                  input: {
+                    min: 1,
+                    max: 500,
+                  },
+                }}
+              />
+            </FormControl>
+
+            <Divider />
+
+            {/* Action Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                mt: 4,
               }}
-              sx={{ maxWidth: 200 }}
-            />
-          </FormControl>
-
-          <Divider />
-
-          {/* Action Buttons */}
-          <div className="flex justify-end mt-6">
-            <Button
-              size="sm"
-              variant="outlined"
-              sx={{ mr: 2, width: 100 }}
-              onClick={handleClose}
-              disabled={isGenerating}
             >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="bg-button-primary"
-              sx={{ width: 100 }}
-              onClick={handlePrint}
-              loading={isGenerating}
-              disabled={isGenerating}
-            >
-              Print
-            </Button>
-          </div>
-        </Stack>
+              <Button
+                size="sm"
+                variant="outlined"
+                sx={{ width: 100 }}
+                onClick={handleClose}
+                disabled={isGenerating}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="bg-button-primary"
+                sx={{ width: 100 }}
+                onClick={handlePrint}
+                loading={isGenerating}
+                disabled={isGenerating}
+              >
+                Print
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
       </ModalDialog>
     </Modal>
   );

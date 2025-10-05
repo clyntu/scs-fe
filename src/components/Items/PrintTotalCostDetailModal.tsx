@@ -1,8 +1,17 @@
 import { useState } from "react";
-import Modal from "@mui/joy/Modal";
-import ModalClose from "@mui/joy/ModalClose";
-import Sheet from "@mui/joy/Sheet";
-import { Button, Box, FormControl, FormLabel, Autocomplete } from "@mui/joy";
+import {
+  Modal,
+  ModalDialog,
+  ModalClose,
+  Typography,
+  Divider,
+  Button,
+  Box,
+  FormControl,
+  FormLabel,
+  Autocomplete,
+  Stack,
+} from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import {
   convertToQueryParams,
@@ -81,70 +90,54 @@ const PrintTotalCostDetailModal = ({
   };
 
   return (
-    <Modal
-      aria-labelledby="modal-title"
-      aria-describedby="modal-desc"
-      open={open}
-      onClose={(event, reason) => {
-        if (reason === "backdropClick") return;
-        handleClose();
-      }}
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-    >
-      <Sheet
-        variant="outlined"
-        sx={{
-          width: 700,
-          borderRadius: "md",
-          p: 3,
-          boxShadow: "lg",
-        }}
-      >
-        <ModalClose variant="plain" sx={{ m: 1 }} />
-        <Box>
-          <h3 className="mb-6">Print Total Cost Detail</h3>
+    <Modal open={open} onClose={handleClose}>
+      <ModalDialog size="lg" sx={{ minWidth: 700 }}>
+        <ModalClose />
+        <Typography level="h4" component="h2">
+          Print Total Cost Detail Report
+        </Typography>
+        <Divider sx={{ my: 1 }} />
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 2,
-              mb: 2,
-            }}
-          >
-            <FormControl size="sm">
-              <FormLabel>Brand</FormLabel>
-              <Autocomplete
-                placeholder="All Brands"
-                options={["", ...brands]}
-                value={selectedBrand}
-                onChange={(event, value) => {
-                  setSelectedBrand(value ?? "");
-                }}
-                getOptionLabel={(option) => {
-                  if (option === "") return "All Brands";
-                  return option.toUpperCase();
-                }}
-                size="sm"
-              />
-            </FormControl>
+        <Box sx={{ p: 1 }}>
+          <Stack spacing={3}>
+            {/* Filter Options */}
+            <Stack direction="row" spacing={2}>
+              <FormControl size="sm" sx={{ flex: 1 }}>
+                <FormLabel>Brand</FormLabel>
+                <Autocomplete
+                  placeholder="All Brands"
+                  options={["", ...brands]}
+                  value={selectedBrand}
+                  onChange={(event, value) => {
+                    setSelectedBrand(value ?? "");
+                  }}
+                  getOptionLabel={(option) => {
+                    if (option === "") return "All Brands";
+                    return option.toUpperCase();
+                  }}
+                  size="sm"
+                  sx={{ minHeight: 32 }}
+                />
+              </FormControl>
 
-            <FormControl size="sm">
-              <FormLabel>Category</FormLabel>
-              <Autocomplete
-                placeholder="All Categories"
-                options={["", ...categories]}
-                value={selectedCategory}
-                onChange={(event, value) => {
-                  setSelectedCategory(value ?? "");
-                }}
-                getOptionLabel={(option) => {
-                  if (option === "") return "All Categories";
-                  return option.toUpperCase();
-                }}
-                size="sm"
-              />
-            </FormControl>
+              <FormControl size="sm" sx={{ flex: 1 }}>
+                <FormLabel>Category</FormLabel>
+                <Autocomplete
+                  placeholder="All Categories"
+                  options={["", ...categories]}
+                  value={selectedCategory}
+                  onChange={(event, value) => {
+                    setSelectedCategory(value ?? "");
+                  }}
+                  getOptionLabel={(option) => {
+                    if (option === "") return "All Categories";
+                    return option.toUpperCase();
+                  }}
+                  size="sm"
+                  sx={{ minHeight: 32 }}
+                />
+              </FormControl>
+            </Stack>
 
             <FormControl size="sm">
               <FormLabel>Stock Filter</FormLabel>
@@ -176,32 +169,43 @@ const PrintTotalCostDetailModal = ({
                   option.value === value.value
                 }
                 size="sm"
+                sx={{ minHeight: 32 }}
               />
             </FormControl>
-          </Box>
 
-          <div className="flex justify-end mt-6">
-            <Button
-              size="sm"
-              variant="outlined"
-              sx={{ mr: 2, width: 100 }}
-              onClick={handleClose}
-              disabled={isPrinting}
+            <Divider />
+
+            {/* Action Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                mt: 4,
+              }}
             >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              className="bg-button-primary"
-              sx={{ width: 100 }}
-              onClick={handlePrint}
-              loading={isPrinting}
-            >
-              Print
-            </Button>
-          </div>
+              <Button
+                size="sm"
+                variant="outlined"
+                sx={{ width: 100 }}
+                onClick={handleClose}
+                disabled={isPrinting}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="bg-button-primary"
+                sx={{ width: 100 }}
+                onClick={handlePrint}
+                loading={isPrinting}
+              >
+                Print
+              </Button>
+            </Box>
+          </Stack>
         </Box>
-      </Sheet>
+      </ModalDialog>
     </Modal>
   );
 };

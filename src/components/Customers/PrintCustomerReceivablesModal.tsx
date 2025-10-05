@@ -14,6 +14,7 @@ import {
   Select,
   Stack,
   Alert,
+  Box,
 } from "@mui/joy";
 import { createFilterOptions } from "@mui/joy/Autocomplete";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
@@ -164,17 +165,17 @@ export default function PrintCustomerReceivablesModal({
         <Typography level="h4" component="h2">
           Print Customer Receivables
         </Typography>
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 1 }} />
 
         {error !== null && error !== "" && (
-          <Alert color="danger" sx={{ mb: 2 }}>
+          <Alert color="danger" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
 
         <Stack spacing={3}>
           {/* Customer Selection */}
-          <FormControl required>
+          <FormControl size="sm" required>
             <FormLabel>Customer</FormLabel>
             <Autocomplete
               placeholder="Search and select a customer..."
@@ -198,6 +199,8 @@ export default function PrintCustomerReceivablesModal({
               isOptionEqualToValue={(option, value) =>
                 option.customer_id === value.customer_id
               }
+              size="sm"
+              sx={{ minHeight: 32 }}
               renderOption={(props, option) => (
                 <li {...props} key={option.customer_id}>
                   <div
@@ -266,31 +269,37 @@ export default function PrintCustomerReceivablesModal({
 
           {/* Date Range Filters */}
           <Stack direction="row" spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
+            <FormControl size="sm" sx={{ flex: 1 }}>
               <FormLabel>From Date</FormLabel>
               <Input
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
+                size="sm"
+                sx={{ minHeight: 32 }}
               />
             </FormControl>
-            <FormControl sx={{ flex: 1 }}>
+            <FormControl size="sm" sx={{ flex: 1 }}>
               <FormLabel>To Date</FormLabel>
               <Input
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
+                size="sm"
+                sx={{ minHeight: 32 }}
               />
             </FormControl>
           </Stack>
 
           {/* Source Type and Aging Filters */}
           <Stack direction="row" spacing={2}>
-            <FormControl sx={{ flex: 1 }}>
+            <FormControl size="sm" sx={{ flex: 1 }}>
               <FormLabel>Source Type</FormLabel>
               <Select
                 value={sourceType}
                 onChange={(_, newValue) => setSourceType(newValue ?? "all")}
+                size="sm"
+                sx={{ minHeight: 32 }}
               >
                 <Option value="all">All Transaction Types</Option>
                 <Option value="customer_dr">Customer DR</Option>
@@ -298,11 +307,13 @@ export default function PrintCustomerReceivablesModal({
                 <Option value="other">Other Transactions</Option>
               </Select>
             </FormControl>
-            <FormControl sx={{ flex: 1 }}>
+            <FormControl size="sm" sx={{ flex: 1 }}>
               <FormLabel>Payment Age Range</FormLabel>
               <Select
                 value={agingBucket}
                 onChange={(_, newValue) => setAgingBucket(newValue ?? "all")}
+                size="sm"
+                sx={{ minHeight: 32 }}
               >
                 <Option value="all">All Outstanding Balances</Option>
                 <Option value="current">0-30 days</Option>
@@ -316,11 +327,18 @@ export default function PrintCustomerReceivablesModal({
           <Divider />
 
           {/* Action Buttons */}
-          <div className="flex justify-end mt-6">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+              mt: 4,
+            }}
+          >
             <Button
               size="sm"
               variant="outlined"
-              sx={{ mr: 2, width: 100 }}
+              sx={{ width: 100 }}
               onClick={handleClose}
               disabled={isGenerating}
             >
@@ -336,7 +354,7 @@ export default function PrintCustomerReceivablesModal({
             >
               Print
             </Button>
-          </div>
+          </Box>
         </Stack>
       </ModalDialog>
     </Modal>
