@@ -282,7 +282,7 @@ const POFormTable = ({
                     Number(selectedItem?.price) * Number(selectedItem?.volume),
                   )}
               </td>
-              <td>
+              <td style={{ textAlign: "center" }}>
                 {selectedItem?.id !== null && (
                   <Button
                     size="sm"

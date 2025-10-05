@@ -271,8 +271,10 @@ const ViewAlloc = ({
                   <td>{withTooltip(alloc?.modifier?.username, "130px")}</td>
                   <td>{formatToDate(alloc.date_created)}</td>
                   <td>{formatToDate(alloc.date_modified)}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                  <td style={{ textAlign: "center" }}>
+                    <Box
+                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                    >
                       <Button
                         sx={{ width: "100px" }}
                         size="sm"

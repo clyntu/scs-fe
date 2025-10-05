@@ -241,7 +241,7 @@ const CPOFormTable = ({
                     )}
                 </td>
                 {/* <td>{selectedItem.total_on_stock}</td> */}
-                <td>
+                <td style={{ textAlign: "center" }}>
                   {selectedItem?.id !== null && (
                     <Button
                       size="sm"

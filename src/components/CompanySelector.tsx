@@ -13,21 +13,18 @@ export const CompanySelector: React.FC = () => {
 
   return (
     <div className="company-selector">
-      <FormLabel htmlFor="company-select" sx={{ fontSize: "12px", mb: 0.5 }}>
-        Company
-      </FormLabel>
       <Select
         id="company-select"
         value={currentCompany ?? ""}
         onChange={(_, newValue) => {
           if (newValue !== null && newValue !== currentCompany) {
-            setCurrentCompany(newValue);
+            setCurrentCompany(newValue);W
             // Refresh page to load new company data - simple and reliable UX
             window.location.reload();
           }
         }}
         size="sm"
-        sx={{ minWidth: 180 }}
+        sx={{ minWidth: 180, mt: 1 }}
       >
         {companies.map((company) => (
           <Option key={company.code} value={company.code}>

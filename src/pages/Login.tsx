@@ -149,7 +149,8 @@ export default function Login(): JSX.Element {
         sx={{
           width: 350,
           mx: "auto",
-          my: 14,
+          mt: 24,
+          mb: 14,
           py: 4,
           px: 3,
           display: "flex",

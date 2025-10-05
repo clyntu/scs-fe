@@ -305,8 +305,10 @@ const SupplierForm = (): JSX.Element => {
                     </TooltipTableCell>
                   </td>
                   <td>{formatToDate(supplier.date_modified)}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                  <td style={{ textAlign: "center" }}>
+                    <Box
+                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                    >
                       <Button
                         size="sm"
                         variant="plain"

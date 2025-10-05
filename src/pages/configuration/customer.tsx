@@ -353,8 +353,10 @@ const CustomerForm = (): JSX.Element => {
                     </TooltipTableCell>
                   </td>
                   <td>{formatToDate(customer.date_modified ?? undefined)}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                  <td style={{ textAlign: "center" }}>
+                    <Box
+                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                    >
                       <Button
                         size="sm"
                         variant="plain"
