@@ -18,7 +18,7 @@ export const CompanySelector: React.FC = () => {
         value={currentCompany ?? ""}
         onChange={(_, newValue) => {
           if (newValue !== null && newValue !== currentCompany) {
-            setCurrentCompany(newValue);W
+            setCurrentCompany(newValue);
             // Refresh page to load new company data - simple and reliable UX
             window.location.reload();
           }
