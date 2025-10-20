@@ -99,6 +99,7 @@ const ReceivingReportForm = ({
         setRemarks(selectedRow?.remarks ?? "");
         setSelectedSDRs(selectedRow?.sdrs);
         setPesoRate(selectedRow?.rate ?? 56);
+        setCurrencyUsed(selectedRow?.currency ?? "USD");
 
         // Get Fixed Discounts and sum them
         let totalDiscount = 0;

@@ -10,7 +10,6 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
 } from "@mui/joy";
 import type { RRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
@@ -23,6 +22,7 @@ import {
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import { toast } from "react-toastify";
 
 const RRFormDetails = ({
   openEdit,
@@ -59,14 +59,7 @@ const RRFormDetails = ({
 }: RRFormDetailsProps): JSX.Element => {
   const [unservedSDRs, setUnservedSDRs] = useState<PaginatedSDR | undefined>();
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
-  const [currencies, setCurrencies] = useState<Currency[]>(() => {
-    const code = selectedSupplier?.currency;
-    if (typeof code === "string" && code.trim() !== "") {
-      const placeholder: Currency = { id: -1, code };
-      return [placeholder];
-    }
-    return [];
-  });
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   useEffect(() => {
     if (selectedSupplier !== null && selectedSupplier !== undefined) {
@@ -76,15 +69,6 @@ const RRFormDetails = ({
         )
         .then((response) => setUnservedSDRs(response.data))
         .catch((error) => console.error("Error:", error));
-    }
-  }, [selectedSupplier]);
-
-  useEffect(() => {
-    const code = selectedSupplier?.currency;
-    if (typeof code === "string" && code.trim() !== "") {
-      const placeholder: Currency = { id: -1, code };
-      setCurrencies([placeholder]);
-      setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
     }
   }, [selectedSupplier]);
 
@@ -108,8 +92,37 @@ const RRFormDetails = ({
     if (!openEdit) getFixedAmtDiscounts();
 
     if (selectedSDRs.length > 0) {
+      // Get reference number from first SDR
       const firstSDR = selectedSDRs[0];
       setReferenceNumber(firstSDR.reference_number);
+
+      // Check if all SDRs have the same currency
+      let commonCurrency: string | null = null;
+      let commonRate: number | null = null;
+
+      for (const sdr of selectedSDRs) {
+        if (sdr.purchase_orders?.length > 0) {
+          const sdrCurrency = sdr.purchase_orders[0].currency_used;
+          const sdrRate = sdr.purchase_orders[0].peso_rate;
+
+          if (commonCurrency === null) {
+            // First SDR sets the currency
+            commonCurrency = sdrCurrency;
+            commonRate = sdrRate;
+          } else if (commonCurrency !== sdrCurrency) {
+            // Found different currency - this shouldn't happen but handle it
+            toast.warning(
+              `Warning: SDR ${sdr.id} has different currency (${sdrCurrency}) from others (${commonCurrency})`,
+            );
+          }
+        }
+      }
+
+      // Set the common currency and rate
+      if (commonCurrency !== null && commonRate !== null) {
+        setCurrencyUsed(commonCurrency);
+        setPesoRate(commonRate);
+      }
     }
   }, [selectedSDRs]);
 
@@ -191,6 +204,7 @@ const RRFormDetails = ({
                 size="sm"
                 placeholder="USD"
                 value={currencyUsed}
+                disabled={isEditDisabled}
               >
                 {currencies.map((currency) => (
                   <Option key={currency.id} value={currency.code}>
