@@ -96,7 +96,7 @@ const StockTransferForm = ({
     // Fetch suppliers
     axiosInstance
       .get<PaginatedSuppliers>(
-        "/api/suppliers/?with_active_po=True&with_active_rr=True&sort_by=name",
+        "/api/suppliers/?with_active_rr=True&sort_by=name",
       )
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
