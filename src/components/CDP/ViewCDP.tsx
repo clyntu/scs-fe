@@ -50,8 +50,8 @@ const ViewCDP = ({
     const payload: PaginationQueryParams = {
       page: 1,
       limit: PAGE_LIMIT,
-      sort_by: "id",
-      sort_order: "desc",
+      sort_by: "transaction_date",
+      sort_order: "asc",
       search_term: searchTerm,
     };
 
@@ -79,8 +79,8 @@ const ViewCDP = ({
     const payload: PaginationQueryParams = {
       page: value,
       limit: PAGE_LIMIT,
-      sort_by: "id",
-      sort_order: "desc",
+      sort_by: "transaction_date",
+      sort_order: "asc",
       search_term: searchTerm,
     };
 
