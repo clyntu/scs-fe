@@ -75,7 +75,7 @@ const ItemsModal = ({
         : addFourPlaces(Number(row?.net_cost_before_tax) ?? 0),
       currency: row?.currency ?? defaultCurrency,
       currency_id: row?.currency_id ?? defaultCurrency.id,
-      rate: row?.rate,
+      rate: row?.rate ?? undefined,
       // srp: required field, empty for new items
       srp: isNewItem ? "" : addTwoPlaces(Number(row?.srp) ?? 0),
       // last_sale_price: not required, defaults to 0
@@ -377,7 +377,7 @@ const ItemsModal = ({
                             step: ".0001",
                           },
                         }}
-                        value={item?.rate}
+                        value={item?.rate ?? ""}
                         onChange={handleChange}
                         required
                       />

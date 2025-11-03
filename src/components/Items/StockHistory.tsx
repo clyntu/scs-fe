@@ -248,7 +248,9 @@ const StockHistory = ({
                             </td>
                             <td style={{ textAlign: "right" }}>
                               {history.transaction_type === "DR" ||
-                              history.transaction_type === "CR"
+                              history.transaction_type === "CR" ||
+                              history.transaction_type === "SA-Surplus" ||
+                              history.transaction_type === "SA-Deficit"
                                 ? "-"
                                 : addCommaToNumberWithTwoPlaces(
                                     history.net_cost,

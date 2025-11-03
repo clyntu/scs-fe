@@ -369,6 +369,39 @@ export interface AggregatedWarehouseItem {
   total_unserved_spo: number;
 }
 
+export interface StockAdjustmentRequest {
+  adjustment_type: "surplus" | "deficit";
+  adjustment_amount: number;
+  reason: string;
+  notes?: string;
+}
+
+export interface StockAdjustmentResponse {
+  id: number;
+  warehouse_id: number;
+  warehouse_name: string;
+  item_id: number;
+  stock_code: string;
+  item_name: string;
+  adjustment_type: "surplus" | "deficit";
+  adjustment_amount: number;
+  previous_on_stock: number;
+  new_on_stock: number;
+  reason: string;
+  notes?: string;
+  created_by_name: string;
+  date_created: string;
+  company_id: number;
+}
+
+export interface PaginatedStockAdjustments {
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  items: StockAdjustmentResponse[];
+}
+
 export interface PurchaseOrder {
   id: number;
   supplier_id: number;

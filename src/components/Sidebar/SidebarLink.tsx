@@ -1,4 +1,3 @@
-import ListItem from "@mui/joy/ListItem";
 import ListItemButton from "@mui/joy/ListItemButton";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListItemContent from "@mui/joy/ListItemContent";
@@ -22,14 +21,12 @@ const SidebarLink = ({
 
   return (
     <Link href={link}>
-      <ListItem>
-        <ListItemButton selected={pathName === link}>
-          <ListItemDecorator>
-            <Icon fontSize="small" />
-          </ListItemDecorator>
-          <ListItemContent>{label}</ListItemContent>
-        </ListItemButton>
-      </ListItem>
+      <ListItemButton selected={pathName === link}>
+        <ListItemDecorator>
+          <Icon fontSize="small" />
+        </ListItemDecorator>
+        <ListItemContent>{label}</ListItemContent>
+      </ListItemButton>
     </Link>
   );
 };
