@@ -67,6 +67,7 @@ export interface ViewStockHistory {
   open: boolean;
   setOpen: (isOpen: boolean) => void;
   row?: Item;
+  refetchTrigger?: number;
 }
 
 export interface IStockHistory {
@@ -321,6 +322,7 @@ export interface ViewWHModalProps {
   setOpen: (isOpen: boolean) => void;
   row?: any;
   type: string;
+  onStockAdjustmentSuccess?: () => void;
 }
 
 export interface FetchedWarehouseItems {

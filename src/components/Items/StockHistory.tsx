@@ -13,6 +13,7 @@ const StockHistory = ({
   open,
   setOpen,
   row,
+  refetchTrigger,
 }: ViewStockHistory): JSX.Element => {
   const [stockHistory, setStockHistory] = useState<IStockHistory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +21,8 @@ const StockHistory = ({
   const [lastSelectedRow, setLastSelectedRow] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!row?.stock_code) return;
+    
     setIsLoading(true);
     axiosInstance
       .get(`/api/items/stock-history/?stock_code=${row?.stock_code}`)
@@ -31,7 +34,7 @@ const StockHistory = ({
         console.error("Error:", error);
         setIsLoading(false);
       });
-  }, [row]);
+  }, [row, refetchTrigger]);
 
   return (
     <Modal

@@ -28,6 +28,7 @@ const ViewWHModal = ({
   setOpen,
   row,
   type,
+  onStockAdjustmentSuccess,
 }: ViewWHModalProps): JSX.Element => {
   const [isLoading, setIsLoading] = useState(false);
   const [warehouseItems, setWarehouseItems] = useState<
@@ -48,6 +49,10 @@ const ViewWHModal = ({
   const handleAdjustmentSuccess = (): void => {
     // Reload warehouse items after successful adjustment
     loadWarehouseItems();
+    // Notify parent to refetch stock history
+    if (onStockAdjustmentSuccess) {
+      onStockAdjustmentSuccess();
+    }
   };
 
   const loadWarehouseItems = (): void => {

@@ -49,6 +49,13 @@ const ItemsModal = ({
   });
   const [openStockHistory, setOpenStockHistory] = useState(false);
   const [openWH, setOpenWH] = useState(false);
+  const [stockHistoryRefetchTrigger, setStockHistoryRefetchTrigger] =
+    useState(0);
+
+  const handleStockAdjustmentSuccess = (): void => {
+    // Trigger refetch of stock history by incrementing the trigger
+    setStockHistoryRefetchTrigger((prev) => prev + 1);
+  };
 
   const generateItem = (): Item => {
     // Use the first currency from the list if none is specified
@@ -509,8 +516,15 @@ const ItemsModal = ({
         open={openStockHistory}
         setOpen={setOpenStockHistory}
         row={row}
+        refetchTrigger={stockHistoryRefetchTrigger}
       />
-      <ViewWHModal open={openWH} setOpen={setOpenWH} row={row} type="item" />
+      <ViewWHModal
+        open={openWH}
+        setOpen={setOpenWH}
+        row={row}
+        type="item"
+        onStockAdjustmentSuccess={handleStockAdjustmentSuccess}
+      />
     </>
   );
 };
