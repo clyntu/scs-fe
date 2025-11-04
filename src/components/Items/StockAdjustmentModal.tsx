@@ -22,7 +22,7 @@ import type {
   StockAdjustmentResponse,
   PaginatedItems,
 } from "../../interface";
-import { addTwoPlaces } from "../../helper";
+import { addFourPlaces } from "../../helper";
 
 interface StockAdjustmentModalProps {
   open: boolean;
@@ -75,7 +75,7 @@ const StockAdjustmentModal = ({
           console.log(response.data);
           const defaultNetCost =
             Number(response.data.items[0]?.net_cost_before_tax) || 0;
-          setNetCost(addTwoPlaces(defaultNetCost).toString());
+          setNetCost(addFourPlaces(defaultNetCost).toString());
           setIsLoadingItem(false);
         })
         .catch((err) => {
@@ -129,6 +129,13 @@ const StockAdjustmentModal = ({
     const cost = parseFloat(netCost);
     if (isNaN(cost) || cost <= 0) {
       setError("Net Cost must be a positive number");
+      return;
+    }
+
+    // Check for max 4 decimal places
+    const decimalPart = netCost.split('.')[1];
+    if (decimalPart && decimalPart.length > 4) {
+      setError("Net Cost can have a maximum of 4 decimal places");
       return;
     }
 
@@ -234,6 +241,13 @@ const StockAdjustmentModal = ({
     if (!netCost) return "Net Cost is required";
     if (isNaN(cost)) return "Please enter a valid number";
     if (cost <= 0) return "Net Cost must be greater than 0";
+    
+    // Check for max 4 decimal places
+    const decimalPart = netCost.split('.')[1];
+    if (decimalPart && decimalPart.length > 4) {
+      return "Net Cost can have a maximum of 4 decimal places";
+    }
+    
     return null;
   }, [netCost, touched.netCost, isSubmitting, success]);
 
@@ -241,12 +255,17 @@ const StockAdjustmentModal = ({
     const trimmedReason = reason.trim();
     const amount = parseFloat(adjustmentAmount);
     const cost = parseFloat(netCost);
+    
+    // Check for max 4 decimal places
+    const decimalPart = netCost.split('.')[1];
+    const hasValidDecimals = !decimalPart || decimalPart.length <= 4;
 
     return (
       !isNaN(amount) &&
       amount > 0 &&
       !isNaN(cost) &&
       cost > 0 &&
+      hasValidDecimals &&
       trimmedReason.length >= 5 &&
       trimmedReason.length <= 500 &&
       notes.trim().length <= 1000
@@ -382,8 +401,8 @@ const StockAdjustmentModal = ({
                       disabled={isSubmitting}
                       slotProps={{
                         input: {
-                          min: 0.01,
-                          step: 0.01,
+                          min: 0.0001,
+                          step: 0.0001,
                         },
                       }}
                     />
@@ -391,8 +410,7 @@ const StockAdjustmentModal = ({
                       <FormHelperText>{getNetCostError}</FormHelperText>
                     ) : (
                       <FormHelperText>
-                        Cost per unit before tax (defaults to item's current Net
-                        Cost B/F Tax)
+                        Cost per unit before tax (max 4 decimal places)
                       </FormHelperText>
                     )}
                   </FormControl>

@@ -4,7 +4,7 @@ import Sheet from "@mui/joy/Sheet";
 import { Card, Box, Table } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { addCommaToNumberWithFourPlaces, addCommaToNumberWithTwoPlaces } from "../../helper";
 import { withTooltip } from "../shared/withTooltip";
 
 import { type IStockHistory, type ViewStockHistory } from "../../interface";
@@ -22,7 +22,7 @@ const StockHistory = ({
 
   useEffect(() => {
     if (!row?.stock_code) return;
-    
+
     setIsLoading(true);
     axiosInstance
       .get(`/api/items/stock-history/?stock_code=${row?.stock_code}`)
@@ -253,7 +253,7 @@ const StockHistory = ({
                               {history.transaction_type === "DR" ||
                               history.transaction_type === "CR"
                                 ? "-"
-                                : addCommaToNumberWithTwoPlaces(
+                                : addCommaToNumberWithFourPlaces(
                                     history.net_cost,
                                   )}
                             </td>
