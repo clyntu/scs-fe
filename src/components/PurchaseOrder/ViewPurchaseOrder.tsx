@@ -53,7 +53,7 @@ const ViewPurchaseOrder = ({
       page: 1,
       limit: PAGE_LIMIT,
       sort_by: "transaction_date",
-      sort_order: "asc",
+      sort_order: "desc",
       search_term: searchTerm,
     };
 
@@ -82,7 +82,7 @@ const ViewPurchaseOrder = ({
       page: value,
       limit: PAGE_LIMIT,
       sort_by: "transaction_date",
-      sort_order: "asc",
+      sort_order: "desc",
       search_term: searchTerm,
     };
 
