@@ -376,8 +376,6 @@ export interface StockAdjustmentRequest {
   adjustment_type: "surplus" | "deficit";
   adjustment_amount: number;
   net_cost: number;
-  reason: string;
-  notes?: string;
 }
 
 export interface StockAdjustmentResponse {
