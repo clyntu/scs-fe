@@ -373,6 +373,7 @@ export interface AggregatedWarehouseItem {
 export interface StockAdjustmentRequest {
   adjustment_type: "surplus" | "deficit";
   adjustment_amount: number;
+  net_cost: number;
   reason: string;
   notes?: string;
 }
@@ -386,6 +387,7 @@ export interface StockAdjustmentResponse {
   item_name: string;
   adjustment_type: "surplus" | "deficit";
   adjustment_amount: number;
+  net_cost: number;
   previous_on_stock: number;
   new_on_stock: number;
   reason: string;

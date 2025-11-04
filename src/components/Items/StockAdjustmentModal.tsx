@@ -14,12 +14,15 @@ import RadioGroup from "@mui/joy/RadioGroup";
 import Button from "@mui/joy/Button";
 import Alert from "@mui/joy/Alert";
 import Typography from "@mui/joy/Typography";
+import CircularProgress from "@mui/joy/CircularProgress";
 import React, { useState, useEffect, useMemo } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import type {
   StockAdjustmentRequest,
   StockAdjustmentResponse,
+  PaginatedItems,
 } from "../../interface";
+import { addTwoPlaces } from "../../helper";
 
 interface StockAdjustmentModalProps {
   open: boolean;
@@ -48,12 +51,40 @@ const StockAdjustmentModal = ({
     "surplus",
   );
   const [adjustmentAmount, setAdjustmentAmount] = useState<string>("");
+  const [netCost, setNetCost] = useState<string>("");
   const [reason, setReason] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [touched, setTouched] = useState({ amount: false, reason: false });
+  const [isLoadingItem, setIsLoadingItem] = useState(false);
+  const [touched, setTouched] = useState({
+    amount: false,
+    netCost: false,
+    reason: false,
+  });
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+
+  // Fetch item details when modal opens to get default net cost
+  useEffect(() => {
+    if (open && itemId) {
+      setIsLoadingItem(true);
+      axiosInstance
+        .get<PaginatedItems>(`/api/items/?item_id=${itemId}`)
+        .then((response) => {
+          console.log(itemId);
+          console.log(response.data);
+          const defaultNetCost =
+            Number(response.data.items[0]?.net_cost_before_tax) || 0;
+          setNetCost(addTwoPlaces(defaultNetCost).toString());
+          setIsLoadingItem(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching item details:", err);
+          setNetCost("0");
+          setIsLoadingItem(false);
+        });
+    }
+  }, [open, itemId]);
 
   // Reset form state when modal opens
   useEffect(() => {
@@ -62,7 +93,7 @@ const StockAdjustmentModal = ({
       setReason("");
       setNotes("");
       setAdjustmentType("surplus");
-      setTouched({ amount: false, reason: false });
+      setTouched({ amount: false, netCost: false, reason: false });
       setError("");
       setSuccess("");
     }
@@ -95,6 +126,12 @@ const StockAdjustmentModal = ({
       return;
     }
 
+    const cost = parseFloat(netCost);
+    if (isNaN(cost) || cost <= 0) {
+      setError("Net Cost must be a positive number");
+      return;
+    }
+
     if (adjustmentType === "deficit" && amount > currentStock) {
       setError(
         `Insufficient stock. Current stock: ${currentStock}, attempting to remove: ${amount}`,
@@ -108,6 +145,7 @@ const StockAdjustmentModal = ({
       const request: StockAdjustmentRequest = {
         adjustment_type: adjustmentType,
         adjustment_amount: amount,
+        net_cost: cost,
         reason: reason.trim(),
         ...(notes.trim() && { notes: notes.trim() }),
       };
@@ -140,6 +178,7 @@ const StockAdjustmentModal = ({
     if (!isSubmitting) {
       setOpen(false);
       setAdjustmentAmount("");
+      setNetCost("");
       setReason("");
       setNotes("");
       setAdjustmentType("surplus");
@@ -188,18 +227,31 @@ const StockAdjustmentModal = ({
     return null;
   }, [notes, isSubmitting, success]);
 
+  const getNetCostError = useMemo(() => {
+    // Don't show errors during submission or after success
+    if (!touched.netCost || isSubmitting || success) return null;
+    const cost = parseFloat(netCost);
+    if (!netCost) return "Net Cost is required";
+    if (isNaN(cost)) return "Please enter a valid number";
+    if (cost <= 0) return "Net Cost must be greater than 0";
+    return null;
+  }, [netCost, touched.netCost, isSubmitting, success]);
+
   const isFormValid = useMemo(() => {
     const trimmedReason = reason.trim();
     const amount = parseFloat(adjustmentAmount);
+    const cost = parseFloat(netCost);
 
     return (
       !isNaN(amount) &&
       amount > 0 &&
+      !isNaN(cost) &&
+      cost > 0 &&
       trimmedReason.length >= 5 &&
       trimmedReason.length <= 500 &&
       notes.trim().length <= 1000
     );
-  }, [adjustmentAmount, reason, notes]);
+  }, [adjustmentAmount, netCost, reason, notes]);
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -235,143 +287,189 @@ const StockAdjustmentModal = ({
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={2}>
-                {/* Adjustment Type */}
-                <FormControl required>
-                  <FormLabel>Adjustment Type</FormLabel>
-                  <RadioGroup
-                    value={adjustmentType}
-                    onChange={(e) =>
-                      setAdjustmentType(e.target.value as "surplus" | "deficit")
-                    }
-                  >
-                    <Radio
-                      value="surplus"
-                      label="Surplus (Add Stock)"
-                      color="success"
-                    />
-                    <Radio
-                      value="deficit"
-                      label="Deficit (Subtract Stock)"
-                      color="danger"
-                    />
-                  </RadioGroup>
-                </FormControl>
-
-                {/* Amount */}
-                <FormControl required error={!!getAmountError}>
-                  <FormLabel>Amount</FormLabel>
-                  <Input
-                    type="number"
-                    value={adjustmentAmount}
-                    onChange={(e) => setAdjustmentAmount(e.target.value)}
-                    onBlur={() =>
-                      setTouched((prev) => ({ ...prev, amount: true }))
-                    }
-                    placeholder="Enter stock adjustment amount"
-                    disabled={isSubmitting}
-                    slotProps={{
-                      input: {
-                        min: 1,
-                        step: 1,
-                      },
-                    }}
-                  />
-                  {getAmountError && (
-                    <FormHelperText>{getAmountError}</FormHelperText>
-                  )}
-                  {adjustmentAmount &&
-                    !isNaN(parseFloat(adjustmentAmount)) &&
-                    parseFloat(adjustmentAmount) > 0 && (
-                      <Typography level="body-sm" sx={{ mt: 0.5 }}>
-                        New stock level will be:{" "}
-                        <strong
-                          style={{
-                            color:
-                              adjustmentType === "surplus"
-                                ? "green"
-                                : predictedStock() < 0
-                                  ? "red"
-                                  : "inherit",
-                          }}
-                        >
-                          {predictedStock()} units
-                        </strong>
-                      </Typography>
-                    )}
-                </FormControl>
-
-                {/* Reason */}
-                <FormControl required error={!!getReasonError}>
-                  <FormLabel>Reason for Adjustment</FormLabel>
-                  <Textarea
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    onBlur={() =>
-                      setTouched((prev) => ({ ...prev, reason: true }))
-                    }
-                    placeholder="Explain why this adjustment is needed (minimum 5 characters)"
-                    minRows={2}
-                    disabled={isSubmitting}
-                  />
-                  {getReasonError ? (
-                    <FormHelperText>{getReasonError}</FormHelperText>
-                  ) : (
-                    <FormHelperText>
-                      {reason.trim().length > 0
-                        ? `${reason.trim().length}/5 characters minimum (max 500)`
-                        : "Minimum 5 characters required"}
-                    </FormHelperText>
-                  )}
-                </FormControl>
-
-                {/* Notes */}
-                <FormControl error={!!getNotesError}>
-                  <FormLabel>Additional Notes (Optional)</FormLabel>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Additional details (optional, max 1000 characters)"
-                    minRows={2}
-                    disabled={isSubmitting}
-                  />
-                  {getNotesError ? (
-                    <FormHelperText>{getNotesError}</FormHelperText>
-                  ) : notes.trim().length > 0 ? (
-                    <FormHelperText>
-                      {notes.trim().length}/1000 characters
-                    </FormHelperText>
-                  ) : (
-                    <FormHelperText>
-                      Optional additional information
-                    </FormHelperText>
-                  )}
-                </FormControl>
-
-                {/* Action Buttons */}
-                <Stack direction="row" spacing={1} justifyContent="flex-end">
-                  <Button
-                    variant="outlined"
-                    color="neutral"
-                    onClick={handleClose}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    color={adjustmentType === "surplus" ? "success" : "danger"}
-                    loading={isSubmitting}
-                    disabled={isSubmitting || !isFormValid}
-                  >
-                    {adjustmentType === "surplus"
-                      ? "Add Stock"
-                      : "Subtract Stock"}
-                  </Button>
-                </Stack>
+            {isLoadingItem ? (
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ py: 3 }}
+              >
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading item details...</Typography>
               </Stack>
-            </form>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={2}>
+                  {/* Adjustment Type */}
+                  <FormControl required>
+                    <FormLabel>Adjustment Type</FormLabel>
+                    <RadioGroup
+                      value={adjustmentType}
+                      onChange={(e) =>
+                        setAdjustmentType(
+                          e.target.value as "surplus" | "deficit",
+                        )
+                      }
+                    >
+                      <Radio
+                        value="surplus"
+                        label="Surplus (Add Stock)"
+                        color="success"
+                      />
+                      <Radio
+                        value="deficit"
+                        label="Deficit (Subtract Stock)"
+                        color="danger"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+
+                  {/* Amount */}
+                  <FormControl required error={!!getAmountError}>
+                    <FormLabel>Amount</FormLabel>
+                    <Input
+                      type="number"
+                      value={adjustmentAmount}
+                      onChange={(e) => setAdjustmentAmount(e.target.value)}
+                      onBlur={() =>
+                        setTouched((prev) => ({ ...prev, amount: true }))
+                      }
+                      placeholder="Enter stock adjustment amount"
+                      disabled={isSubmitting}
+                      slotProps={{
+                        input: {
+                          min: 1,
+                          step: 1,
+                        },
+                      }}
+                    />
+                    {getAmountError && (
+                      <FormHelperText>{getAmountError}</FormHelperText>
+                    )}
+                    {adjustmentAmount &&
+                      !isNaN(parseFloat(adjustmentAmount)) &&
+                      parseFloat(adjustmentAmount) > 0 && (
+                        <Typography level="body-sm" sx={{ mt: 0.5 }}>
+                          New stock level will be:{" "}
+                          <strong
+                            style={{
+                              color:
+                                adjustmentType === "surplus"
+                                  ? "green"
+                                  : predictedStock() < 0
+                                    ? "red"
+                                    : "inherit",
+                            }}
+                          >
+                            {predictedStock()} units
+                          </strong>
+                        </Typography>
+                      )}
+                  </FormControl>
+
+                  {/* Net Cost */}
+                  <FormControl required error={!!getNetCostError}>
+                    <FormLabel>Net Cost</FormLabel>
+                    <Input
+                      type="number"
+                      value={netCost}
+                      onChange={(e) => setNetCost(e.target.value)}
+                      onBlur={() =>
+                        setTouched((prev) => ({ ...prev, netCost: true }))
+                      }
+                      placeholder="Enter net cost before tax"
+                      disabled={isSubmitting}
+                      slotProps={{
+                        input: {
+                          min: 0.01,
+                          step: 0.01,
+                        },
+                      }}
+                    />
+                    {getNetCostError ? (
+                      <FormHelperText>{getNetCostError}</FormHelperText>
+                    ) : (
+                      <FormHelperText>
+                        Cost per unit before tax (defaults to item's current Net
+                        Cost B/F Tax)
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+
+                  {/* Reason */}
+                  <FormControl required error={!!getReasonError}>
+                    <FormLabel>Reason for Adjustment</FormLabel>
+                    <Textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      onBlur={() =>
+                        setTouched((prev) => ({ ...prev, reason: true }))
+                      }
+                      placeholder="Explain why this adjustment is needed (minimum 5 characters)"
+                      minRows={2}
+                      disabled={isSubmitting}
+                    />
+                    {getReasonError ? (
+                      <FormHelperText>{getReasonError}</FormHelperText>
+                    ) : (
+                      <FormHelperText>
+                        {reason.trim().length > 0
+                          ? `${reason.trim().length}/5 characters minimum (max 500)`
+                          : "Minimum 5 characters required"}
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+
+                  {/* Notes */}
+                  <FormControl error={!!getNotesError}>
+                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <Textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Additional details (optional, max 1000 characters)"
+                      minRows={2}
+                      disabled={isSubmitting}
+                    />
+                    {getNotesError ? (
+                      <FormHelperText>{getNotesError}</FormHelperText>
+                    ) : notes.trim().length > 0 ? (
+                      <FormHelperText>
+                        {notes.trim().length}/1000 characters
+                      </FormHelperText>
+                    ) : (
+                      <FormHelperText>
+                        Optional additional information
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      variant="outlined"
+                      color="neutral"
+                      onClick={handleClose}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      color={
+                        adjustmentType === "surplus" ? "success" : "danger"
+                      }
+                      loading={isSubmitting}
+                      disabled={isSubmitting || !isFormValid}
+                    >
+                      {adjustmentType === "surplus"
+                        ? "Add Stock"
+                        : "Subtract Stock"}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </form>
+            )}
           </Stack>
         </DialogContent>
       </ModalDialog>
