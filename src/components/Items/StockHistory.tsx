@@ -25,16 +25,24 @@ const StockHistory = ({
   const [hasMore, setHasMore] = useState(true);
   const limit = 10;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false); // Track loading state to prevent duplicate requests
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Debounce scroll events
 
   // Reset and fetch initial data when row changes or modal opens
   useEffect(() => {
     if (!row?.stock_code || !open) return;
+
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
 
     // Reset state for new item
     setPage(1);
     setStockHistory([]);
     setHasMore(true);
     setIsLoading(true);
+    isLoadingRef.current = false; // Reset loading ref
 
     axiosInstance
       .get(`/api/items/stock-history/?stock_code=${row?.stock_code}&page=1&limit=${limit}`)
@@ -52,10 +60,17 @@ const StockHistory = ({
 
   // Load more data
   const loadMore = useCallback(() => {
-    if (isLoadingMore || !hasMore || !row?.stock_code) return;
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore || !row?.stock_code) {
+      return;
+    }
 
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
     setIsLoadingMore(true);
     const nextPage = page + 1;
+
+    console.log('Loading page:', nextPage);
 
     axiosInstance
       .get(`/api/items/stock-history/?stock_code=${row.stock_code}&page=${nextPage}&limit=${limit}`)
@@ -68,27 +83,39 @@ const StockHistory = ({
         });
         setPage(nextPage);
         setIsLoadingMore(false);
+        isLoadingRef.current = false; // Reset ref after completion
       })
       .catch((error) => {
         console.error("Error:", error);
         setIsLoadingMore(false);
+        isLoadingRef.current = false; // Reset ref on error
       });
   }, [isLoadingMore, hasMore, page, row?.stock_code]);
 
-  // Handle scroll event for infinite scroll
+  // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-
-    // Trigger load more when scrolled to within 200px of bottom (increased threshold)
-    if (distanceFromBottom < 200 && hasMore && !isLoadingMore) {
-      console.log('Triggering loadMore');
-      loadMore();
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
-  }, [loadMore, hasMore, isLoadingMore]);
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      console.log('Scroll event:', { scrollTop, scrollHeight, clientHeight, distanceFromBottom, hasMore, isLoading: isLoadingRef.current });
+
+      // Trigger load more when scrolled to within 200px of bottom (increased threshold)
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        console.log('Triggering loadMore');
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
 
   // Attach scroll listener (keeping for compatibility but also using onScroll prop)
   useEffect(() => {
@@ -96,7 +123,13 @@ const StockHistory = ({
     if (!container) return;
 
     container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, [handleScroll]);
 
   // Also handle scroll via onScroll prop
