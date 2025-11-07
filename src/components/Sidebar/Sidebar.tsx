@@ -20,6 +20,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
 import SwapHorizontalCircleRoundedIcon from "@mui/icons-material/SwapHorizontalCircleRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -34,7 +35,7 @@ export default function Sidebar(): JSX.Element | null {
   const router = useRouter();
   const currentPath = router.pathname;
 
-  const [fullName, setFullName] = useState("");
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // avoids SSR localStorage errors
   const [mounted, setMounted] = useState(false);
@@ -45,13 +46,15 @@ export default function Sidebar(): JSX.Element | null {
     sales: true,
   });
 
+  const isAdmin = currentUser?.is_admin === true;
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     setMounted(true);
 
     axiosInstance
       .get<User>("/api/users/me/")
-      .then((response) => setFullName(response.data.full_name))
+      .then((response) => setCurrentUser(response.data))
       .catch((error) => console.error("Error fetching user ID:", error));
   }, []);
 
@@ -95,7 +98,7 @@ export default function Sidebar(): JSX.Element | null {
       }}
     >
       <Typography sx={{ mt: 0.5, px: 1, fontWeight: "bold", fontSize: "18px" }}>
-        Hi, {fullName}!
+        Hi, {currentUser?.full_name || ""}!
       </Typography>
 
       <Box sx={{ mb: 2, px: 1 }}>
@@ -135,6 +138,13 @@ export default function Sidebar(): JSX.Element | null {
               label="Warehouses"
               link="/configuration/warehouse"
             />
+            {isAdmin && (
+              <SidebarLink
+                Icon={TuneRoundedIcon}
+                label="Stock Adjustment"
+                link="/configuration/stock-adjustment"
+              />
+            )}
           </Section>
           {/* Purchasing */}
           <Section
