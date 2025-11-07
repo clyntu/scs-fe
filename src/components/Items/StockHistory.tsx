@@ -1,8 +1,8 @@
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
-import { Card, Box, Table } from "@mui/joy";
-import React, { useState, useEffect } from "react";
+import { Card, Box, Table, CircularProgress, Typography } from "@mui/joy";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { addCommaToNumberWithFourPlaces, addCommaToNumberWithTwoPlaces } from "../../helper";
 import { withTooltip } from "../shared/withTooltip";
@@ -17,24 +17,92 @@ const StockHistory = ({
 }: ViewStockHistory): JSX.Element => {
   const [stockHistory, setStockHistory] = useState<IStockHistory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [lastSelectedRow, setLastSelectedRow] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 10;
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Reset and fetch initial data when row changes or modal opens
   useEffect(() => {
-    if (!row?.stock_code) return;
+    if (!row?.stock_code || !open) return;
 
+    // Reset state for new item
+    setPage(1);
+    setStockHistory([]);
+    setHasMore(true);
     setIsLoading(true);
+
     axiosInstance
-      .get(`/api/items/stock-history/?stock_code=${row?.stock_code}`)
+      .get(`/api/items/stock-history/?stock_code=${row?.stock_code}&page=1&limit=${limit}`)
       .then((response) => {
-        setStockHistory(response.data as IStockHistory[]);
+        setStockHistory(response.data.items as IStockHistory[]);
+        setTotal(response.data.total);
+        setHasMore(response.data.items.length < response.data.total);
         setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
       });
-  }, [row, refetchTrigger]);
+  }, [row?.stock_code, open, refetchTrigger]);
+
+  // Load more data
+  const loadMore = useCallback(() => {
+    if (isLoadingMore || !hasMore || !row?.stock_code) return;
+
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    axiosInstance
+      .get(`/api/items/stock-history/?stock_code=${row.stock_code}&page=${nextPage}&limit=${limit}`)
+      .then((response) => {
+        const newItems = response.data.items as IStockHistory[];
+        setStockHistory((prev) => {
+          const updated = [...prev, ...newItems];
+          setHasMore(updated.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+      });
+  }, [isLoadingMore, hasMore, page, row?.stock_code]);
+
+  // Handle scroll event for infinite scroll
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+    // Trigger load more when scrolled to within 200px of bottom (increased threshold)
+    if (distanceFromBottom < 200 && hasMore && !isLoadingMore) {
+      console.log('Triggering loadMore');
+      loadMore();
+    }
+  }, [loadMore, hasMore, isLoadingMore]);
+
+  // Attach scroll listener (keeping for compatibility but also using onScroll prop)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // Also handle scroll via onScroll prop
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    handleScroll();
+  };
 
   return (
     <Modal
@@ -61,6 +129,8 @@ const StockHistory = ({
           <h3 className="mb-6">Stock History</h3>
           <Card className="w-[100%] mr-7">
             <Sheet
+              ref={scrollContainerRef}
+              onScroll={onScroll}
               sx={{
                 "--TableCell-height": "40px",
                 // the number is the amount of the header rows.
@@ -71,6 +141,7 @@ const StockHistory = ({
                 "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
                 "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
                 overflow: "auto",
+                overflowY: "scroll",
                 borderRadius: 8,
                 background: (
                   theme,
@@ -88,7 +159,7 @@ const StockHistory = ({
                 backgroundPosition:
                   "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
                 backgroundColor: "background.surface",
-                maxHeight: "600px",
+                height: "400px",
               }}
             >
               <Table
@@ -271,6 +342,35 @@ const StockHistory = ({
               </Table>
             </Sheet>
           </Card>
+
+          {/* Infinite Scroll Status */}
+          {stockHistory.length > 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                mt: 2,
+                px: 1,
+                gap: 2,
+              }}
+            >
+              {isLoadingMore ? (
+                <>
+                  <CircularProgress size="sm" />
+                  <Typography level="body-sm">Loading more...</Typography>
+                </>
+              ) : hasMore ? (
+                <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                  Showing {stockHistory.length} of {total} records • Scroll for more
+                </Typography>
+              ) : (
+                <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                  Showing all {total} records
+                </Typography>
+              )}
+            </Box>
+          )}
         </Box>
       </Sheet>
     </Modal>
