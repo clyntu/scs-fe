@@ -1,5 +1,5 @@
-// src/pages/register.tsx
-import { useState } from "react";
+// src/pages/admin/register.tsx
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
   Sheet,
@@ -9,16 +9,28 @@ import {
   Input,
   Button,
   Alert,
+  CircularProgress,
 } from "@mui/joy";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
-import axiosInstance from "../utils/axiosConfig";
+import { toast } from "react-toastify";
+import axiosInstance from "../../utils/axiosConfig";
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  full_name: string;
+  role?: string;
+  is_admin?: boolean;
+}
 
 export default function Register(): JSX.Element {
   /* ─────────────────── hooks ─────────────────── */
   const router = useRouter();
 
+  /* ─────────────────── state ─────────────────── */
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -28,9 +40,44 @@ export default function Register(): JSX.Element {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Use default company - users can switch companies after registration
   const defaultCompany = "company-a";
+
+  /* ─────────────────── admin check ─────────────────── */
+  useEffect(() => {
+    const checkAdminAccess = async (): Promise<void> => {
+      try {
+        const response = await axiosInstance.get<User>("/api/users/me/");
+        const user = response.data;
+
+        if (!user.is_admin) {
+          // Non-admin users are redirected to forbidden page
+          await router.push("/forbidden");
+        } else {
+          setIsCheckingAuth(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin access:", error);
+        // If not authenticated or error, redirect to login
+        await router.push("/");
+      }
+    };
+
+    void checkAdminAccess();
+  }, [router]);
+
+  /* ─────────────────── helpers ─────────────────── */
+  const resetForm = (): void => {
+    setUsername("");
+    setEmail("");
+    setFullName("");
+    setPassword("");
+    setShowPassword(false);
+    setErrors({});
+    setGeneralError("");
+  };
 
   /* ─────────────────── handlers ─────────────────── */
   const handleRegister = async (
@@ -42,21 +89,28 @@ export default function Register(): JSX.Element {
     setGeneralError("");
 
     try {
-      // Set default company for registration
-      localStorage.setItem("companyId", defaultCompany);
-      localStorage.setItem("currentCompany", defaultCompany);
-
       // Get the Supabase client (now single instance)
-      const { getSupabase } = await import("../supabase/supabaseClient");
+      const { getSupabase } = await import("../../supabase/supabaseClient");
       const supabase = getSupabase();
 
-      // Supabase sign-up (browser)
+      // Store admin's current session before creating new user
+      const { data: { session: adminSession } } = await supabase.auth.getSession();
+
+      // Supabase sign-up (browser) - creates user in Supabase auth
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } },
       });
       if (error !== null) throw error;
+
+      // Sign out the newly created user to restore admin session
+      await supabase.auth.signOut();
+
+      // Restore admin session if available
+      if (adminSession) {
+        await supabase.auth.setSession(adminSession);
+      }
 
       // Persist user in your own DB (roles)
       await axiosInstance.post(
@@ -65,11 +119,9 @@ export default function Register(): JSX.Element {
         { headers: { "X-Company-ID": defaultCompany } },
       );
 
-      //  success -> login page
-      await router.push({
-        pathname: "/",
-        query: { registered: "success" },
-      });
+      // Show success toast and reset form
+      toast.success("User registered successfully!");
+      resetForm();
     } catch (err: any) {
       console.error("Registration error:", err);
 
@@ -98,9 +150,23 @@ export default function Register(): JSX.Element {
     }
   };
 
-  const toLogin = async (): Promise<void> => {
-    await router.push({ pathname: "/" });
-  };
+  // Show loading spinner while checking admin access
+  if (isCheckingAuth) {
+    return (
+      <main>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main>
@@ -120,9 +186,9 @@ export default function Register(): JSX.Element {
         variant="outlined"
       >
         <Typography level="h4" component="h1">
-          <b>Create an Account</b>
+          <b>Register User</b>
         </Typography>
-        <Typography level="body-sm">Register to get started.</Typography>
+        <Typography level="body-sm">Create a new user account.</Typography>
 
         {generalError !== "" && (
           <Alert color="danger" variant="soft" sx={{ mt: 1, mb: 1 }}>
@@ -232,16 +298,6 @@ export default function Register(): JSX.Element {
             {isLoading ? "Creating Account…" : "Register"}
           </Button>
         </form>
-
-        <Button
-          variant="outlined"
-          color="neutral"
-          className="w-full"
-          onClick={toLogin}
-          disabled={isLoading}
-        >
-          Already have an account? Log in
-        </Button>
       </Sheet>
     </main>
   );

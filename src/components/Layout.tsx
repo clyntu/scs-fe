@@ -6,8 +6,7 @@ import { useRouter } from "next/router";
 
 const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
   const router = useRouter();
-  const hideSidebar =
-    router.pathname === "/" || router.pathname === "/register";
+  const hideSidebar = router.pathname === "/";
 
   return (
     <div className="font-inter">

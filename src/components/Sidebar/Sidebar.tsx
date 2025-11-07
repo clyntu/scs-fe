@@ -24,8 +24,9 @@ import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import axiosInstance from "../../utils/axiosConfig";
-import type { User } from "../../pages/Login";
+import type { User } from "../../pages/login";
 import { authHelpers } from "../../supabase/supabaseClient";
 import { CompanySelector } from "../CompanySelector";
 
@@ -41,9 +42,10 @@ export default function Sidebar(): JSX.Element | null {
   const [mounted, setMounted] = useState(false);
 
   const [expanded, setExpanded] = useState({
-    configuration: false,
+    configuration: true,
     purchasing: true,
     sales: true,
+    userManagement: true,
   });
 
   const isAdmin = currentUser?.is_admin === true;
@@ -80,6 +82,7 @@ export default function Sidebar(): JSX.Element | null {
   const isConfig = currentPath.includes("/configuration");
   const isPurchasing = currentPath.includes("/purchasing");
   const isSales = currentPath.includes("/sales");
+  const isUserManagement = currentPath.includes("/admin");
 
   return (
     <Box
@@ -217,6 +220,21 @@ export default function Sidebar(): JSX.Element | null {
               link="/sales/ar-receipts"
             />
           </Section>
+          {/* User Management (Admin Only) */}
+          {isAdmin && (
+            <Section
+              title="User Management"
+              active={isUserManagement}
+              open={expanded.userManagement}
+              onToggle={() => toggle("userManagement")}
+            >
+              <SidebarLink
+                Icon={PersonAddIcon}
+                label="Register User"
+                link="/admin/register"
+              />
+            </Section>
+          )}
         </List>
       </Box>
       <Divider sx={{ mt: "auto", mb: 2 }} />

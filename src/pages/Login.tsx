@@ -137,13 +137,6 @@ export default function Login(): JSX.Element {
     checkExpiredSession();
   }, [router.query]);
 
-  const handleRegisterRedirect = async (): Promise<void> => {
-    // Pass selected company ID to registration page
-    await router.push({
-      pathname: "/register",
-      query: { companyId: "company-a" },
-    });
-  };
 
   return (
     <main>
@@ -228,15 +221,6 @@ export default function Login(): JSX.Element {
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-        <Button
-          variant="outlined"
-          color="neutral"
-          className="w-full"
-          onClick={handleRegisterRedirect}
-          disabled={isLoading}
-        >
-          Don&apos;t have an account? Register
-        </Button>
       </Sheet>
     </main>
   );
