@@ -15,6 +15,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import axiosInstance from "../../utils/axiosConfig";
 import TooltipAutocomplete from "../../components/shared/TooltipAutocomplete";
+import { createFilterOptions } from "@mui/joy/Autocomplete";
 import type {
   StockAdjustmentRequest,
   StockAdjustmentResponse,
@@ -69,6 +70,22 @@ const StockAdjustmentPage = (): JSX.Element => {
   // Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const isAdmin = currentUser?.is_admin === true;
+
+  // Filter options for prefix-only matching in autocompletes
+  const stockCodeFilterOptions = createFilterOptions({
+    matchFrom: 'start',
+    stringify: (option: Item) => option.stock_code,
+  });
+
+  const stockNameFilterOptions = createFilterOptions({
+    matchFrom: 'start',
+    stringify: (option: Item) => option.name,
+  });
+
+  const warehouseFilterOptions = createFilterOptions({
+    matchFrom: 'start',
+    stringify: (option: Warehouse) => option.name,
+  });
 
   // Check admin access
   useEffect(() => {
@@ -382,6 +399,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       getOptionLabel={(item) =>
                         `${item.stock_code}`
                       }
+                      filterOptions={stockCodeFilterOptions}
                       onChange={(_, value) => {
                         setSelectedItem(value);
                         setError("");
@@ -412,6 +430,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       getOptionLabel={(item) =>
                         `${item.name}`
                       }
+                      filterOptions={stockNameFilterOptions}
                       onChange={(_, value) => {
                         setSelectedItem(value);
                         setError("");
@@ -440,6 +459,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       placeholder="Select a warehouse"
                       options={warehouses.items}
                       getOptionLabel={(warehouse) => warehouse.name}
+                      filterOptions={warehouseFilterOptions}
                       onChange={(_, value) => {
                         setSelectedWarehouse(value);
                         setError("");
@@ -521,7 +541,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                     size="sm"
                     sx={{ flex: 1 }}
                   >
-                    <FormLabel>Amount</FormLabel>
+                    <FormLabel>Quantity</FormLabel>
                     <Input
                       type="number"
                       size="sm"
