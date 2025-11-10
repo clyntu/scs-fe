@@ -25,6 +25,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PeopleIcon from "@mui/icons-material/People";
 import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../../pages/login";
 import { authHelpers } from "../../supabase/supabaseClient";
@@ -256,6 +257,11 @@ export default function Sidebar(): JSX.Element | null {
               open={expanded.userManagement}
               onToggle={() => toggle("userManagement")}
             >
+              <SidebarLink
+                Icon={PeopleIcon}
+                label="View Users"
+                link="/admin/users"
+              />
               <SidebarLink
                 Icon={PersonAddIcon}
                 label="Register User"

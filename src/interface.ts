@@ -1,5 +1,5 @@
 import type { Expense } from "./components/ReceivingReport/interface";
-import type { User } from "./pages/Login";
+import type { User } from "./pages/login";
 
 export interface Currency {
   id: number;
@@ -273,6 +273,11 @@ export interface PaginatedCR {
 export interface PaginatedAR {
   total: number;
   items: AR[];
+}
+
+export interface PaginatedUsers {
+  total: number;
+  items: User[];
 }
 
 export interface PaginationQueryParams {
