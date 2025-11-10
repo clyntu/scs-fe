@@ -24,8 +24,10 @@ const ARForm = ({
   openEdit,
   selectedRow,
   title,
+  isAdmin: isAdminProp,
 }: ARFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
+  const [isAdmin, setIsAdmin] = useState(isAdminProp ?? false);
   const [customers, setCustomers] = useState<PaginatedCustomers>({
     total: 0,
     items: [],
@@ -71,7 +73,17 @@ const ARForm = ({
   const paymentAmount = totalApplied - Number(lessAmount) + Number(addAmount);
 
   const isEditDisabled =
-    selectedRow !== undefined && selectedRow?.status !== "unposted";
+    selectedRow !== undefined && (selectedRow?.status !== "unposted" || !isAdmin);
+
+  // Fetch user info if not provided (for backward compatibility)
+  useEffect(() => {
+    if (isAdminProp === undefined) {
+      axiosInstance
+        .get<{ id: number; is_admin?: boolean }>("/api/users/me/")
+        .then((response) => setIsAdmin(response.data.is_admin || false))
+        .catch((error) => console.error("Error fetching user:", error));
+    }
+  }, [isAdminProp]);
 
   useEffect(() => {
     // Fetch customers
@@ -357,7 +369,7 @@ const ARForm = ({
       <div className="flex justify-between">
         <h2 className="mb-6">{title}</h2>
         <div className="flex">
-          {isEditDisabled && paymentStatus === "cleared" && (
+          {isEditDisabled && paymentStatus === "cleared" && isAdmin && (
             <Button
               className="w-[130px] h-[35px] bg-button-primary"
               size="sm"

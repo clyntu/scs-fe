@@ -34,6 +34,7 @@ const ViewAR = ({
   setOpenEdit,
   selectedRow,
   setSelectedRow,
+  isAdmin,
 }: ViewARProps): JSX.Element => {
   const [ARs, setARs] = useState<PaginatedAR>({
     total: 0,
@@ -191,19 +192,21 @@ const ViewAR = ({
             >
               Print Summary
             </Button>
-            <Button
-              className="mt-2 bg-button-primary"
-              sx={{
-                ml: 2,
-                width: 140,
-              }}
-              color="primary"
-              onClick={() => {
-                setOpenCreate(true);
-              }}
-            >
-              Add AR Receipt
-            </Button>
+            {isAdmin && (
+              <Button
+                className="mt-2 bg-button-primary"
+                sx={{
+                  ml: 2,
+                  width: 140,
+                }}
+                color="primary"
+                onClick={() => {
+                  setOpenCreate(true);
+                }}
+              >
+                Add AR Receipt
+              </Button>
+            )}
           </div>
         </Box>
         <Box className="flex items-center mb-6">
@@ -382,21 +385,23 @@ const ViewAR = ({
                           setSelectedRow(AR);
                         }}
                       >
-                        {AR.status !== "unposted" ? "View" : "Edit"}
+                        {AR.status !== "unposted" || !isAdmin ? "View" : "Edit"}
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(AR);
-                        }}
-                        disabled={AR.status !== "unposted"}
-                      >
-                        Archive
-                      </Button>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="soft"
+                          color="danger"
+                          className="bg-delete-red"
+                          onClick={() => {
+                            setOpenDelete(true);
+                            setSelectedRow(AR);
+                          }}
+                          disabled={AR.status !== "unposted"}
+                        >
+                          Archive
+                        </Button>
+                      )}
                     </Box>
                   </td>
                 </tr>

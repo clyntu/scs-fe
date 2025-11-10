@@ -565,6 +565,7 @@ export interface ARFormProps {
   openEdit: boolean;
   selectedRow?: AR;
   title: string;
+  isAdmin?: boolean;
 }
 
 export interface ViewPurchaseOrderProps {
@@ -641,6 +642,7 @@ export interface ViewARProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: AR | undefined;
   setSelectedRow: (ar: AR) => void;
+  isAdmin: boolean;
 }
 
 export interface CPOItems {
