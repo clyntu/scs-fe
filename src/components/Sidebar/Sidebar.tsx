@@ -104,6 +104,20 @@ export default function Sidebar(): JSX.Element | null {
         Hi, {currentUser?.full_name || ""}!
       </Typography>
 
+      {isAdmin && (
+        <Typography
+          sx={{
+            mt: 0.5,
+            px: 1,
+            fontSize: "12px",
+            color: "primary.500",
+            fontWeight: "600"
+          }}
+        >
+          Role: Administrator
+        </Typography>
+      )}
+
       <Box sx={{ mb: 2, px: 1 }}>
         <CompanySelector />
       </Box>

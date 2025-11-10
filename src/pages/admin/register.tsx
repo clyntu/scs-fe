@@ -10,12 +10,15 @@ import {
   Button,
   Alert,
   CircularProgress,
+  Checkbox,
+  Box,
 } from "@mui/joy";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosConfig";
+import axios from "axios";
 
 interface User {
   id: number;
@@ -36,6 +39,7 @@ export default function Register(): JSX.Element {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string>("");
@@ -74,6 +78,7 @@ export default function Register(): JSX.Element {
     setEmail("");
     setFullName("");
     setPassword("");
+    setIsAdmin(false);
     setShowPassword(false);
     setErrors({});
     setGeneralError("");
@@ -97,27 +102,43 @@ export default function Register(): JSX.Element {
       const { data: { session: adminSession } } = await supabase.auth.getSession();
 
       // Supabase sign-up (browser) - creates user in Supabase auth
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: fullName } },
       });
       if (error !== null) throw error;
 
-      // Sign out the newly created user to restore admin session
+      // Get the new user's access token (while session is still active)
+      const newUserToken = signUpData?.session?.access_token;
+
+      if (!newUserToken) {
+        throw new Error("Failed to get access token for new user");
+      }
+
+      // Persist user in your own DB BEFORE signing out
+      // Use plain axios to bypass interceptor that would replace the token
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      await axios.post(
+        `${apiUrl}/api/users/sync`,
+        { username, full_name: fullName, is_admin: isAdmin },
+        {
+          headers: {
+            "X-Company-ID": defaultCompany,
+            "Authorization": `Bearer ${newUserToken}`,
+            "Content-Type": "application/json"
+          },
+          withCredentials: true
+        },
+      );
+
+      // NOW sign out the newly created user to restore admin session
       await supabase.auth.signOut();
 
       // Restore admin session if available
       if (adminSession) {
         await supabase.auth.setSession(adminSession);
       }
-
-      // Persist user in your own DB (roles)
-      await axiosInstance.post(
-        "/api/users/sync",
-        { username, full_name: fullName }, // body optional
-        { headers: { "X-Company-ID": defaultCompany } },
-      );
 
       // Show success toast and reset form
       toast.success("User registered successfully!");
@@ -287,6 +308,15 @@ export default function Register(): JSX.Element {
               </Typography>
             )}
           </FormControl>
+
+          <Box sx={{ mt: 2 }}>
+            <Checkbox
+              label="Grant Admin Access"
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}
+              disabled={isLoading}
+            />
+          </Box>
 
           <Button
             className="bg-button-primary w-full"
