@@ -375,12 +375,12 @@ const StockAdjustmentPage = (): JSX.Element => {
                 {/* Item and Warehouse Selection - Side by Side */}
                 <Stack direction="row" spacing={2}>
                   <FormControl required sx={{ flex: 1 }}>
-                    <FormLabel>Item</FormLabel>
+                    <FormLabel>Stock Code</FormLabel>
                     <TooltipAutocomplete
-                      placeholder="Select an item"
+                      placeholder="Select an Stock Code"
                       options={items.items}
                       getOptionLabel={(item) =>
-                        `${item.stock_code} - ${item.name}`
+                        `${item.stock_code}`
                       }
                       onChange={(_, value) => {
                         setSelectedItem(value);
@@ -400,7 +400,37 @@ const StockAdjustmentPage = (): JSX.Element => {
                       }}
                     />
                     <FormHelperText>
-                      Select the item to adjust stock for
+                      Select the stock code to adjust stock for
+                    </FormHelperText>
+                  </FormControl>
+
+                  <FormControl required sx={{ flex: 1 }}>
+                    <FormLabel>Stock Name</FormLabel>
+                    <TooltipAutocomplete
+                      placeholder="Select a Stock Name"
+                      options={items.items}
+                      getOptionLabel={(item) =>
+                        `${item.name}`
+                      }
+                      onChange={(_, value) => {
+                        setSelectedItem(value);
+                        setError("");
+                        setSuccess("");
+                      }}
+                      value={selectedItem}
+                      size="sm"
+                      loading={isLoadingItems}
+                      slotProps={{
+                        listbox: {
+                          sx: {
+                            width: 350,
+                            fontSize: "13px",
+                          },
+                        },
+                      }}
+                    />
+                    <FormHelperText>
+                      Select the stock name to adjust stock for
                     </FormHelperText>
                   </FormControl>
 
