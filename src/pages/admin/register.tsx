@@ -227,6 +227,7 @@ export default function Register(): JSX.Element {
               onChange={(e) => setUsername(e.target.value)}
               disabled={isLoading}
               required
+              placeholder="e.g., jsmith or john.smith"
             />
             {errors.username !== undefined && errors.username !== "" && (
               <Typography level="body-xs" color="danger">
@@ -246,6 +247,7 @@ export default function Register(): JSX.Element {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               required
+              placeholder="user@company.com"
             />
             {errors.email !== undefined && errors.email !== "" && (
               <Typography level="body-xs" color="danger">
@@ -264,6 +266,7 @@ export default function Register(): JSX.Element {
               onChange={(e) => setFullName(e.target.value)}
               disabled={isLoading}
               required
+              placeholder="John Smith"
             />
             {errors.full_name !== undefined && errors.full_name !== "" && (
               <Typography level="body-xs" color="danger">
