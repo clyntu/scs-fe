@@ -185,11 +185,13 @@ export default function Sidebar(): JSX.Element | null {
               label="Receiving Report"
               link="/purchasing/receiving-report"
             />
-            <SidebarLink
-              Icon={SwapHorizontalCircleRoundedIcon}
-              label="Stock Transfer"
-              link="/purchasing/stock-transfer"
-            />
+            {isAdmin && (
+              <SidebarLink
+                Icon={SwapHorizontalCircleRoundedIcon}
+                label="Stock Transfer"
+                link="/purchasing/stock-transfer"
+              />
+            )}
           </Section>
           {/* Sales */}
           <Section
