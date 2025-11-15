@@ -165,7 +165,7 @@ const WarehouseForm = (): JSX.Element => {
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
-              placeholder="Name"
+              placeholder="Code"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
