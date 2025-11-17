@@ -177,7 +177,7 @@ const ViewWHModal = ({
                     <tbody>
                       <tr>
                         <td
-                          colSpan={isAdmin ? 6 : 5}
+                          colSpan={type === "item" ? (isAdmin ? 7 : 6) : (isAdmin ? 6 : 5)}
                           style={{ textAlign: "center" }}
                         >
                           <h5>Loading...</h5>
@@ -191,8 +191,11 @@ const ViewWHModal = ({
                     <>
                       <thead>
                         <tr>
+                          {type === "item" && (
+                            <th style={{ width: 120 }}>WH Code</th>
+                          )}
                           <th
-                            style={{ width: "var(--Table-firstColumnWidth)" }}
+                            style={{ width: type === "item" ? 200 : "var(--Table-firstColumnWidth)" }}
                           >
                             {type === "warehouse"
                               ? "Stock Name"
@@ -220,6 +223,9 @@ const ViewWHModal = ({
                             <tr
                               key={`${warehouseItem.warehouse_id}-${warehouseItem.stock_code}`}
                             >
+                              {type === "item" && (
+                                <td>{warehouseItem.warehouse_code}</td>
+                              )}
                               <td>
                                 {type === "warehouse"
                                   ? withTooltip(
@@ -262,7 +268,7 @@ const ViewWHModal = ({
                     <tbody>
                       <tr>
                         <td
-                          colSpan={isAdmin ? 6 : 5}
+                          colSpan={type === "item" ? (isAdmin ? 7 : 6) : (isAdmin ? 6 : 5)}
                           style={{ textAlign: "center" }}
                         >
                           No Stock Location Available

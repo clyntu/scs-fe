@@ -363,6 +363,7 @@ export interface WarehouseItem {
 
 export interface AggregatedWarehouseItem {
   warehouse_id: number;
+  warehouse_code: string;
   warehouse_name: string;
   item_id: number;
   stock_code: string;
