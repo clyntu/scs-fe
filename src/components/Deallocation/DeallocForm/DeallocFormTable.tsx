@@ -108,7 +108,7 @@ const DeallocFormTable = ({
               <td>
                 <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   value={item.warehouse_1}
                   onChange={(event, newValue) => {
                     setAllocItems((prevAllocItems) =>
@@ -157,7 +157,7 @@ const DeallocFormTable = ({
               <td style={{ width: 200 }}>
                 <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   value={item.warehouse_2}
                   onChange={(event, newValue) => {
                     setAllocItems((prevAllocItems) =>
@@ -206,7 +206,7 @@ const DeallocFormTable = ({
               <td style={{ width: 200 }}>
                 <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   value={item.warehouse_3}
                   onChange={(event, newValue) => {
                     setAllocItems((prevAllocItems) =>

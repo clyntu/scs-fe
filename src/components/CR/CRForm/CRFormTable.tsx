@@ -141,7 +141,7 @@ const CRFormTable = ({
                     options={warehouses.items.filter(
                       (warehouse) => warehouse.id,
                     )}
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option) => `${option.code} - ${option.name}`}
                     value={item.return_warehouse}
                     onChange={(e, newValue) => {
                       setFormattedDRs((prevDRItems) =>
