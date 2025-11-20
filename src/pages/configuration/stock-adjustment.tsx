@@ -397,7 +397,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       placeholder="Select an Stock Code"
                       options={items.items}
                       getOptionLabel={(item) =>
-                        `${item.stock_code}`
+                        `${item.stock_code} (${item.name})`
                       }
                       filterOptions={stockCodeFilterOptions}
                       onChange={(_, value) => {
