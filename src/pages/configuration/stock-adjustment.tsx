@@ -74,7 +74,7 @@ const StockAdjustmentPage = (): JSX.Element => {
   // Filter options for prefix-only matching in autocompletes
   const stockCodeFilterOptions = createFilterOptions({
     matchFrom: 'start',
-    stringify: (option: Item) => option.stock_code,
+    stringify: (option: Item) => `${option.stock_code} (${option.name})`,
   });
 
   const stockNameFilterOptions = createFilterOptions({
