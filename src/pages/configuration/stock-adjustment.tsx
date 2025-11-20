@@ -84,7 +84,7 @@ const StockAdjustmentPage = (): JSX.Element => {
 
   const warehouseFilterOptions = createFilterOptions({
     matchFrom: 'start',
-    stringify: (option: Warehouse) => `${option.code}`,
+    stringify: (option: Warehouse) => option.code,
   });
 
   // Check admin access
