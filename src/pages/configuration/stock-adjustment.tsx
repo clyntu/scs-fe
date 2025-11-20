@@ -408,6 +408,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       value={selectedItem}
                       size="sm"
                       loading={isLoadingItems}
+                      autoHighlight={false}
                       slotProps={{
                         listbox: {
                           sx: {
@@ -439,6 +440,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       value={selectedItem}
                       size="sm"
                       loading={isLoadingItems}
+                      autoHighlight={false}
                       slotProps={{
                         listbox: {
                           sx: {
@@ -468,6 +470,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                       value={selectedWarehouse}
                       size="sm"
                       loading={isLoadingWarehouses}
+                      autoHighlight={false}
                       slotProps={{
                         listbox: {
                           sx: {
