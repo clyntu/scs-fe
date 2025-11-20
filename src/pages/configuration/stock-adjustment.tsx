@@ -84,7 +84,7 @@ const StockAdjustmentPage = (): JSX.Element => {
 
   const warehouseFilterOptions = createFilterOptions({
     matchFrom: 'start',
-    stringify: (option: Warehouse) => option.name,
+    stringify: (option: Warehouse) => `${option.code}`,
   });
 
   // Check admin access
@@ -458,7 +458,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                     <TooltipAutocomplete
                       placeholder="Select a warehouse"
                       options={warehouses.items}
-                      getOptionLabel={(warehouse) => warehouse.name}
+                      getOptionLabel={(warehouse) => `${warehouse.code}`}
                       filterOptions={warehouseFilterOptions}
                       onChange={(_, value) => {
                         setSelectedWarehouse(value);
@@ -492,7 +492,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                         {selectedItem.stock_code})
                       </Typography>
                       <Typography level="body-sm">
-                        <strong>Warehouse:</strong> {selectedWarehouse.name}
+                        <strong>Warehouse:</strong> {selectedWarehouse.code}
                       </Typography>
                       <Typography level="body-sm">
                         <strong>Current Stock:</strong>{" "}
