@@ -172,7 +172,7 @@ const AllocFormTable = ({
                               stockInfo.allocatable_qty > 0
                             );
                           })}
-                          getOptionLabel={(option) => option.name}
+                          getOptionLabel={(option) => option.code}
                           value={item.warehouse_1}
                           onChange={(event, newValue) => {
                             setCPOItems((prevCPOItems) =>
@@ -311,7 +311,7 @@ const AllocFormTable = ({
                               stockInfo.allocatable_qty > 0
                             );
                           })}
-                          getOptionLabel={(option) => option.name}
+                          getOptionLabel={(option) => option.code}
                           value={item.warehouse_2}
                           onChange={(event, newValue) => {
                             setCPOItems((prevCPOItems) =>
@@ -450,7 +450,7 @@ const AllocFormTable = ({
                               stockInfo.allocatable_qty > 0
                             );
                           })}
-                          getOptionLabel={(option) => option.name}
+                          getOptionLabel={(option) => option.code}
                           value={item.warehouse_3}
                           onChange={(event, newValue) => {
                             setCPOItems((prevCPOItems) =>

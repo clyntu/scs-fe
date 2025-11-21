@@ -106,7 +106,7 @@ const STFormTable = ({
                         options={warehouses.items.filter(
                           (warehouse) => warehouse.id,
                         )}
-                        getOptionLabel={(option) => option.name}
+                        getOptionLabel={(option) => option.code}
                         value={item.warehouse_1}
                         onChange={(event, newValue) => {
                           const updatedWarehouseItems = warehouseItems.map(
@@ -153,7 +153,7 @@ const STFormTable = ({
                         options={warehouses.items.filter(
                           (warehouse) => warehouse.id,
                         )}
-                        getOptionLabel={(option) => option.name}
+                        getOptionLabel={(option) => option.code}
                         value={item.warehouse_2}
                         onChange={(event, newValue) => {
                           const updatedWarehouseItems = warehouseItems.map(
@@ -200,7 +200,7 @@ const STFormTable = ({
                         options={warehouses.items.filter(
                           (warehouse) => warehouse.id,
                         )}
-                        getOptionLabel={(option) => option.name}
+                        getOptionLabel={(option) => option.code}
                         value={item.warehouse_3}
                         onChange={(event, newValue) => {
                           const updatedWarehouseItems = warehouseItems.map(
