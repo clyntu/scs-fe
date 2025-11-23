@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import ItemsModal from "../../components/Items/ItemsModal";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
@@ -13,6 +13,8 @@ import {
   Menu,
   MenuButton,
   MenuItem,
+  CircularProgress,
+  Typography,
 } from "@mui/joy";
 import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
 import CurrencyModal from "../../components/Items/CurrencyModal";
@@ -34,10 +36,7 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
-import { Pagination } from "@mui/material";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
-
-const PAGE_LIMIT = 10;
 
 const ItemForm = (): JSX.Element => {
   const [items, setItems] = useState<PaginatedItems>({
@@ -53,7 +52,6 @@ const ItemForm = (): JSX.Element => {
   const [selectedRow, setSelectedRow] = useState<Item>();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<string[]>([]);
   const [brands, setBrands] = useState<string[]>([]);
   const [warehouses, setWarehouses] = useState<PaginatedWarehouse>({
@@ -66,12 +64,37 @@ const ItemForm = (): JSX.Element => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("active");
 
-  const getAllStocks = (page: number, searchTerm: string): void => {
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
+  const getAllStocks = (searchTerm: string): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setItems({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     axiosInstance
       .get<PaginatedItems>(
         `/api/items/?${convertToQueryParams({
-          page,
-          limit: PAGE_LIMIT,
+          page: 1,
+          limit,
           sort_by: "stock_code",
           sort_order: "asc",
           search_term: searchTerm,
@@ -80,21 +103,111 @@ const ItemForm = (): JSX.Element => {
           status: selectedStatus,
         })}`,
       )
-      .then((response) => setItems(response.data))
-      .catch((error) => console.error("Error:", error));
+      .then((response) => {
+        setItems(response.data);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
-    getAllStocks(value, searchTerm);
-  };
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    axiosInstance
+      .get<PaginatedItems>(
+        `/api/items/?${convertToQueryParams({
+          page: nextPage,
+          limit,
+          sort_by: "stock_code",
+          sort_order: "asc",
+          search_term: searchTerm,
+          brand: selectedBrand,
+          category: selectedCategory,
+          status: selectedStatus,
+        })}`,
+      )
+      .then((response) => {
+        const newItems = response.data.items;
+        setItems((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    selectedBrand,
+    selectedCategory,
+    selectedStatus,
+  ]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      getAllStocks(1, searchTerm);
+      getAllStocks(searchTerm);
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
@@ -430,6 +543,8 @@ const ItemForm = (): JSX.Element => {
         </Box>
 
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
@@ -487,11 +602,24 @@ const ItemForm = (): JSX.Element => {
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                  Stock Code
-                </th>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={15} style={{ textAlign: "center", padding: "20px" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">Loading items...</Typography>
+                    </Box>
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Stock Code
+                    </th>
                 <th style={{ width: 300 }}>Description</th>
                 <th style={{ width: 100 }}>On Stock</th>
                 <th style={{ width: 100 }}>Available</th>
@@ -597,17 +725,40 @@ const ItemForm = (): JSX.Element => {
                 </tr>
               ))}
             </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
-      </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(items.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
+
+        {/* Infinite Scroll Status */}
+        {items.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {items.items.length} of {items.total} items • Scroll for
+                more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {items.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <ItemsModal
         open={openAdd}
