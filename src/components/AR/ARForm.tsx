@@ -3,7 +3,7 @@ import ARFormTable from "./ARForm/ARFormTable";
 import { Button, Divider } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
@@ -164,55 +164,58 @@ const ARForm = ({
     }
   }, [selectedRow]);
 
-  const fetchARByCustomer = (
-    customerId: number | null,
-    savedPayments: Record<string, string> = {},
-    completePayment = false,
-  ) => {
-    setIsLoadingItems(true);
-    // Fetch ARs
-    axiosInstance
-      .get<OutstandingTrans[]>(
-        `/api/ar-receipts/customer/${customerId}/outstanding-transactions`,
-      )
-      .then((response) => {
-        setOutstandingTrans(
-          response.data.map((trans) => {
-            const key = `${trans.source_type}-${trans.id}`;
-            const savedPayment = savedPayments[key];
+  const fetchARByCustomer = useCallback(
+    (
+      customerId: number | null,
+      savedPayments: Record<string, string> = {},
+      completePayment = false,
+    ) => {
+      setIsLoadingItems(true);
+      // Fetch ARs
+      axiosInstance
+        .get<OutstandingTrans[]>(
+          `/api/ar-receipts/customer/${customerId}/outstanding-transactions`,
+        )
+        .then((response) => {
+          setOutstandingTrans(
+            response.data.map((trans) => {
+              const key = `${trans.source_type}-${trans.id}`;
+              const savedPayment = savedPayments[key];
 
-            if (savedPayment !== undefined) {
-              // This invoice was previously selected - restore payment amount
-              return { ...trans, payment: savedPayment };
-            } else if (completePayment) {
-              // Auto-fill mode
-              return {
-                ...trans,
-                payment: addTwoPlaces(Number(trans.transaction_amount)),
-              };
-            } else {
-              // New invoice or not previously selected - empty payment
-              return { ...trans, payment: "" };
-            }
-          }),
-        );
+              if (savedPayment !== undefined) {
+                // This invoice was previously selected - restore payment amount
+                return { ...trans, payment: savedPayment };
+              } else if (completePayment) {
+                // Auto-fill mode
+                return {
+                  ...trans,
+                  payment: addTwoPlaces(Number(trans.transaction_amount)),
+                };
+              } else {
+                // New invoice or not previously selected - empty payment
+                return { ...trans, payment: "" };
+              }
+            }),
+          );
 
-        // Combination of transaction numbers and reference(for CR)
-        setCDRNumbers([
-          ...new Set(
-            response.data
-              .flatMap((trans) => [trans.transaction_number, trans.reference])
-              // DR numbers only
-              .filter((transNo) => transNo.startsWith("DR")),
-          ),
-        ]);
-        setIsLoadingItems(false);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setIsLoadingItems(false);
-      });
-  };
+          // Combination of transaction numbers and reference(for CR)
+          setCDRNumbers([
+            ...new Set(
+              response.data
+                .flatMap((trans) => [trans.transaction_number, trans.reference])
+                // DR numbers only
+                .filter((transNo) => transNo.startsWith("DR")),
+            ),
+          ]);
+          setIsLoadingItems(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoadingItems(false);
+        });
+    },
+    [],
+  );
 
   const resetForm = (): void => {
     setSelectedCustomer(null);
