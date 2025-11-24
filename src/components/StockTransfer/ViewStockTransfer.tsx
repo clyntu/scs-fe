@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,8 @@ import {
   Option,
   FormControl,
   FormLabel,
+  CircularProgress,
+  Typography,
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteSTModal from "./DeleteSTModal";
@@ -19,13 +21,9 @@ import type {
   ViewStockTransferProps,
 } from "../../interface";
 
-import { Pagination } from "@mui/material";
-
 import { convertToQueryParams, formatToDate } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-
-const PAGE_LIMIT = 10;
 
 const ViewStockTransfer = ({
   setOpenCreate,
@@ -40,12 +38,35 @@ const ViewStockTransfer = ({
   const [openDelete, setOpenDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
+
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const getAllST = (): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setStockTransfers({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     const payload: PaginationQueryParams = {
       page: 1,
-      limit: PAGE_LIMIT,
+      limit,
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
@@ -61,20 +82,30 @@ const ViewStockTransfer = ({
       )
       .then((response) => {
         setStockTransfers(response.data);
-        setPage(1);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
 
     const payload: PaginationQueryParams = {
-      page: value,
-      limit: PAGE_LIMIT,
+      page: nextPage,
+      limit,
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
@@ -88,9 +119,48 @@ const ViewStockTransfer = ({
       .get<PaginatedST>(
         `/api/stock-transfers/?${convertToQueryParams(payload)}`,
       )
-      .then((response) => setStockTransfers(response.data))
-      .catch((error) => console.error("Error:", error));
-  };
+      .then((response) => {
+        const newItems = response.data.items;
+        setStockTransfers((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm, status, limit]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -99,6 +169,21 @@ const ViewStockTransfer = ({
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
   }, [searchTerm, status]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   const handleDeleteST = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -177,6 +262,8 @@ const ViewStockTransfer = ({
         </Box>
 
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
@@ -236,94 +323,131 @@ const ViewStockTransfer = ({
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                  STR No.
-                </th>
-                <th style={{ width: 120 }}>Tx. Date</th>
-                <th style={{ width: 110 }}>Status</th>
-                <th style={{ width: 130 }}>RR Transfer</th>
-                <th style={{ width: 100 }}>RR No.</th>
-                <th style={{ width: 200 }}>Remarks</th>
-                <th style={{ width: 150 }}>Created By</th>
-                <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 120 }}>Date Created</th>
-                <th style={{ width: 120 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
-              {stockTransfers.items.map((stockTransfer) => (
-                <tr
-                  key={stockTransfer.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(stockTransfer);
-                  }}
-                >
-                  <td>{stockTransfer.id}</td>
-                  <td>{stockTransfer.transaction_date}</td>
-                  <td>
-                    <StatusChip status={stockTransfer.status} />
-                  </td>
-                  <td>{stockTransfer.rr_transfer ? "Yes" : "No"}</td>
-                  <td>{stockTransfer?.rr_id ?? "N/A"}</td>
-                  <td>{withTooltip(stockTransfer.remarks, "180px")}</td>
-                  <td>
-                    {withTooltip(stockTransfer?.creator?.username, "130px")}
-                  </td>
-                  <td>
-                    {withTooltip(stockTransfer?.modifier?.username, "130px")}
-                  </td>
-                  <td>{formatToDate(stockTransfer.date_created)}</td>
-                  <td>{formatToDate(stockTransfer.date_modified)}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(stockTransfer);
-                        }}
-                      >
-                        {stockTransfer.status !== "unposted" ? "View" : "Edit"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(stockTransfer);
-                        }}
-                        disabled={stockTransfer.status !== "unposted"}
-                      >
-                        Archive
-                      </Button>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={11} style={{ textAlign: "center", padding: "20px" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">Loading stock transfers...</Typography>
                     </Box>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      STR No.
+                    </th>
+                    <th style={{ width: 120 }}>Tx. Date</th>
+                    <th style={{ width: 110 }}>Status</th>
+                    <th style={{ width: 130 }}>RR Transfer</th>
+                    <th style={{ width: 100 }}>RR No.</th>
+                    <th style={{ width: 200 }}>Remarks</th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="last"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {stockTransfers.items.map((stockTransfer) => (
+                    <tr
+                      key={stockTransfer.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(stockTransfer);
+                      }}
+                    >
+                      <td>{stockTransfer.id}</td>
+                      <td>{stockTransfer.transaction_date}</td>
+                      <td>
+                        <StatusChip status={stockTransfer.status} />
+                      </td>
+                      <td>{stockTransfer.rr_transfer ? "Yes" : "No"}</td>
+                      <td>{stockTransfer?.rr_id ?? "N/A"}</td>
+                      <td>{withTooltip(stockTransfer.remarks, "180px")}</td>
+                      <td>
+                        {withTooltip(stockTransfer?.creator?.username, "130px")}
+                      </td>
+                      <td>
+                        {withTooltip(stockTransfer?.modifier?.username, "130px")}
+                      </td>
+                      <td>{formatToDate(stockTransfer.date_created)}</td>
+                      <td>{formatToDate(stockTransfer.date_modified)}</td>
+                      <td>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(stockTransfer);
+                            }}
+                          >
+                            {stockTransfer.status !== "unposted" ? "View" : "Edit"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(stockTransfer);
+                            }}
+                            disabled={stockTransfer.status !== "unposted"}
+                          >
+                            Archive
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
       </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(stockTransfers.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
-      </Box>
+
+      {/* Infinite Scroll Status */}
+      {stockTransfers.items.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            mt: 2,
+            px: 1,
+            gap: 2,
+          }}
+        >
+          {isLoadingMore ? (
+            <>
+              <CircularProgress size="sm" />
+              <Typography level="body-sm">Loading more...</Typography>
+            </>
+          ) : hasMore ? (
+            <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+              Showing {stockTransfers.items.length} of {stockTransfers.total} items • Scroll for
+              more
+            </Typography>
+          ) : (
+            <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+              Showing all {stockTransfers.total} items
+            </Typography>
+          )}
+        </Box>
+      )}
+
       <DeleteSTModal
         open={openDelete}
         setOpen={setOpenDelete}

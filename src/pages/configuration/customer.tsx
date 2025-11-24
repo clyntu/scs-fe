@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
@@ -11,12 +11,13 @@ import {
   Menu,
   MenuButton,
   MenuItem,
+  CircularProgress,
+  Typography,
 } from "@mui/joy";
 import CustomersModal from "../../components/Customers/CustomersModal";
 import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../Login";
 import { toast } from "react-toastify";
-import { Pagination } from "@mui/material";
 
 import type { Customer, PaginatedCustomers } from "../../interface";
 
@@ -26,8 +27,6 @@ import TooltipTableCell from "../../components/shared/TooltipTableCell";
 import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
 import PrintCustomerReceivablesModal from "../../components/Customers/PrintCustomerReceivablesModal";
 import PrintTopCustomersModal from "../../components/Customers/PrintTopCustomersModal";
-
-const PAGE_LIMIT = 10;
 
 const CustomerForm = (): JSX.Element => {
   const [customers, setCustomers] = useState<PaginatedCustomers>({
@@ -44,34 +43,128 @@ const CustomerForm = (): JSX.Element => {
   const [userId, setUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
 
-  const getAllCustomers = (page: number, search_term: string) => {
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
+  const getAllCustomers = (searchTerm: string): void => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    setPage(1);
+    setCustomers({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     axiosInstance
       .get<PaginatedCustomers>(
         `/api/customers/?${convertToQueryParams({
-          page,
-          limit: PAGE_LIMIT,
+          page: 1,
+          limit,
           sort_by: "name",
           sort_order: "asc",
-          search_term,
+          search_term: searchTerm,
         })}`,
       )
-      .then((response) => setCustomers(response.data))
-      .catch((error) => console.error("Error:", error));
+      .then((response) => {
+        setCustomers(response.data);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
-    getAllCustomers(value, searchTerm);
-  };
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    axiosInstance
+      .get<PaginatedCustomers>(
+        `/api/customers/?${convertToQueryParams({
+          page: nextPage,
+          limit,
+          sort_by: "name",
+          sort_order: "asc",
+          search_term: searchTerm,
+        })}`,
+      )
+      .then((response) => {
+        const newItems = response.data.items;
+        setCustomers((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      getAllCustomers(1, searchTerm);
+      getAllCustomers(searchTerm);
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
@@ -229,6 +322,8 @@ const CustomerForm = (): JSX.Element => {
           </FormControl>
         </Box>
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
@@ -286,26 +381,39 @@ const CustomerForm = (): JSX.Element => {
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
-                <th style={{ width: 300 }}>Name</th>
-                <th style={{ width: 400 }}>Address</th>
-                <th style={{ width: 150 }}>Contact Person</th>
-                <th style={{ width: 150 }}>Contact Number</th>
-                <th style={{ width: 300 }}>Email</th>
-                <th style={{ width: 150 }}>Customer Balance</th>
-                <th style={{ width: 150 }}>Created By</th>
-                <th style={{ width: 120 }}>Date Created</th>
-                <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 120 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={12} style={{ textAlign: "center", padding: "20px" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">Loading customers...</Typography>
+                    </Box>
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                    <th style={{ width: 300 }}>Name</th>
+                    <th style={{ width: 400 }}>Address</th>
+                    <th style={{ width: 150 }}>Contact Person</th>
+                    <th style={{ width: 150 }}>Contact Number</th>
+                    <th style={{ width: 300 }}>Email</th>
+                    <th style={{ width: 150 }}>Customer Balance</th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="last"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
               {customers.items.map((customer) => (
                 <tr
                   key={customer.customer_id}
@@ -384,18 +492,41 @@ const CustomerForm = (): JSX.Element => {
                   </td>
                 </tr>
               ))}
-            </tbody>
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
-      </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(customers.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
+
+        {/* Infinite Scroll Status */}
+        {customers.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {customers.items.length} of {customers.total} items • Scroll for
+                more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {customers.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <CustomersModal
         open={openAdd}

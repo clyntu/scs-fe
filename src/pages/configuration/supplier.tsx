@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input, FormControl, FormLabel } from "@mui/joy";
+import { Input, FormControl, FormLabel, CircularProgress, Typography } from "@mui/joy";
 import SuppliersModal from "../../components/Suppliers/SuppliersModal";
 import DeleteSuppliersModal from "../../components/Suppliers/DeleteSupplierModal";
 import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../Login";
 import { toast } from "react-toastify";
-import { Pagination } from "@mui/material";
 
 import type { Supplier, PaginatedSuppliers } from "../../interface";
 
 import { convertToQueryParams, formatToSP, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
-
-const PAGE_LIMIT = 10;
 
 const SupplierForm = (): JSX.Element => {
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
@@ -30,34 +27,137 @@ const SupplierForm = (): JSX.Element => {
   const [userId, setUserId] = useState<number | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
 
-  const getAllSuppliers = (page: number, search_term: string) => {
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
+  const getAllSuppliers = (searchTerm: string): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setSuppliers({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     axiosInstance
       .get<PaginatedSuppliers>(
         `/api/suppliers/?${convertToQueryParams({
-          page,
-          limit: PAGE_LIMIT,
+          page: 1,
+          limit,
           sort_by: "name",
           sort_order: "asc",
-          search_term,
+          search_term: searchTerm,
         })}`,
       )
-      .then((response) => setSuppliers(response.data))
-      .catch((error) => console.error("Error:", error));
+      .then((response) => {
+        setSuppliers(response.data);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
-    getAllSuppliers(value, searchTerm);
-  };
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    axiosInstance
+      .get<PaginatedSuppliers>(
+        `/api/suppliers/?${convertToQueryParams({
+          page: nextPage,
+          limit,
+          sort_by: "name",
+          sort_order: "asc",
+          search_term: searchTerm,
+        })}`,
+      )
+      .then((response) => {
+        const newItems = response.data.items;
+        setSuppliers((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      getAllSuppliers(1, searchTerm);
+      getAllSuppliers(searchTerm);
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
@@ -177,6 +277,8 @@ const SupplierForm = (): JSX.Element => {
           </FormControl>
         </Box>
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
@@ -234,27 +336,40 @@ const SupplierForm = (): JSX.Element => {
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
-                <th style={{ width: 300 }}>Name</th>
-                <th style={{ width: 400 }}>Address</th>
-                <th style={{ width: 150 }}>Contact Person</th>
-                <th style={{ width: 150 }}>Contact Number</th>
-                <th style={{ width: 300 }}>Email</th>
-                <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 150 }}>Supplier Balance</th>
-                <th style={{ width: 150 }}>Created By</th>
-                <th style={{ width: 120 }}>Date Created</th>
-                <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 120 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={13} style={{ textAlign: "center", padding: "20px" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">Loading suppliers...</Typography>
+                    </Box>
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                    <th style={{ width: 300 }}>Name</th>
+                    <th style={{ width: 400 }}>Address</th>
+                    <th style={{ width: 150 }}>Contact Person</th>
+                    <th style={{ width: 150 }}>Contact Number</th>
+                    <th style={{ width: 300 }}>Email</th>
+                    <th style={{ width: 100 }}>Currency</th>
+                    <th style={{ width: 150 }}>Supplier Balance</th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="last"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
               {suppliers.items.map((supplier) => (
                 <tr
                   key={supplier.supplier_id}
@@ -336,18 +451,41 @@ const SupplierForm = (): JSX.Element => {
                   </td>
                 </tr>
               ))}
-            </tbody>
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
-      </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(suppliers.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
+
+        {/* Infinite Scroll Status */}
+        {suppliers.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {suppliers.items.length} of {suppliers.total} items • Scroll for
+                more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {suppliers.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <SuppliersModal
         open={openAdd}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,8 @@ import {
   Option,
   FormControl,
   FormLabel,
+  CircularProgress,
+  Typography,
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
@@ -18,14 +20,10 @@ import type {
   ViewAllocProps,
 } from "../../interface";
 
-import { Pagination } from "@mui/material";
-
 import { convertToQueryParams, formatToDate } from "../../helper";
 import DeleteAllocModal from "./DeleteAllocModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-
-const PAGE_LIMIT = 10;
 
 const ViewAlloc = ({
   setOpenCreate,
@@ -40,12 +38,36 @@ const ViewAlloc = ({
   const [openDelete, setOpenDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
-  const [page, setPage] = useState(1);
 
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
   const getAllAlloc = (): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setAllocs({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     const payload: PaginationQueryParams = {
       page: 1,
-      limit: PAGE_LIMIT,
+      limit,
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
@@ -59,20 +81,30 @@ const ViewAlloc = ({
       .get<PaginatedAlloc>(`/api/allocations/?${convertToQueryParams(payload)}`)
       .then((response) => {
         setAllocs(response.data);
-        setPage(1);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
 
     const payload: PaginationQueryParams = {
-      page: value,
-      limit: PAGE_LIMIT,
+      page: nextPage,
+      limit,
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
@@ -84,9 +116,63 @@ const ViewAlloc = ({
 
     axiosInstance
       .get<PaginatedAlloc>(`/api/allocations/?${convertToQueryParams(payload)}`)
-      .then((response) => setAllocs(response.data))
-      .catch((error) => console.error("Error:", error));
-  };
+      .then((response) => {
+        const newItems = response.data.items;
+        setAllocs((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm, status, limit]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -173,6 +259,8 @@ const ViewAlloc = ({
         </Box>
 
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
@@ -232,89 +320,125 @@ const ViewAlloc = ({
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                  Alloc No.
-                </th>
-                <th style={{ width: 120 }}>Tx. Date</th>
-                <th style={{ width: 350 }}>Customer</th>
-                <th style={{ width: 110 }}>Status</th>
-                <th style={{ width: 200 }}>Remarks</th>
-                <th style={{ width: 150 }}>Created By</th>
-                <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 120 }}>Date Created</th>
-                <th style={{ width: 120 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
-              {allocs.items.map((alloc) => (
-                <tr
-                  key={alloc.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(alloc);
-                  }}
-                >
-                  <td>{alloc?.id}</td>
-                  <td>{alloc?.transaction_date}</td>
-                  <td>{withTooltip(alloc?.customer.name, "330px")}</td>
-                  <td>
-                    <StatusChip status={alloc.status} />
-                  </td>
-                  <td>{withTooltip(alloc?.remarks, "180px")}</td>
-                  <td>{withTooltip(alloc?.creator?.username, "130px")}</td>
-                  <td>{withTooltip(alloc?.modifier?.username, "130px")}</td>
-                  <td>{formatToDate(alloc.date_created)}</td>
-                  <td>{formatToDate(alloc.date_modified)}</td>
-                  <td style={{ textAlign: "center" }}>
-                    <Box
-                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
-                    >
-                      <Button
-                        sx={{ width: "100px" }}
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(alloc);
-                        }}
-                      >
-                        {alloc.status !== "unposted" ? "View" : "Edit"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(alloc);
-                        }}
-                      >
-                        Archive
-                      </Button>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={10} style={{ textAlign: "center", padding: "20px" }}>
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">Loading allocations...</Typography>
                     </Box>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Alloc No.
+                    </th>
+                    <th style={{ width: 120 }}>Tx. Date</th>
+                    <th style={{ width: 350 }}>Customer</th>
+                    <th style={{ width: 110 }}>Status</th>
+                    <th style={{ width: 200 }}>Remarks</th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="last"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {allocs.items.map((alloc) => (
+                    <tr
+                      key={alloc.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(alloc);
+                      }}
+                    >
+                      <td>{alloc?.id}</td>
+                      <td>{alloc?.transaction_date}</td>
+                      <td>{withTooltip(alloc?.customer.name, "330px")}</td>
+                      <td>
+                        <StatusChip status={alloc.status} />
+                      </td>
+                      <td>{withTooltip(alloc?.remarks, "180px")}</td>
+                      <td>{withTooltip(alloc?.creator?.username, "130px")}</td>
+                      <td>{withTooltip(alloc?.modifier?.username, "130px")}</td>
+                      <td>{formatToDate(alloc.date_created)}</td>
+                      <td>{formatToDate(alloc.date_modified)}</td>
+                      <td style={{ textAlign: "center" }}>
+                        <Box
+                          sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                        >
+                          <Button
+                            sx={{ width: "100px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(alloc);
+                            }}
+                          >
+                            {alloc.status !== "unposted" ? "View" : "Edit"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(alloc);
+                            }}
+                          >
+                            Archive
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
-      </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(allocs.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
+
+        {/* Infinite Scroll Status */}
+        {allocs.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {allocs.items.length} of {allocs.total} items • Scroll for
+                more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {allocs.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <DeleteAllocModal
         open={openDelete}
