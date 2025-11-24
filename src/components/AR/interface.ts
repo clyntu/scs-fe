@@ -15,7 +15,7 @@ export interface ARFormDetailsProps {
   selectedCustomer: Customer | null;
   fetchARByCustomer: (
     customerId: number | null,
-    isSet?: boolean,
+    savedPayments?: Record<string, string>,
     completePayment?: boolean,
   ) => void;
   setSelectedCustomer: Dispatch<SetStateAction<Customer | null>>;

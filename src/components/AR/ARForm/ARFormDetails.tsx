@@ -75,7 +75,7 @@ const ARFormDetails = ({
           ),
         ).length === 0
       ) {
-        fetchARByCustomer(selectedCustomer?.customer_id, false, true);
+        fetchARByCustomer(selectedCustomer?.customer_id, {}, true);
       }
 
       // Normal case: when DR choice is changed, select only relevant DRs

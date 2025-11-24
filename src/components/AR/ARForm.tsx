@@ -99,7 +99,10 @@ const ARForm = ({
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id ?? null;
 
-    const fetchValues = (selectedRow: AR) => {
+    const fetchValues = (
+      selectedRow: AR,
+      savedPayments: Record<string, string>,
+    ) => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setPaymentMode(selectedRow.payment_method);
@@ -115,7 +118,8 @@ const ARForm = ({
       setPaymentStatus(selectedRow.payment_status);
       setSelectedCDR(selectedRow?.cdr_number_filter);
 
-      fetchARByCustomer(customerID, true);
+      // Fetch ALL outstanding transactions and merge with saved payments
+      fetchARByCustomer(customerID, savedPayments);
     };
 
     if (selectedRow !== null && selectedRow !== undefined) {
@@ -135,32 +139,24 @@ const ARForm = ({
         .then((response) => {
           const ARItems = response.data.receipt_items;
 
-          const formattedARItems = ARItems.map((item) => {
-            return {
-              id: item.source_id,
-              source_type: item.source_type,
-              transaction_number:
-                item.source_type === "customer_dr"
-                  ? `DR-${item.source_id}`
-                  : `CR-${item.source_id}`,
-              transaction_date: item.source_transaction_date,
-              original_amount: item.original_amount,
-              transaction_amount: item.transaction_amount,
-              payment: String(parseFloat(item.payment_amount)),
-              balance: String(
-                Number(item.transaction_amount) - Number(item.payment_amount),
-              ),
-              reference: item.reference,
-            };
+          // Extract saved payments into a map: "source_type-source_id" -> payment_amount
+          const savedPayments: Record<string, string> = {};
+          ARItems.forEach((item) => {
+            const key = `${item.source_type}-${item.source_id}`;
+            savedPayments[key] = String(parseFloat(item.payment_amount));
           });
-          setOutstandingTrans(formattedARItems);
+
+          return savedPayments;
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          return {};
+        });
 
       promises.push(arPromise);
 
-      Promise.all(promises).finally(() => {
-        fetchValues(selectedRow);
+      Promise.all(promises).then(([, savedPayments]) => {
+        fetchValues(selectedRow, savedPayments);
         setIsFetching(false);
       });
     } else {
@@ -170,7 +166,7 @@ const ARForm = ({
 
   const fetchARByCustomer = (
     customerId: number | null,
-    noSet = false,
+    savedPayments: Record<string, string> = {},
     completePayment = false,
   ) => {
     setIsLoadingItems(true);
@@ -180,19 +176,26 @@ const ARForm = ({
         `/api/ar-receipts/customer/${customerId}/outstanding-transactions`,
       )
       .then((response) => {
-        if (!noSet) {
-          setOutstandingTrans(
-            response.data.map((trans) => {
-              if (completePayment) {
-                return {
-                  ...trans,
-                  payment: addTwoPlaces(Number(trans.transaction_amount)),
-                };
-              }
+        setOutstandingTrans(
+          response.data.map((trans) => {
+            const key = `${trans.source_type}-${trans.id}`;
+            const savedPayment = savedPayments[key];
+
+            if (savedPayment !== undefined) {
+              // This invoice was previously selected - restore payment amount
+              return { ...trans, payment: savedPayment };
+            } else if (completePayment) {
+              // Auto-fill mode
+              return {
+                ...trans,
+                payment: addTwoPlaces(Number(trans.transaction_amount)),
+              };
+            } else {
+              // New invoice or not previously selected - empty payment
               return { ...trans, payment: "" };
-            }),
-          );
-        }
+            }
+          }),
+        );
 
         // Combination of transaction numbers and reference(for CR)
         setCDRNumbers([
