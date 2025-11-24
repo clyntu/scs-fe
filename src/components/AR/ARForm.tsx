@@ -95,75 +95,6 @@ const ARForm = ({
       .catch((error) => console.error("Error:", error));
   }, []);
 
-  useEffect(() => {
-    // Set fields for Edit
-    const customerID = selectedRow?.customer.customer_id ?? null;
-
-    const fetchValues = (
-      selectedRow: AR,
-      savedPayments: Record<string, string>,
-    ) => {
-      setStatus(selectedRow?.status ?? "unposted");
-      setTransactionDate(selectedRow?.transaction_date ?? currentDate);
-      setPaymentMode(selectedRow.payment_method);
-
-      setAmountPaid(String(parseFloat(selectedRow?.check_amount ?? "")));
-      setCheckNumber(selectedRow?.check_number ?? "");
-      setCheckDate(selectedRow?.check_date ?? "");
-      setRefNo(selectedRow.reference_number);
-
-      setLessAmount(String(parseFloat(selectedRow.less_amount)));
-      setAddAmount1(String(parseFloat(selectedRow.add_amount)));
-      setRemarks(selectedRow?.remarks ?? "");
-      setPaymentStatus(selectedRow.payment_status);
-      setSelectedCDR(selectedRow?.cdr_number_filter);
-
-      // Fetch ALL outstanding transactions and merge with saved payments
-      fetchARByCustomer(customerID, savedPayments);
-    };
-
-    if (selectedRow !== null && selectedRow !== undefined) {
-      const promises: Promise<any>[] = [];
-      // Get Customer for Edit
-      const customerPromise = axiosInstance
-        .get<Customer>(`/api/customers/${customerID}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
-
-      promises.push(customerPromise);
-
-      const arPromise = axiosInstance
-        .get<AR>(`/api/ar-receipts/${selectedRow.id}`)
-        .then((response) => {
-          const ARItems = response.data.receipt_items;
-
-          // Extract saved payments into a map: "source_type-source_id" -> payment_amount
-          const savedPayments: Record<string, string> = {};
-          ARItems.forEach((item) => {
-            const key = `${item.source_type}-${item.source_id}`;
-            savedPayments[key] = String(parseFloat(item.payment_amount));
-          });
-
-          return savedPayments;
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          return {};
-        });
-
-      promises.push(arPromise);
-
-      Promise.all(promises).then(([, savedPayments]) => {
-        fetchValues(selectedRow, savedPayments);
-        setIsFetching(false);
-      });
-    } else {
-      setIsFetching(false);
-    }
-  }, [selectedRow]);
-
   const fetchARByCustomer = useCallback(
     (
       customerId: number | null,
@@ -216,6 +147,100 @@ const ARForm = ({
     },
     [],
   );
+
+  useEffect(() => {
+    // Set fields for Edit
+    const customerID = selectedRow?.customer.customer_id ?? null;
+
+    const fetchValues = (
+      selectedRow: AR,
+      savedPayments: Record<string, string>,
+      formattedARItems: OutstandingTrans[],
+    ) => {
+      setStatus(selectedRow?.status ?? "unposted");
+      setTransactionDate(selectedRow?.transaction_date ?? currentDate);
+      setPaymentMode(selectedRow.payment_method);
+
+      setAmountPaid(String(parseFloat(selectedRow?.check_amount ?? "")));
+      setCheckNumber(selectedRow?.check_number ?? "");
+      setCheckDate(selectedRow?.check_date ?? "");
+      setRefNo(selectedRow.reference_number);
+
+      setLessAmount(String(parseFloat(selectedRow.less_amount)));
+      setAddAmount1(String(parseFloat(selectedRow.add_amount)));
+      setRemarks(selectedRow?.remarks ?? "");
+      setPaymentStatus(selectedRow.payment_status);
+      setSelectedCDR(selectedRow?.cdr_number_filter);
+
+      // Only fetch fresh data for unposted ARs (draft mode)
+      if (selectedRow.status === "unposted") {
+        // Fetch ALL outstanding transactions and merge with saved payments
+        fetchARByCustomer(customerID, savedPayments);
+      } else {
+        // For posted ARs, just show the exact items that were posted (read-only)
+        setOutstandingTrans(formattedARItems);
+      }
+    };
+
+    if (selectedRow !== null && selectedRow !== undefined) {
+      const promises: Promise<any>[] = [];
+      // Get Customer for Edit
+      const customerPromise = axiosInstance
+        .get<Customer>(`/api/customers/${customerID}`)
+        .then((response) => {
+          setSelectedCustomer(response.data);
+        })
+        .catch((error) => console.error("Error:", error));
+
+      promises.push(customerPromise);
+
+      const arPromise = axiosInstance
+        .get<AR>(`/api/ar-receipts/${selectedRow.id}`)
+        .then((response) => {
+          const ARItems = response.data.receipt_items;
+
+          // Extract saved payments into a map: "source_type-source_id" -> payment_amount
+          const savedPayments: Record<string, string> = {};
+          const formattedARItems: OutstandingTrans[] = ARItems.map((item) => {
+            const key = `${item.source_type}-${item.source_id}`;
+            savedPayments[key] = String(parseFloat(item.payment_amount));
+
+            // Format the items for display (used for posted ARs)
+            return {
+              id: item.source_id,
+              source_type: item.source_type,
+              transaction_number:
+                item.source_type === "customer_dr"
+                  ? `DR-${item.source_id}`
+                  : `CR-${item.source_id}`,
+              transaction_date: item.source_transaction_date,
+              original_amount: item.original_amount,
+              transaction_amount: item.transaction_amount,
+              payment: String(parseFloat(item.payment_amount)),
+              balance: String(
+                Number(item.transaction_amount) - Number(item.payment_amount),
+              ),
+              reference: item.reference,
+            };
+          });
+
+          return { savedPayments, formattedARItems };
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          return { savedPayments: {}, formattedARItems: [] };
+        });
+
+      promises.push(arPromise);
+
+      Promise.all(promises).then(([, { savedPayments, formattedARItems }]) => {
+        fetchValues(selectedRow, savedPayments, formattedARItems);
+        setIsFetching(false);
+      });
+    } else {
+      setIsFetching(false);
+    }
+  }, [selectedRow]);
 
   const resetForm = (): void => {
     setSelectedCustomer(null);
