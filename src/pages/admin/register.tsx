@@ -99,7 +99,9 @@ export default function Register(): JSX.Element {
       const supabase = getSupabase();
 
       // Store admin's current session before creating new user
-      const { data: { session: adminSession } } = await supabase.auth.getSession();
+      const {
+        data: { session: adminSession },
+      } = await supabase.auth.getSession();
 
       // Supabase sign-up (browser) - creates user in Supabase auth
       const { data: signUpData, error } = await supabase.auth.signUp({
@@ -120,15 +122,15 @@ export default function Register(): JSX.Element {
       // Use plain axios to bypass interceptor that would replace the token
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       await axios.post(
-        `${apiUrl}/api/users/sync`,
+        `${apiUrl}api/users/sync`,
         { username, full_name: fullName, is_admin: isAdmin },
         {
           headers: {
             "X-Company-ID": defaultCompany,
-            "Authorization": `Bearer ${newUserToken}`,
-            "Content-Type": "application/json"
+            Authorization: `Bearer ${newUserToken}`,
+            "Content-Type": "application/json",
           },
-          withCredentials: true
+          withCredentials: true,
         },
       );
 
