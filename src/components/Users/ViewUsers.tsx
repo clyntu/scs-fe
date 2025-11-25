@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Box, Button, Table, Sheet, Input, FormControl, FormLabel, CircularProgress, Typography } from "@mui/joy";
+import { Box, Button, Table, Sheet, Input, FormControl, FormLabel, CircularProgress, Typography, Chip } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteUserModal from "./DeleteUserModal";
+import ToggleUserStatusModal from "./ToggleUserStatusModal";
 import { toast } from "react-toastify";
 import type { PaginatedUsers, PaginationQueryParams, User } from "../../interface";
 import { convertToQueryParams } from "../../helper";
@@ -11,9 +11,10 @@ const ViewUsers = (): JSX.Element => {
     total: 0,
     items: [],
   });
-  const [openDelete, setOpenDelete] = useState(false);
+  const [openToggleStatus, setOpenToggleStatus] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+  const [isDisabling, setIsDisabling] = useState(false);
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -150,17 +151,25 @@ const ViewUsers = (): JSX.Element => {
     return () => clearTimeout(timeout);
   }, [searchTerm]);
 
-  const handleDeleteUser = async (): Promise<void> => {
+  const handleToggleUserStatus = async (): Promise<void> => {
     if (selectedUser !== undefined) {
-      const url = `/api/users/${selectedUser.id}`;
-      try {
-        await axiosInstance.delete(url);
-        toast.success("User deleted successfully!");
+      const url = `/api/users/${selectedUser.id}/status`;
+      const newDisabledStatus = !selectedUser.disabled;
 
+      try {
+        const response = await axiosInstance.patch<User>(url, {
+          disabled: newDisabledStatus,
+        });
+
+        const actionText = newDisabledStatus ? "disabled" : "enabled";
+        toast.success(`User ${actionText} successfully!`);
+
+        // Update the user in the list with the response data
         setUsers((prevUsers) => ({
           ...prevUsers,
-          items: prevUsers.items.filter((user) => user.id !== selectedUser.id),
-          total: prevUsers.total - 1,
+          items: prevUsers.items.map((user) =>
+            user.id === selectedUser.id ? response.data : user
+          ),
         }));
       } catch (error: any) {
         toast.error(
@@ -274,6 +283,7 @@ const ViewUsers = (): JSX.Element => {
                     <th style={{ width: 200 }}>Username</th>
                     <th style={{ width: 250 }}>Email</th>
                     <th style={{ width: 150 }}>Role</th>
+                    <th style={{ width: 100 }}>Status</th>
                     <th
                       aria-label="last"
                       style={{
@@ -300,17 +310,27 @@ const ViewUsers = (): JSX.Element => {
                             : "N/A"}
                       </td>
                       <td>
+                        <Chip
+                          color={user.disabled ? "danger" : "success"}
+                          variant="soft"
+                          size="sm"
+                        >
+                          {user.disabled ? "Disabled" : "Active"}
+                        </Chip>
+                      </td>
+                      <td>
                         <Box sx={{ display: "flex", justifyContent: "center" }}>
                           <Button
                             variant="soft"
-                            color="danger"
+                            color={user.disabled ? "success" : "warning"}
                             size="sm"
                             onClick={() => {
                               setSelectedUser(user);
-                              setOpenDelete(true);
+                              setIsDisabling(!user.disabled);
+                              setOpenToggleStatus(true);
                             }}
                           >
-                            Delete
+                            {user.disabled ? "Enable" : "Disable"}
                           </Button>
                         </Box>
                       </td>
@@ -353,11 +373,12 @@ const ViewUsers = (): JSX.Element => {
         )}
       </Box>
 
-      <DeleteUserModal
-        open={openDelete}
-        title={`Delete User: ${selectedUser?.full_name || ""}`}
-        setOpen={setOpenDelete}
-        onDelete={handleDeleteUser}
+      <ToggleUserStatusModal
+        open={openToggleStatus}
+        title={`${isDisabling ? "Disable" : "Enable"} User: ${selectedUser?.full_name || ""}`}
+        setOpen={setOpenToggleStatus}
+        onToggleStatus={handleToggleUserStatus}
+        isDisabling={isDisabling}
       />
     </>
   );

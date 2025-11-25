@@ -23,6 +23,7 @@ export interface User {
   full_name: string;
   role?: string; // User role: "admin", "user", "read_only"
   is_admin?: boolean; // Admin flag
+  disabled?: boolean; // Whether user is disabled
 }
 
 export default function Login(): JSX.Element {
