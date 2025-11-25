@@ -283,7 +283,7 @@ const ViewUsers = (): JSX.Element => {
                     <th style={{ width: 200 }}>Username</th>
                     <th style={{ width: 250 }}>Email</th>
                     <th style={{ width: 150 }}>Role</th>
-                    <th style={{ width: 100 }}>Status</th>
+                    <th style={{ width: 100, textAlign: "center" }}>Status</th>
                     <th
                       aria-label="last"
                       style={{
@@ -309,7 +309,7 @@ const ViewUsers = (): JSX.Element => {
                             ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
                             : "N/A"}
                       </td>
-                      <td>
+                      <td style={{ textAlign: "center" }}>
                         <Chip
                           color={user.disabled ? "danger" : "success"}
                           variant="soft"
