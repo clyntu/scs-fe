@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,8 @@ import {
   Option,
   FormControl,
   FormLabel,
+  CircularProgress,
+  Typography,
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteDeliveryReceiptModal from "./DeleteDeliveryReceiptModal";
@@ -20,8 +22,6 @@ import type {
   PaginationQueryParams,
 } from "../../interface";
 
-import { Pagination } from "@mui/material";
-
 import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
@@ -30,8 +30,6 @@ import {
 } from "../../helper";
 import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-
-const PAGE_LIMIT = 10;
 
 const ViewDeliveryReceipt = ({
   setOpenCreate,
@@ -47,12 +45,35 @@ const ViewDeliveryReceipt = ({
   const [openCancel, setOpenCancel] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
+
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const getAllSDR = (): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setDeliveryReceipts({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     const payload: PaginationQueryParams = {
       page: 1,
-      limit: PAGE_LIMIT,
+      limit,
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
@@ -68,20 +89,30 @@ const ViewDeliveryReceipt = ({
       )
       .then((response) => {
         setDeliveryReceipts(response.data);
-        setPage(1);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
 
     const payload: PaginationQueryParams = {
-      page: value,
-      limit: PAGE_LIMIT,
+      page: nextPage,
+      limit,
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
@@ -95,9 +126,63 @@ const ViewDeliveryReceipt = ({
       .get<PaginatedSDR>(
         `/api/supplier-delivery-receipts/?${convertToQueryParams(payload)}`,
       )
-      .then((response) => setDeliveryReceipts(response.data))
-      .catch((error) => console.error("Error:", error));
-  };
+      .then((response) => {
+        const newItems = response.data.items;
+        setDeliveryReceipts((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm, status, limit]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -208,6 +293,8 @@ const ViewDeliveryReceipt = ({
         </Box>
 
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
@@ -267,31 +354,53 @@ const ViewDeliveryReceipt = ({
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                  SDR No.
-                </th>
-                <th style={{ width: 120 }}>Tx. Date</th>
-                <th style={{ width: 250 }}>Supplier</th>
-                <th style={{ width: 180 }}>Ref No.</th>
-                <th style={{ width: 110 }}>Status</th>
-                <th style={{ width: 130 }}>Net Amount</th>
-                <th style={{ width: 130 }}>FOB Total</th>
-                <th style={{ width: 130 }}>Landed Total (₱)</th>
-                <th style={{ width: 200 }}>Remarks</th>
-                <th style={{ width: 150 }}>Created By</th>
-                <th style={{ width: 150 }}>Modified By</th>
-                <th style={{ width: 120 }}>Date Created</th>
-                <th style={{ width: 120 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
-              {deliveryReceipts.items.map((deliveryReceipt) => (
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={14} style={{ textAlign: "center", padding: "20px" }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">
+                        Loading delivery receipts...
+                      </Typography>
+                    </Box>
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      SDR No.
+                    </th>
+                    <th style={{ width: 120 }}>Tx. Date</th>
+                    <th style={{ width: 250 }}>Supplier</th>
+                    <th style={{ width: 180 }}>Ref No.</th>
+                    <th style={{ width: 110 }}>Status</th>
+                    <th style={{ width: 130 }}>Net Amount</th>
+                    <th style={{ width: 130 }}>FOB Total</th>
+                    <th style={{ width: 130 }}>Landed Total (₱)</th>
+                    <th style={{ width: 200 }}>Remarks</th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="last"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {deliveryReceipts.items.map((deliveryReceipt) => (
                 <tr
                   key={deliveryReceipt.id}
                   onDoubleClick={() => {
@@ -372,19 +481,41 @@ const ViewDeliveryReceipt = ({
                   </td>
                 </tr>
               ))}
-            </tbody>
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
       </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(deliveryReceipts.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
-      </Box>
+      {/* Infinite Scroll Status */}
+      {deliveryReceipts.items.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            mt: 2,
+            px: 1,
+            gap: 2,
+          }}
+        >
+          {isLoadingMore ? (
+            <>
+              <CircularProgress size="sm" />
+              <Typography level="body-sm">Loading more...</Typography>
+            </>
+          ) : hasMore ? (
+            <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+              Showing {deliveryReceipts.items.length} of{" "}
+              {deliveryReceipts.total} items • Scroll for more
+            </Typography>
+          ) : (
+            <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+              Showing all {deliveryReceipts.total} items
+            </Typography>
+          )}
+        </Box>
+      )}
       <DeleteDeliveryReceiptModal
         open={openDelete}
         setOpen={setOpenDelete}
