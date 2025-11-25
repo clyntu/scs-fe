@@ -11,6 +11,7 @@ import Alert from "@mui/joy/Alert";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
+import axios from "axios";
 import axiosInstance, { getCookie } from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { getSupabase } from "../supabase/supabaseClient";
@@ -107,6 +108,23 @@ export default function Login(): JSX.Element {
           );
         } catch (syncError) {
           console.error("User sync error:", syncError);
+
+          // Check if user is disabled
+          if (axios.isAxiosError(syncError) && syncError.response?.status === 400) {
+            const errorDetail = syncError.response?.data?.detail || "";
+            if (errorDetail.toLowerCase().includes("disabled")) {
+              // Sign out from Supabase
+              await supabase.auth.signOut();
+
+              // Show error to user
+              setError("Your account has been disabled. Please contact an administrator.");
+              setIsLoading(false);
+              return;
+            }
+          }
+
+          // For other sync errors, log but continue (user might not exist in DB yet)
+          console.warn("User sync failed, but continuing login");
         }
 
         // Set authentication state
@@ -127,15 +145,17 @@ export default function Login(): JSX.Element {
     }
   };
 
-  // Add a check for expired sessions on page load
+  // Add a check for expired sessions and disabled users on page load
   useEffect(() => {
-    const checkExpiredSession = (): void => {
+    const checkQueryParams = (): void => {
       if (router.query.expired === "true") {
         setError("Your session has expired. Please log in again.");
+      } else if (router.query.error === "disabled") {
+        setError("Your account has been disabled. Please contact an administrator.");
       }
     };
 
-    checkExpiredSession();
+    checkQueryParams();
   }, [router.query]);
 
 

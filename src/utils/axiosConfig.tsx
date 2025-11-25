@@ -230,6 +230,23 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
           "You don't have permission to access this resource";
         window.location.href = `/forbidden?message=${encodeURIComponent(msg)}`;
       }
+      // Handle 400 Bad Request for disabled/inactive users
+      else if (
+        status === 400 &&
+        typeof error.response?.data?.detail === "string" &&
+        (error.response?.data?.detail.toLowerCase().includes("inactive user") ||
+          error.response?.data?.detail.toLowerCase().includes("disabled")) &&
+        path !== "/"
+      ) {
+        console.error("User account is disabled, signing out");
+
+        // Sign out from Supabase
+        const supabase = getSupabase();
+        void supabase.auth.signOut();
+
+        // Redirect to login with error message
+        window.location.href = "/?error=disabled";
+      }
       // Handle 400 Bad Request related to Company ID
       else if (
         status === 400 &&
