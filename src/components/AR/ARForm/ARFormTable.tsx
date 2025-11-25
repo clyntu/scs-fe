@@ -73,7 +73,7 @@ const ARFormTable = ({
                     width: "var(--Table-firstColumnWidth)",
                   }}
                 >
-                  Source
+                  Ref No.
                 </th>
                 <th style={{ width: 130 }}>Tran No.</th>
                 <th style={{ width: 50 }}>Pay?</th>
@@ -82,7 +82,6 @@ const ARFormTable = ({
                 <th style={{ width: 150 }}>Tran Amt</th>
                 <th style={{ width: 150 }}>Payment</th>
                 <th style={{ width: 150 }}>Balance</th>
-                <th style={{ width: 150 }}>Reference No.</th>
               </tr>
             </thead>
             <tbody>
@@ -112,9 +111,9 @@ const ARFormTable = ({
                   return (
                     <tr key={trans.id}>
                       <td>
-                        {trans.source_type === "customer_dr"
-                          ? "Customer DR"
-                          : "Sales Return"}
+                        <TooltipTableCell maxWidth="150px">
+                          {trans.reference}
+                        </TooltipTableCell>
                       </td>
 
                       <td>{trans.transaction_number}</td>
@@ -194,11 +193,6 @@ const ARFormTable = ({
                           Number(trans.transaction_amount) -
                             Number(trans.payment),
                         )}
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="150px">
-                          {trans.reference}
-                        </TooltipTableCell>
                       </td>
                     </tr>
                   );
