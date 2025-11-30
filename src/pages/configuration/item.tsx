@@ -21,7 +21,7 @@ import CurrencyModal from "../../components/Items/CurrencyModal";
 import PrintStocksModal from "../../components/Items/PrintStocksModal";
 import PrintTotalCostDetailModal from "../../components/Items/PrintTotalCostDetailModal";
 import { generateTotalCostPDF } from "../../components/Items/generateTotalCostPDF";
-import axiosInstance from "../../utils/axiosConfig";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { AxiosError } from "axios";
 import type {
@@ -377,8 +377,8 @@ const ItemForm = (): JSX.Element => {
         },
       };
 
-      // Get company ID (you may need to adjust this based on how company ID is determined)
-      const companyId = "company-a"; // or get from context/state
+      // Get company ID
+      const companyId = getCompanyId();
 
       generateTotalCostPDF(totalCostData, companyId);
     } catch (error) {

@@ -24,7 +24,7 @@ const addCustomHeader = (doc: jsPDF, companyId: string): void => {
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
 
-  const title = companyId === "company-a" ? "P.P.T." : "MA";
+  const title = companyId === "company-a" ? "P.P.T." : "MA Inc.";
   doc.text(title, 40, 40);
 
   // Address and contact info (normal)
