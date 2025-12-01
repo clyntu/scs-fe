@@ -347,11 +347,17 @@ const ItemForm = (): JSX.Element => {
       const allItems = response.data.items;
 
       // Calculate totals for items with and without net cost
+      // Items WITH net cost: must have cost > 0 AND stock > 0
       const withNetCost = allItems.filter(
-        (item) => (item.net_cost_before_tax ?? 0) > 0,
+        (item) =>
+          (item.net_cost_before_tax ?? 0) > 0 &&
+          (item.total_on_stock ?? 0) > 0,
       );
+      // Items WITHOUT net cost: either no cost OR no stock
       const withoutNetCost = allItems.filter(
-        (item) => (item.net_cost_before_tax ?? 0) <= 0,
+        (item) =>
+          (item.net_cost_before_tax ?? 0) <= 0 ||
+          (item.total_on_stock ?? 0) <= 0,
       );
 
       const withNetCostTotal = withNetCost.reduce((sum, item) => {
