@@ -53,6 +53,7 @@ const PrintStocksModal = ({
       brand: selectedBrand,
       category: selectedCategory,
       status: "active", // Only print active items
+      exact_match: true, // Use exact match for category and brand
     };
 
     if (selectedLocation !== null) {
