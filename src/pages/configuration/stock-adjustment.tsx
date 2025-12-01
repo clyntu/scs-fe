@@ -50,6 +50,7 @@ const StockAdjustmentPage = (): JSX.Element => {
     total: 0,
     items: [],
   });
+  const [warehouseItems, setWarehouseItems] = useState<WarehouseItem[]>([]);
   const [currentStock, setCurrentStock] = useState<number>(0);
 
   // Loading states
@@ -73,17 +74,17 @@ const StockAdjustmentPage = (): JSX.Element => {
 
   // Filter options for prefix-only matching in autocompletes
   const stockCodeFilterOptions = createFilterOptions({
-    matchFrom: 'start',
+    matchFrom: "start",
     stringify: (option: Item) => `${option.stock_code} (${option.name})`,
   });
 
   const stockNameFilterOptions = createFilterOptions({
-    matchFrom: 'start',
+    matchFrom: "start",
     stringify: (option: Item) => option.name,
   });
 
   const warehouseFilterOptions = createFilterOptions({
-    matchFrom: 'start',
+    matchFrom: "start",
     stringify: (option: Warehouse) => option.code,
   });
 
@@ -114,9 +115,7 @@ const StockAdjustmentPage = (): JSX.Element => {
     const fetchItems = async (): Promise<void> => {
       setIsLoadingItems(true);
       try {
-        const response = await axiosInstance.get<PaginatedItems>(
-          "/api/items",
-        );
+        const response = await axiosInstance.get<PaginatedItems>("/api/items");
         setItems(response.data);
       } catch (err) {
         console.error("Error fetching items:", err);
@@ -134,9 +133,8 @@ const StockAdjustmentPage = (): JSX.Element => {
     const fetchWarehouses = async (): Promise<void> => {
       setIsLoadingWarehouses(true);
       try {
-        const response = await axiosInstance.get<PaginatedWarehouse>(
-          "/api/warehouses",
-        );
+        const response =
+          await axiosInstance.get<PaginatedWarehouse>("/api/warehouses");
         setWarehouses(response.data);
       } catch (err) {
         console.error("Error fetching warehouses:", err);
@@ -156,6 +154,28 @@ const StockAdjustmentPage = (): JSX.Element => {
       setNetCost(addFourPlaces(defaultNetCost).toString());
     } else {
       setNetCost("");
+    }
+  }, [selectedItem]);
+
+  // Fetch warehouse items for the selected item
+  const fetchWarehouseItems = async (itemId: number): Promise<void> => {
+    try {
+      const response = await axiosInstance.get<PaginatedWarehouseItems>(
+        `/api/warehouse_items?item_id=${itemId}&limit=1000`,
+      );
+      setWarehouseItems(response.data.items);
+    } catch (err: any) {
+      console.error("Error fetching warehouse items:", err);
+      setWarehouseItems([]);
+    }
+  };
+
+  // Fetch warehouse items when item is selected
+  useEffect(() => {
+    if (selectedItem) {
+      fetchWarehouseItems(selectedItem.id);
+    } else {
+      setWarehouseItems([]);
     }
   }, [selectedItem]);
 
@@ -246,6 +266,22 @@ const StockAdjustmentPage = (): JSX.Element => {
         `Stock adjusted successfully. New quantity: ${response.data.new_on_stock} units`,
       );
 
+      // Refetch warehouse items to update quantities in dropdown
+      if (selectedItem) {
+        await fetchWarehouseItems(selectedItem.id);
+      }
+
+      // Update the selected warehouse with new stock value to refresh the dropdown display
+      if (selectedWarehouse) {
+        setSelectedWarehouse((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            _stock: response.data.new_on_stock,
+          } as any;
+        });
+      }
+
       // Reset form after success
       setTimeout(() => {
         setAdjustmentAmount("");
@@ -330,6 +366,58 @@ const StockAdjustmentPage = (): JSX.Element => {
     );
   }, [selectedItem, selectedWarehouse, adjustmentAmount, netCost]);
 
+  // Create filtered warehouse options with stock quantity display
+  const warehouseOptions = useMemo(() => {
+    // Create a map of warehouse_id to on_stock for quick lookup
+    const stockMap = new Map<number, number>();
+    warehouseItems.forEach((item) => {
+      stockMap.set(item.warehouse_id, item.on_stock);
+    });
+
+    // For deficit, filter to only show warehouses with stock > 0
+    // For surplus, show all warehouses
+    const baseWarehouses =
+      adjustmentType === "deficit"
+        ? warehouses.items.filter((wh) => (stockMap.get(wh.id) || 0) > 0)
+        : warehouses.items;
+
+    // Extend warehouses with stock information for display
+    const warehousesWithStock = baseWarehouses.map((wh) => ({
+      ...wh,
+      _stock: stockMap.get(wh.id) || 0,
+    }));
+
+    // Sort warehouses
+    return warehousesWithStock.sort((a, b) => {
+      if (adjustmentType === "deficit") {
+        // For deficit: sort by stock descending (highest stock first)
+        return b._stock - a._stock;
+      } else {
+        // For surplus: two-tier sorting
+        // 1st tier: warehouses with stock first, then without stock
+        // 2nd tier: alphabetical by warehouse code within each tier
+        if (a._stock > 0 !== b._stock > 0) {
+          return a._stock > 0 ? -1 : 1; // Warehouses with stock come first
+        }
+        return a.code.localeCompare(b.code); // Then sort alphabetically
+      }
+    });
+  }, [warehouses.items, warehouseItems, adjustmentType]);
+
+  // Clear selected warehouse if it's no longer in the filtered options
+  // This happens when switching from surplus to deficit and the selected warehouse has no stock
+  useEffect(() => {
+    if (selectedWarehouse && warehouseOptions.length > 0) {
+      const isWarehouseInOptions = warehouseOptions.some(
+        (wh) => wh.id === selectedWarehouse.id,
+      );
+      if (!isWarehouseInOptions) {
+        setSelectedWarehouse(null);
+        setCurrentStock(0);
+      }
+    }
+  }, [warehouseOptions, selectedWarehouse]);
+
   // Show loading while checking authorization
   if (isCheckingAuth) {
     return (
@@ -399,6 +487,9 @@ const StockAdjustmentPage = (): JSX.Element => {
                       getOptionLabel={(item) =>
                         `${item.stock_code} (${item.name})`
                       }
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                      }
                       filterOptions={stockCodeFilterOptions}
                       onChange={(_, value) => {
                         setSelectedItem(value);
@@ -428,8 +519,9 @@ const StockAdjustmentPage = (): JSX.Element => {
                     <TooltipAutocomplete
                       placeholder="Select a Stock Name"
                       options={items.items}
-                      getOptionLabel={(item) =>
-                        `${item.name}`
+                      getOptionLabel={(item) => `${item.name}`}
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
                       }
                       filterOptions={stockNameFilterOptions}
                       onChange={(_, value) => {
@@ -459,8 +551,13 @@ const StockAdjustmentPage = (): JSX.Element => {
                     <FormLabel>Warehouse</FormLabel>
                     <TooltipAutocomplete
                       placeholder="Select a warehouse"
-                      options={warehouses.items}
-                      getOptionLabel={(warehouse) => `${warehouse.code}`}
+                      options={warehouseOptions}
+                      getOptionLabel={(warehouse) => {
+                        const stock = (warehouse as any)._stock;
+                        return stock > 0
+                          ? `${warehouse.code} (Qty: ${stock})`
+                          : warehouse.code;
+                      }}
                       filterOptions={warehouseFilterOptions}
                       onChange={(_, value) => {
                         setSelectedWarehouse(value);
@@ -481,7 +578,9 @@ const StockAdjustmentPage = (): JSX.Element => {
                       }}
                     />
                     <FormHelperText>
-                      Select the warehouse to adjust stock in
+                      {adjustmentType === "deficit"
+                        ? "Only warehouses with stock are shown"
+                        : "Select the warehouse to adjust stock in"}
                     </FormHelperText>
                   </FormControl>
                 </Stack>
@@ -515,9 +614,7 @@ const StockAdjustmentPage = (): JSX.Element => {
                   <RadioGroup
                     value={adjustmentType}
                     onChange={(e) =>
-                      setAdjustmentType(
-                        e.target.value as "surplus" | "deficit",
-                      )
+                      setAdjustmentType(e.target.value as "surplus" | "deficit")
                     }
                     size="sm"
                   >
