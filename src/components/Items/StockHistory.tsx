@@ -215,20 +215,18 @@ const StockHistory = ({
                   <>
                     <thead>
                       <tr>
-                        <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                          Tx Type
-                        </th>
-                        <th style={{ width: 250 }}>Supplier</th>
-                        <th style={{ width: 250 }}>Customer</th>
-                        <th style={{ width: 130 }}>Tx Date</th>
-                        <th style={{ width: 100 }}>Tx No.</th>
-                        <th style={{ width: 100 }}>In</th>
-                        <th style={{ width: 100 }}>Out</th>
-                        <th style={{ width: 160 }}>Price</th>
-                        <th style={{ width: 160 }}>Gross Amount</th>
-                        <th style={{ width: 200 }}>Tx Discounts (in %)</th>
-                        <th style={{ width: 160 }}>NET Cost</th>
-                        <th style={{ width: 200 }}>Reference No.</th>
+                        <th style={{ width: 120 }}>Supplier</th>
+                        <th style={{ width: 180 }}>Customer</th>
+                        <th style={{ width: 100 }}>TX Date</th>
+                        <th style={{ width: 80 }}>TX #</th>
+                        <th style={{ width: 70 }}>Out</th>
+                        <th style={{ width: 70 }}>In</th>
+                        <th style={{ width: 100 }}>Price</th>
+                        <th style={{ width: 80 }}>Tx Type</th>
+                        <th style={{ width: 120 }}>Gross Amount</th>
+                        <th style={{ width: 160 }}>Tx Discounts (%)</th>
+                        <th style={{ width: 120 }}>NET Cost</th>
+                        <th style={{ width: 150 }}>Reference No.</th>
                       </tr>
                     </thead>
 
@@ -308,17 +306,16 @@ const StockHistory = ({
                               }
                             }}
                           >
-                            <td>{history.transaction_type}</td>
                             <td>
                               {withTooltip(
                                 history?.supplier_name ?? "-",
-                                "230px",
+                                "100px",
                               )}
                             </td>
                             <td>
                               {withTooltip(
                                 history?.customer_name ?? "-",
-                                "230px",
+                                "160px",
                               )}
                             </td>
                             <td>{history.transaction_date}</td>
@@ -326,14 +323,15 @@ const StockHistory = ({
                               {history.transaction_number}
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              {history.quantity_in}
+                              {history.quantity_out}
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              {history.quantity_out}
+                              {history.quantity_in}
                             </td>
                             <td style={{ textAlign: "right" }}>
                               {addCommaToNumberWithTwoPlaces(history.price)}
                             </td>
+                            <td>{history.transaction_type}</td>
                             <td style={{ textAlign: "right" }}>
                               {addCommaToNumberWithTwoPlaces(
                                 history.gross_amount,
@@ -343,10 +341,8 @@ const StockHistory = ({
                               {[
                                 history.supplier_discount_1,
                                 history.supplier_discount_2,
-                                // history.supplier_discount_3,
                                 history.transaction_discount_1,
                                 history.transaction_discount_2,
-                                // history.transaction_discount_3,
                               ]
                                 .map((d) =>
                                   d != null && d.trim() !== "" ? d : "-",
@@ -362,7 +358,7 @@ const StockHistory = ({
                                   )}
                             </td>
                             <td>
-                              {withTooltip(history?.reference_number, "180px")}
+                              {withTooltip(history?.reference_number, "130px")}
                             </td>
                           </tr>
                         );
