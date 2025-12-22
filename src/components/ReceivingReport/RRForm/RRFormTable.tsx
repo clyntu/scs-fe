@@ -177,8 +177,9 @@ const RRFormTable = ({
             <th style={{ width: 100 }}>PO No.</th>
             <th style={{ width: 200 }}>Stock Code</th>
             <th style={{ width: 200 }}>Name</th>
-            <th style={{ width: 150 }}>Served Qty.</th>
+            <th style={{ width: 125 }}>Served Qty.</th>
             <th style={{ width: 150 }}>Price</th>
+            <th style={{ width: 175 }}>NET Cost</th>
             <th style={{ width: 150 }}>Gross Amount</th>
             <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
             <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
@@ -189,7 +190,6 @@ const RRFormTable = ({
             <th style={{ width: 150 }}>Net Amount</th>
             <th style={{ width: 150 }}>Currency</th>
             <th style={{ width: 150 }}>Peso Rate</th>
-            <th style={{ width: 200 }}>NET Cost</th>
           </tr>
         </thead>
         <tbody>
@@ -220,6 +220,13 @@ const RRFormTable = ({
                         : POItem.in_transit}
                     </td>
                     <td style={{ textAlign: "right" }}>{POItem.price}</td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithFourPlaces(
+                        POItem.price *
+                          Number(pesoRate) *
+                          (1 + percentNetCost / 100),
+                      )}
+                    </td>
                     <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithTwoPlaces(grossPerRow[key])}
                     </td>
@@ -258,13 +265,6 @@ const RRFormTable = ({
                     </td>
                     <td>{PO.currency_used}</td>
                     <td style={{ textAlign: "right" }}>{pesoRate}</td>
-                    <td style={{ textAlign: "right" }}>
-                      {addCommaToNumberWithFourPlaces(
-                        POItem.price *
-                          Number(pesoRate) *
-                          (1 + percentNetCost / 100),
-                      )}
-                    </td>
                   </tr>
                 );
               });
