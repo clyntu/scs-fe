@@ -579,6 +579,7 @@ export interface ViewPurchaseOrderProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: PurchaseOrder | undefined;
   setSelectedRow: (purchaseOrder: PurchaseOrder) => void;
+  refetchTrigger?: number;
 }
 
 export interface ViewCPOProps {

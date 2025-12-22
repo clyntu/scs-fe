@@ -96,35 +96,39 @@ const RRFormDetails = ({
       const firstSDR = selectedSDRs[0];
       setReferenceNumber(firstSDR.reference_number);
 
-      // Check if all SDRs have the same currency
-      let commonCurrency: string | null = null;
-      let commonRate: number | null = null;
+      // Only auto-set currency and rate when creating a new RR, not when editing
+      // In edit mode, the rate should come from the saved RR data
+      if (!openEdit) {
+        // Check if all SDRs have the same currency
+        let commonCurrency: string | null = null;
+        let commonRate: number | null = null;
 
-      for (const sdr of selectedSDRs) {
-        if (sdr.purchase_orders?.length > 0) {
-          const sdrCurrency = sdr.purchase_orders[0].currency_used;
-          const sdrRate = sdr.purchase_orders[0].peso_rate;
+        for (const sdr of selectedSDRs) {
+          if (sdr.purchase_orders?.length > 0) {
+            const sdrCurrency = sdr.purchase_orders[0].currency_used;
+            const sdrRate = sdr.purchase_orders[0].peso_rate;
 
-          if (commonCurrency === null) {
-            // First SDR sets the currency
-            commonCurrency = sdrCurrency;
-            commonRate = sdrRate;
-          } else if (commonCurrency !== sdrCurrency) {
-            // Found different currency - this shouldn't happen but handle it
-            toast.warning(
-              `Warning: SDR ${sdr.id} has different currency (${sdrCurrency}) from others (${commonCurrency})`,
-            );
+            if (commonCurrency === null) {
+              // First SDR sets the currency
+              commonCurrency = sdrCurrency;
+              commonRate = sdrRate;
+            } else if (commonCurrency !== sdrCurrency) {
+              // Found different currency - this shouldn't happen but handle it
+              toast.warning(
+                `Warning: SDR ${sdr.id} has different currency (${sdrCurrency}) from others (${commonCurrency})`,
+              );
+            }
           }
         }
-      }
 
-      // Set the common currency and rate
-      if (commonCurrency !== null && commonRate !== null) {
-        setCurrencyUsed(commonCurrency);
-        setPesoRate(commonRate);
+        // Set the common currency and rate
+        if (commonCurrency !== null && commonRate !== null) {
+          setCurrencyUsed(commonCurrency);
+          setPesoRate(commonRate);
+        }
       }
     }
-  }, [selectedSDRs]);
+  }, [selectedSDRs, openEdit]);
 
   return (
     <Box sx={{ display: "flex" }}>
