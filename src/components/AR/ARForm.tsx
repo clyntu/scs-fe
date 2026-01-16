@@ -99,6 +99,7 @@ const ARForm = ({
     (
       customerId: number | null,
       savedPayments: Record<string, string> = {},
+      currentItems: OutstandingTrans[] = [], // New param to include items that might be fully paid and hidden by API
       completePayment = false,
     ) => {
       setIsLoadingItems(true);
@@ -108,8 +109,21 @@ const ARForm = ({
           `/api/ar-receipts/customer/${customerId}/outstanding-transactions`,
         )
         .then((response) => {
+          // Identify items returned by API
+          const apiIds = new Set(
+            response.data.map((t) => `${t.source_type}-${t.id}`),
+          );
+
+          // Find items in currentItems that are NOT in API response (e.g. fully paid ones)
+          const missingItems = currentItems.filter(
+            (t) => !apiIds.has(`${t.source_type}-${t.id}`),
+          );
+
+          // Combine them
+          const allTransactions = [...missingItems, ...response.data];
+
           setOutstandingTrans(
-            response.data.map((trans) => {
+            allTransactions.map((trans) => {
               const key = `${trans.source_type}-${trans.id}`;
               const savedPayment = savedPayments[key];
 
@@ -132,10 +146,10 @@ const ARForm = ({
           // Combination of transaction numbers and reference(for CR)
           setCDRNumbers([
             ...new Set(
-              response.data
+              allTransactions
                 .flatMap((trans) => [trans.transaction_number, trans.reference])
                 // DR numbers only
-                .filter((transNo) => transNo.startsWith("DR")),
+                .filter((transNo) => transNo?.startsWith("DR")),
             ),
           ]);
           setIsLoadingItems(false);
@@ -175,7 +189,8 @@ const ARForm = ({
       // Only fetch fresh data for unposted ARs (draft mode)
       if (selectedRow.status === "unposted") {
         // Fetch ALL outstanding transactions and merge with saved payments
-        fetchARByCustomer(customerID, savedPayments);
+        // Pass formattedARItems as 'currentItems' so fully paid ones are not lost
+        fetchARByCustomer(customerID, savedPayments, formattedARItems);
       } else {
         // For posted ARs, just show the exact items that were posted (read-only)
         setOutstandingTrans(formattedARItems);
@@ -205,7 +220,21 @@ const ARForm = ({
             const key = `${item.source_type}-${item.source_id}`;
             savedPayments[key] = String(parseFloat(item.payment_amount));
 
-            // Format the items for display (used for posted ARs)
+            // Format the items for display (used for posted ARs AND for restoring missing items in unposted)
+            // For Unposted: We subtract payment to mimic the API's "pending balance" 
+            // so that our merge logic (which adds it back) works consistently.
+            // For Posted: We display the values as stored in the DB item.
+            const isUnposted = selectedRow?.status === "unposted";
+            const rawTransactionAmount = Number(item.transaction_amount);
+            const rawPaymentAmount = Number(item.payment_amount);
+
+            // If unposted, we need to "hide" the payment from the transaction amount
+            // so that the restoration logic (which adds it back) doesn't double count 
+            // or result in correct "Before Payment" value.
+            const displayTransactionAmount = isUnposted 
+              ? rawTransactionAmount - rawPaymentAmount
+              : rawTransactionAmount;
+
             return {
               id: item.source_id,
               source_type: item.source_type,
@@ -215,11 +244,10 @@ const ARForm = ({
                   : `CR-${item.source_id}`,
               transaction_date: item.source_transaction_date,
               original_amount: item.original_amount,
-              transaction_amount: item.transaction_amount,
-              payment: String(parseFloat(item.payment_amount)),
-              balance: String(
-                Number(item.transaction_amount) - Number(item.payment_amount),
-              ),
+              transaction_amount: String(displayTransactionAmount),
+              payment: String(rawPaymentAmount),
+              // Balance is remaining amount
+              balance: String(displayTransactionAmount - (isUnposted ? 0 : rawPaymentAmount)),
               reference: item.reference,
             };
           });
