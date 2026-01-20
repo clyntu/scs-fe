@@ -212,11 +212,12 @@ const ViewAR = ({
         await axiosInstance.delete(url);
         toast.success("Archive successful!");
 
-        // Only allow delete for unposted, it should hard delete
+        // Update the AR's status to archived in the list
         setARs((prevAR) => ({
           ...prevAR,
-          items: prevAR.items.filter((AR) => AR.id !== selectedRow.id),
-          total: prevAR.total - 1,
+          items: prevAR.items.map((AR) =>
+            AR.id === selectedRow.id ? { ...AR, status: "archived" } : AR,
+          ),
         }));
       } catch (error: any) {
         toast.error(
@@ -322,6 +323,7 @@ const ViewAR = ({
               <Option value="all">All</Option>
               <Option value="posted">Posted</Option>
               <Option value="unposted">Unposted</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <FormControl sx={{ ml: 2 }}>
