@@ -323,9 +323,20 @@ const ARForm = ({
 
     try {
       setIsSaving(true);
-      await axiosInstance.post("/api/ar-receipts/", payload);
+      const response = await axiosInstance.post<AR>("/api/ar-receipts/", payload);
+      
+      // Update state with response data
+      setStatus(response.data.status);
+      setPaymentStatus(response.data.payment_status);
+      
       setIsSaving(false);
-      toast.success("Save successful!");
+      
+      if (response.data.status === "posted") {
+        toast.success("Post successful!");
+      } else {
+        toast.success("Save successful!");
+      }
+
       setHasSaved(true);
       // Handle the response, update state, etc.
     } catch (error: any) {
@@ -350,9 +361,11 @@ const ARForm = ({
         };
       });
 
+    // If status in state is "posted", we send it as "posted" to trigger the atomic post in backend.
+    // Otherwise we send "unposted" (or the current status, which is likely unposted if we are editing)
     const payload = {
       reference_number: refNo,
-      status: "unposted",
+      status: status, // Send the actual intended status
       transaction_date: transactionDate == "" ? null : transactionDate,
       customer_id: selectedCustomer?.customer_id,
       payment_method: paymentMode,
@@ -370,24 +383,19 @@ const ARForm = ({
 
     try {
       setIsSaving(true);
-      // First unposted PUT request to edit fields
-      await axiosInstance.put(`/api/ar-receipts/${selectedRow?.id}`, payload);
+      // Single atomic request for both update and post (if status is posted)
+      const response = await axiosInstance.put<AR>(`/api/ar-receipts/${selectedRow?.id}`, payload);
 
-      // If status is "posted", send second PUT request to post
-      if (status === "posted") {
-        try {
-          await axiosInstance.put(`/api/ar-receipts/${selectedRow?.id}/post`);
-          toast.success("Post successful!");
-        } catch (error: any) {
-          toast.error(
-            `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
-          );
-          setIsSaving(false);
-          return; // Prevent form reset and closing if post fails
-        }
+      // Update state with response data
+      setStatus(response.data.status);
+      setPaymentStatus(response.data.payment_status);
+
+      if (response.data.status === "posted") {
+        toast.success("Post successful!");
+      } else {
+        toast.success("Save successful!");
       }
-
-      toast.success("Save successful!");
+      
       setIsSaving(false);
       setHasSaved(true);
     } catch (error: any) {
