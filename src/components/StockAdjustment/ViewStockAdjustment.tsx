@@ -209,7 +209,7 @@ const ViewStockAdjustment = ({
           }}
           className="flex justify-between"
         >
-          <h2>Stock Adjustment History</h2>
+          <h2>Stock Adjustment</h2>
           <Button
             className="mt-2 bg-button-primary"
             color="primary"
