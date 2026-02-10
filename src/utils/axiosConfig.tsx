@@ -293,7 +293,7 @@ export function createAuthenticatedAxios() {
   const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
     withCredentials: true,
-    timeout: 30000, // 30 second timeout
+    timeout: 200000, // 60 second timeout
   });
 
   setupAxiosInterceptors(axiosInstance);

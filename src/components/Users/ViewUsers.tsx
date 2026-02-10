@@ -196,6 +196,7 @@ const ViewUsers = (): JSX.Element => {
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
+              sx={{ width: 250 }}
               placeholder="Name / Username / Email"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

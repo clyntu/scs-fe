@@ -257,7 +257,8 @@ const ViewDeliveryReceipt = ({
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
-              placeholder="Ref No."
+              sx={{ width: 250 }}
+              placeholder="Ref No. or Supplier"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

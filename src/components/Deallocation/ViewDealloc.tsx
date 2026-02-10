@@ -229,6 +229,7 @@ const ViewDealloc = ({
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
+              sx={{ width: 250 }}
               placeholder="Dealloc No. or Remarks"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

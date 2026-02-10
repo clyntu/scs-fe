@@ -75,7 +75,7 @@ const ViewAR = ({
       page: 1,
       limit,
       sort_by: "transaction_date",
-      sort_order: "asc",
+      sort_order: "desc",
       search_term: searchTerm,
     };
 
@@ -116,7 +116,7 @@ const ViewAR = ({
       page: nextPage,
       limit,
       sort_by: "transaction_date",
-      sort_order: "asc",
+      sort_order: "desc",
       search_term: searchTerm,
     };
 
@@ -305,6 +305,7 @@ const ViewAR = ({
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
+              sx={{ width: 250 }}
               placeholder="Rec No. / Check No. / Remarks"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

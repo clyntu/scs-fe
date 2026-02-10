@@ -396,8 +396,6 @@ export interface StockAdjustmentResponse {
   net_cost: number;
   previous_on_stock: number;
   new_on_stock: number;
-  reason: string;
-  notes?: string;
   created_by_name: string;
   date_created: string;
   company_id: number;
@@ -409,6 +407,10 @@ export interface PaginatedStockAdjustments {
   limit: number;
   total_pages: number;
   items: StockAdjustmentResponse[];
+}
+
+export interface ViewStockAdjustmentProps {
+  setOpenCreate: (isOpen: boolean) => void;
 }
 
 export interface PurchaseOrder {

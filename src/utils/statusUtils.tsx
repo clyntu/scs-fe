@@ -55,3 +55,33 @@ export const isTransactionPosted = (status: string): boolean => {
 export const canCancelTransaction = (status: string): boolean => {
   return isTransactionPosted(status) && !isTransactionCancelled(status);
 };
+
+// Stock Adjustment Type Helpers
+export const getAdjustmentTypeColor = (
+  adjustmentType: string,
+): "success" | "danger" => {
+  return adjustmentType === "surplus" ? "success" : "danger";
+};
+
+export const getAdjustmentTypeVariant = (
+  adjustmentType: string,
+): "solid" | "soft" => {
+  return "soft";
+};
+
+interface AdjustmentTypeChipProps {
+  adjustmentType: string;
+}
+
+export const AdjustmentTypeChip: React.FC<AdjustmentTypeChipProps> = ({
+  adjustmentType,
+}) => {
+  const color = getAdjustmentTypeColor(adjustmentType);
+  const label = adjustmentType === "surplus" ? "Surplus" : "Deficit";
+
+  return (
+    <Chip color={color} variant="soft" size="sm">
+      {label}
+    </Chip>
+  );
+};
