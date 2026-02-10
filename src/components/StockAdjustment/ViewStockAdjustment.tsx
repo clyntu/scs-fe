@@ -230,7 +230,7 @@ const ViewStockAdjustment = ({
             flexWrap: "wrap",
           }}
         >
-          <FormControl sx={{ minWidth: 250 }}>
+          <FormControl sx={{ flexGrow: 1, minWidth: 200 }}>
             <FormLabel>Search</FormLabel>
             <Input
               size="sm"
