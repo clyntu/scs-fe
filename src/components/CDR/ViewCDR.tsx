@@ -241,7 +241,7 @@ const ViewCDR = ({
             <Input
               size="sm"
               sx={{ width: 250 }}
-              placeholder="Ref No., Customer, or Remarks"
+              placeholder="Ref No. or Customer"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
