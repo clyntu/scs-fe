@@ -306,7 +306,7 @@ const ViewAR = ({
             <Input
               size="sm"
               sx={{ width: 250 }}
-              placeholder="Rec No. / Check No. / Remarks"
+              placeholder="Customer"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
