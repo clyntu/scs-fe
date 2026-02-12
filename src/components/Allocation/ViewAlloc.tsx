@@ -225,7 +225,7 @@ const ViewAlloc = ({
             <Input
               size="sm"
               sx={{ width: 250 }}
-              placeholder="Alloc No. or Remarks"
+              placeholder="Alloc No., Customer, or Remarks"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

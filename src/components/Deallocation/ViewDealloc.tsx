@@ -230,7 +230,7 @@ const ViewDealloc = ({
             <Input
               size="sm"
               sx={{ width: 250 }}
-              placeholder="Dealloc No. or Remarks"
+              placeholder="Dealloc No., Customer, or Remarks"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

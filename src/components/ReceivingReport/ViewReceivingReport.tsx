@@ -236,7 +236,7 @@ const ViewReceivingReport = ({
             <Input
               size="sm"
               sx={{ width: 250 }}
-              placeholder="Ref No."
+              placeholder="Ref No. or Supplier"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

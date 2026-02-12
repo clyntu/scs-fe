@@ -258,7 +258,7 @@ const ViewPurchaseOrder = ({
             <Input
               size="sm"
               sx={{ width: 250 }}
-              placeholder="Ref No. or Remarks"
+              placeholder="Ref No., Supplier, or Remarks"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
