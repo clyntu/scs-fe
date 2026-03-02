@@ -11,6 +11,7 @@ import {
   Box,
   Select,
   Option,
+  Divider,
 } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
@@ -389,66 +390,46 @@ const ItemsModal = ({
                       />
                     </FormControl>
                   </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
-                      <FormLabel>On Stock</FormLabel>
-                      <Input
-                        name="total_on_stock"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_on_stock + item?.total_allocated}
-                        disabled
-                      />
-                    </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
-                      <FormLabel>Available</FormLabel>
-                      <Input
-                        name="total_available"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_on_stock}
-                        disabled
-                      />
-                    </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
-                      <FormLabel>Allocated</FormLabel>
-                      <Input
-                        name="total_allocated"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_allocated}
-                        disabled
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
-                      <FormLabel>Purchased</FormLabel>
-                      <Input
-                        name="total_purchased"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_purchased}
-                        disabled
-                      />
-                    </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
-                      <FormLabel>Sold</FormLabel>
-                      <Input
-                        name="total_sold"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_sold}
-                        disabled
-                      />
-                    </FormControl>
-                    <Box sx={{ flex: 1 }} />
-                  </Stack>
+                  {title === "Edit Stock" && (
+                    <>
+                      <Divider sx={{ my: 2 }}>Stock Quantities</Divider>
+                      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                        <FormControl size="sm" sx={{ flex: 1 }}>
+                          <FormLabel>On Stock</FormLabel>
+                          <p className="text-sm">
+                            {item?.total_on_stock + item?.total_allocated}
+                          </p>
+                        </FormControl>
+                        <FormControl size="sm" sx={{ flex: 1 }}>
+                          <FormLabel>Available</FormLabel>
+                          <p className="text-sm">
+                            {item?.total_on_stock}
+                          </p>
+                        </FormControl>
+                        <FormControl size="sm" sx={{ flex: 1 }}>
+                          <FormLabel>Allocated</FormLabel>
+                          <p className="text-sm">
+                            {item?.total_allocated}
+                          </p>
+                        </FormControl>
+                      </Stack>
+                      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                        <FormControl size="sm" sx={{ flex: 1 }}>
+                          <FormLabel>Purchased</FormLabel>
+                          <p className="text-sm">
+                            {item?.total_purchased}
+                          </p>
+                        </FormControl>
+                        <FormControl size="sm" sx={{ flex: 1 }}>
+                          <FormLabel>Sold</FormLabel>
+                          <p className="text-sm">
+                            {item?.total_sold}
+                          </p>
+                        </FormControl>
+                        <Box sx={{ flex: 1 }} />
+                      </Stack>
+                    </>
+                  )}
                 </div>
               </Card>
               <div className="flex justify-end mt-5">
