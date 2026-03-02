@@ -390,7 +390,7 @@ const ItemsModal = ({
                     </FormControl>
                   </Stack>
                   <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
                       <FormLabel>On Stock</FormLabel>
                       <Input
                         name="total_on_stock"
@@ -401,7 +401,7 @@ const ItemsModal = ({
                         disabled
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
                       <FormLabel>Available</FormLabel>
                       <Input
                         name="total_available"
@@ -412,7 +412,7 @@ const ItemsModal = ({
                         disabled
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
                       <FormLabel>Allocated</FormLabel>
                       <Input
                         name="total_allocated"
@@ -425,7 +425,7 @@ const ItemsModal = ({
                     </FormControl>
                   </Stack>
                   <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
                       <FormLabel>Purchased</FormLabel>
                       <Input
                         name="total_purchased"
@@ -436,7 +436,7 @@ const ItemsModal = ({
                         disabled
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl size="sm" sx={{ mb: 1, flex: 1 }}>
                       <FormLabel>Sold</FormLabel>
                       <Input
                         name="total_sold"
