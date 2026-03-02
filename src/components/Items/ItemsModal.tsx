@@ -393,40 +393,41 @@ const ItemsModal = ({
                   {title === "Edit Stock" && (
                     <>
                       <Divider sx={{ my: 2 }}>Stock Quantities</Divider>
-                      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                        <FormControl size="sm" sx={{ flex: 1 }}>
-                          <FormLabel>On Stock</FormLabel>
-                          <p className="text-sm">
+                      <Stack
+                        direction="row"
+                        spacing={3}
+                        sx={{ flexWrap: "wrap" }}
+                      >
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">On Stock</p>
+                          <p className="text-sm font-semibold">
                             {item?.total_on_stock + item?.total_allocated}
                           </p>
-                        </FormControl>
-                        <FormControl size="sm" sx={{ flex: 1 }}>
-                          <FormLabel>Available</FormLabel>
-                          <p className="text-sm">
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Available</p>
+                          <p className="text-sm font-semibold">
                             {item?.total_on_stock}
                           </p>
-                        </FormControl>
-                        <FormControl size="sm" sx={{ flex: 1 }}>
-                          <FormLabel>Allocated</FormLabel>
-                          <p className="text-sm">
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Allocated</p>
+                          <p className="text-sm font-semibold">
                             {item?.total_allocated}
                           </p>
-                        </FormControl>
-                      </Stack>
-                      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                        <FormControl size="sm" sx={{ flex: 1 }}>
-                          <FormLabel>Purchased</FormLabel>
-                          <p className="text-sm">
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Purchased</p>
+                          <p className="text-sm font-semibold">
                             {item?.total_purchased}
                           </p>
-                        </FormControl>
-                        <FormControl size="sm" sx={{ flex: 1 }}>
-                          <FormLabel>Sold</FormLabel>
-                          <p className="text-sm">
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Sold</p>
+                          <p className="text-sm font-semibold">
                             {item?.total_sold}
                           </p>
-                        </FormControl>
-                        <Box sx={{ flex: 1 }} />
+                        </Box>
                       </Stack>
                     </>
                   )}
