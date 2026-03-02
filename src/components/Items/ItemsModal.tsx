@@ -447,6 +447,7 @@ const ItemsModal = ({
                         disabled
                       />
                     </FormControl>
+                    <Box sx={{ flex: 1 }} />
                   </Stack>
                 </div>
               </Card>
