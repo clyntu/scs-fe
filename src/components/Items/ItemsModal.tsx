@@ -90,7 +90,6 @@ const ItemsModal = ({
         ? ""
         : addTwoPlaces(Number(row?.last_sale_price) ?? 0),
       total_on_stock: row?.total_on_stock ?? 0,
-      total_in_transit: row?.total_in_transit ?? 0,
       total_allocated: row?.total_allocated ?? 0,
       total_purchased: row?.total_purchased ?? 0,
       total_sold: row?.total_sold ?? 0,
@@ -434,17 +433,6 @@ const ItemsModal = ({
                         size="sm"
                         placeholder="0"
                         value={item?.total_purchased}
-                        disabled
-                      />
-                    </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>In Transit</FormLabel>
-                      <Input
-                        name="total_in_transit"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_in_transit}
                         disabled
                       />
                     </FormControl>
