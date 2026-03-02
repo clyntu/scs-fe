@@ -396,7 +396,7 @@ const ItemsModal = ({
                       <Stack
                         direction="row"
                         spacing={3}
-                        sx={{ flexWrap: "wrap" }}
+                        sx={{ flexWrap: "wrap", justifyContent: "center" }}
                       >
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">On Stock</p>
