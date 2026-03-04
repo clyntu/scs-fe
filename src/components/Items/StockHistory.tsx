@@ -323,10 +323,10 @@ const StockHistory = ({
                               {history.transaction_number}
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              {history.quantity_out}
+                              {history.quantity_out?.toLocaleString()}
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              {history.quantity_in}
+                              {history.quantity_in?.toLocaleString()}
                             </td>
                             <td style={{ textAlign: "right" }}>
                               {addCommaToNumberWithTwoPlaces(history.price)}

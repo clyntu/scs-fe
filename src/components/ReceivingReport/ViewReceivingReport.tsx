@@ -400,7 +400,7 @@ const ViewReceivingReport = ({
                         )}
                       </td>
                       <td>{receivingReport.currency}</td>
-                      <td style={{ textAlign: "right" }}>{receivingReport.rate}</td>
+                      <td style={{ textAlign: "right" }}>{addCommaToNumberWithTwoPlaces(receivingReport.rate)}</td>
                       <td>{withTooltip(receivingReport.remarks, "180px")}</td>
                       <td>
                         {withTooltip(receivingReport?.creator?.username, "130px")}

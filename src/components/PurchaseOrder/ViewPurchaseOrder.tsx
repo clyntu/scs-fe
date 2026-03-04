@@ -422,7 +422,7 @@ const ViewPurchaseOrder = ({
                   </td>
                   <td>{purchaseOrder.currency_used}</td>
                   <td style={{ textAlign: "right" }}>
-                    {purchaseOrder.peso_rate}
+                    {addCommaToNumberWithTwoPlaces(purchaseOrder.peso_rate)}
                   </td>
                   <td>{withTooltip(purchaseOrder.remarks, "180px")}</td>
                   <td>

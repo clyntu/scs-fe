@@ -389,7 +389,7 @@ const ViewCDP = ({
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
                       </td>
-                      <td style={{ textAlign: "right" }}>{CDP.total_items}</td>
+                      <td style={{ textAlign: "right" }}>{CDP.total_items?.toLocaleString()}</td>
                       <td>{withTooltip(CDP.remarks, "180px")}</td>
                       <td>{withTooltip(CDP?.creator?.username, "130px")}</td>
                       <td>{withTooltip(CDP?.modifier?.username, "130px")}</td>

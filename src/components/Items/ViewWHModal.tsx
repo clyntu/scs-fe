@@ -237,13 +237,13 @@ const ViewWHModal = ({
                                       "200px",
                                     )}
                               </td>
-                              <td>
-                                {warehouseItem.total_on_stock +
-                                  warehouseItem.total_allocated}
+                              <td style={{ textAlign: "right" }}>
+                                {(warehouseItem.total_on_stock +
+                                  warehouseItem.total_allocated).toLocaleString()}
                               </td>
-                              <td>{warehouseItem.total_on_stock}</td>
-                              <td>{warehouseItem.total_allocated}</td>
-                              <td>{warehouseItem.total_sold}</td>
+                              <td style={{ textAlign: "right" }}>{warehouseItem.total_on_stock.toLocaleString()}</td>
+                              <td style={{ textAlign: "right" }}>{warehouseItem.total_allocated.toLocaleString()}</td>
+                              <td style={{ textAlign: "right" }}>{warehouseItem.total_sold.toLocaleString()}</td>
                               {isAdmin && (
                                 <td style={{ textAlign: "center" }}>
                                   <Tooltip title="Adjust Stock">

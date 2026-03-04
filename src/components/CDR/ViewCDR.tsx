@@ -396,7 +396,7 @@ const ViewCDR = ({
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
                       </td>
-                      <td style={{ textAlign: "right" }}>{CDR.total_items}</td>
+                      <td style={{ textAlign: "right" }}>{CDR.total_items?.toLocaleString()}</td>
                       <td>{CDR.delivery_plan_id}</td>
                       <td>{withTooltip(CDR.remarks, "180px")}</td>
                       <td>{withTooltip(CDR?.creator?.username, "130px")}</td>

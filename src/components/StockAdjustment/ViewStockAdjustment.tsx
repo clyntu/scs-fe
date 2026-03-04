@@ -23,7 +23,6 @@ import type {
 import {
   convertToQueryParams,
   formatToDate,
-  addCommaToNumberWithFourPlaces,
 } from "../../helper";
 import { withTooltip } from "../shared/withTooltip";
 import { AdjustmentTypeChip } from "../../utils/statusUtils";
@@ -357,14 +356,14 @@ const ViewStockAdjustment = ({
                       }}
                     >
                       {adjustment.adjustment_type === "surplus" ? "+" : "-"}
-                      {adjustment.adjustment_amount}
+                      {adjustment.adjustment_amount.toLocaleString()}
                     </span>
                   </td>
                   <td style={{ textAlign: "right" }}>
-                    {adjustment.previous_on_stock}
+                    {adjustment.previous_on_stock.toLocaleString()}
                   </td>
                   <td style={{ textAlign: "right" }}>
-                    {adjustment.new_on_stock}
+                    {adjustment.new_on_stock.toLocaleString()}
                   </td>
                   <td>{withTooltip(adjustment.warehouse_name, 150)}</td>
                   <td>{adjustment.created_by_name}</td>

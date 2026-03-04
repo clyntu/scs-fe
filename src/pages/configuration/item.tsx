@@ -666,12 +666,12 @@ const ItemForm = (): JSX.Element => {
                     </TooltipTableCell>
                   </td>
                   <td style={{ textAlign: "right" }}>
-                    {item.total_on_stock + item.total_allocated}
+                    {(item.total_on_stock + item.total_allocated).toLocaleString()}
                   </td>
-                  <td style={{ textAlign: "right" }}>{item.total_on_stock}</td>
-                  <td style={{ textAlign: "right" }}>{item.total_allocated}</td>
-                  <td style={{ textAlign: "right" }}>{item.total_purchased}</td>
-                  <td style={{ textAlign: "right" }}>{item.total_sold}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_on_stock.toLocaleString()}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_allocated.toLocaleString()}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_purchased.toLocaleString()}</td>
+                  <td style={{ textAlign: "right" }}>{item.total_sold.toLocaleString()}</td>
                   <td style={{ textAlign: "right" }}>
                     {addCommaToNumberWithTwoPlaces(item.srp)}
                   </td>
