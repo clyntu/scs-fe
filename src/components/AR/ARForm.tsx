@@ -288,6 +288,8 @@ const ARForm = ({
 
   // Create Receipt
   const handleCreateAR = async (): Promise<void> => {
+    if (isSaving) return;
+
     const receiptItems = outstandingTrans
       .filter((row) => !!row.payment)
       .map((row) => {
@@ -324,30 +326,32 @@ const ARForm = ({
     try {
       setIsSaving(true);
       const response = await axiosInstance.post<AR>("/api/ar-receipts/", payload);
-      
+
+      // Lock form immediately after successful response
+      setHasSaved(true);
+
       // Update state with response data
       setStatus(response.data.status);
       setPaymentStatus(response.data.payment_status);
-      
+
       setIsSaving(false);
-      
+
       if (response.data.status === "posted") {
         toast.success("Post successful!");
       } else {
         toast.success("Save successful!");
       }
-
-      setHasSaved(true);
-      // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }
   };
 
   const handleEditAR = async (): Promise<void> => {
+    if (isSaving) return;
+
     const receiptItems = outstandingTrans
       .filter((row) => !!row.payment)
       .map((row) => {
@@ -386,21 +390,23 @@ const ARForm = ({
       // Single atomic request for both update and post (if status is posted)
       const response = await axiosInstance.put<AR>(`/api/ar-receipts/${selectedRow?.id}`, payload);
 
+      // Lock form immediately after successful response
+      setHasSaved(true);
+
       // Update state with response data
       setStatus(response.data.status);
       setPaymentStatus(response.data.payment_status);
+
+      setIsSaving(false);
 
       if (response.data.status === "posted") {
         toast.success("Post successful!");
       } else {
         toast.success("Save successful!");
       }
-      
-      setIsSaving(false);
-      setHasSaved(true);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
       );
       setIsSaving(false);
     }
