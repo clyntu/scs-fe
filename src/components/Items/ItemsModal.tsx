@@ -36,6 +36,18 @@ const formatToFourDecimals = (
   return parseFloat(value.toFixed(4));
 };
 
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
 const ItemsModal = ({
   open,
   title,
@@ -129,6 +141,17 @@ const ItemsModal = ({
         : (e.target as HTMLInputElement).value;
     setItem({ ...item, [name]: value });
   };
+
+  const handlePriceChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    const { name, value } = e.target;
+    const raw = stripCommas(value);
+    if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+      setItem({ ...item, [name]: raw });
+    }
+  };
+
   const handleCurrencyChange = (
     event:
       | React.MouseEvent<Element, MouseEvent>
@@ -283,17 +306,10 @@ const ItemsModal = ({
                       <Input
                         sx={{ input: { textAlign: "right" } }}
                         name="acquisition_cost"
-                        type="number"
                         size="sm"
                         placeholder="Enter acquisition cost"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.acquisition_cost}
-                        onChange={handleChange}
+                        value={formatWithCommas(item?.acquisition_cost)}
+                        onChange={handlePriceChange}
                         required
                       />
                     </FormControl>
@@ -302,17 +318,10 @@ const ItemsModal = ({
                       <Input
                         sx={{ input: { textAlign: "right" } }}
                         name="net_cost_before_tax"
-                        type="number"
                         size="sm"
                         placeholder="0 (default)"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.net_cost_before_tax}
-                        onChange={handleChange}
+                        value={formatWithCommas(item?.net_cost_before_tax)}
+                        onChange={handlePriceChange}
                       />
                     </FormControl>
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
@@ -320,17 +329,10 @@ const ItemsModal = ({
                       <Input
                         sx={{ input: { textAlign: "right" } }}
                         name="srp"
-                        type="number"
                         size="sm"
                         placeholder="Enter SRP"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.srp}
-                        onChange={handleChange}
+                        value={formatWithCommas(item?.srp)}
+                        onChange={handlePriceChange}
                         required
                       />
                     </FormControl>
@@ -339,17 +341,10 @@ const ItemsModal = ({
                       <Input
                         sx={{ input: { textAlign: "right" } }}
                         name="last_sale_price"
-                        type="number"
                         size="sm"
                         placeholder="0 (default)"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.last_sale_price}
-                        onChange={handleChange}
+                        value={formatWithCommas(item?.last_sale_price)}
+                        onChange={handlePriceChange}
                       />
                     </FormControl>
                   </Stack>
@@ -374,18 +369,12 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                       <FormLabel>Philippine Peso Rate (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="rate"
-                        type="number"
                         size="sm"
                         placeholder="0"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.rate ?? ""}
-                        onChange={handleChange}
+                        value={formatWithCommas(item?.rate ?? "")}
+                        onChange={handlePriceChange}
                         required
                       />
                     </FormControl>
@@ -401,31 +390,31 @@ const ItemsModal = ({
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">On Stock</p>
                           <p className="text-sm font-semibold">
-                            {item?.total_on_stock + item?.total_allocated}
+                            {formatWithCommas(item?.total_on_stock + item?.total_allocated)}
                           </p>
                         </Box>
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">Available</p>
                           <p className="text-sm font-semibold">
-                            {item?.total_on_stock}
+                            {formatWithCommas(item?.total_on_stock)}
                           </p>
                         </Box>
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">Allocated</p>
                           <p className="text-sm font-semibold">
-                            {item?.total_allocated}
+                            {formatWithCommas(item?.total_allocated)}
                           </p>
                         </Box>
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">Purchased</p>
                           <p className="text-sm font-semibold">
-                            {item?.total_purchased}
+                            {formatWithCommas(item?.total_purchased)}
                           </p>
                         </Box>
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">Sold</p>
                           <p className="text-sm font-semibold">
-                            {item?.total_sold}
+                            {formatWithCommas(item?.total_sold)}
                           </p>
                         </Box>
                       </Stack>
