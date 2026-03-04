@@ -7,6 +7,18 @@ import type { POFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
 const POFormTable = ({
   items,
   status,
@@ -254,16 +266,14 @@ const POFormTable = ({
               <td style={{ zIndex: 2 }}>
                 {selectedItem?.id !== null && (
                   <Input
-                    type="number"
                     sx={{ input: { textAlign: "right" } }}
-                    value={selectedItem.price}
-                    slotProps={{
-                      input: {
-                        min: 0,
-                        step: ".0001",
-                      },
+                    value={formatWithCommas(selectedItem.price)}
+                    onChange={(e) => {
+                      const raw = stripCommas(e.target.value);
+                      if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                        addItemPrice(raw, index);
+                      }
                     }}
-                    onChange={(e) => addItemPrice(e.target.value, index)}
                     onBlur={(e) => {
                       if (
                         selectedItem.acquisition_cost !== selectedItem.price

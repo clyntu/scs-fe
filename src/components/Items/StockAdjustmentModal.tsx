@@ -23,6 +23,18 @@ import type {
 } from "../../interface";
 import { addFourPlaces } from "../../helper";
 
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
 interface StockAdjustmentModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -105,14 +117,15 @@ const StockAdjustmentModal = ({
       return;
     }
 
-    const cost = parseFloat(netCost);
+    const rawNetCost = stripCommas(netCost);
+    const cost = parseFloat(rawNetCost);
     if (isNaN(cost) || cost <= 0) {
       setError("Net Cost must be a positive number");
       return;
     }
 
     // Check for max 4 decimal places
-    const decimalPart = netCost.split(".")[1];
+    const decimalPart = rawNetCost.split(".")[1];
     if (decimalPart && decimalPart.length > 4) {
       setError("Net Cost can have a maximum of 4 decimal places");
       return;
@@ -191,13 +204,14 @@ const StockAdjustmentModal = ({
   const getNetCostError = useMemo(() => {
     // Don't show errors during submission or after success
     if (!touched.netCost || isSubmitting || success) return null;
-    const cost = parseFloat(netCost);
-    if (!netCost) return "Net Cost is required";
+    const rawNetCost = stripCommas(netCost);
+    const cost = parseFloat(rawNetCost);
+    if (!rawNetCost) return "Net Cost is required";
     if (isNaN(cost)) return "Please enter a valid number";
     if (cost <= 0) return "Net Cost must be greater than 0";
 
     // Check for max 4 decimal places
-    const decimalPart = netCost.split(".")[1];
+    const decimalPart = rawNetCost.split(".")[1];
     if (decimalPart && decimalPart.length > 4) {
       return "Net Cost can have a maximum of 4 decimal places";
     }
@@ -207,10 +221,11 @@ const StockAdjustmentModal = ({
 
   const isFormValid = useMemo(() => {
     const amount = parseFloat(adjustmentAmount);
-    const cost = parseFloat(netCost);
+    const rawNetCost = stripCommas(netCost);
+    const cost = parseFloat(rawNetCost);
 
     // Check for max 4 decimal places
-    const decimalPart = netCost.split(".")[1];
+    const decimalPart = rawNetCost.split(".")[1];
     const hasValidDecimals = !decimalPart || decimalPart.length <= 4;
 
     return (
@@ -351,21 +366,19 @@ const StockAdjustmentModal = ({
                       Net Cost
                     </FormLabel>
                     <Input
-                      type="number"
                       size="sm"
-                      value={netCost}
-                      onChange={(e) => setNetCost(e.target.value)}
+                      value={formatWithCommas(netCost)}
+                      onChange={(e) => {
+                        const raw = stripCommas(e.target.value);
+                        if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                          setNetCost(raw);
+                        }
+                      }}
                       onBlur={() =>
                         setTouched((prev) => ({ ...prev, netCost: true }))
                       }
                       placeholder="Enter net cost before tax"
                       disabled={isSubmitting}
-                      slotProps={{
-                        input: {
-                          min: 0.0001,
-                          step: 0.0001,
-                        },
-                      }}
                     />
                     {getNetCostError ? (
                       <FormHelperText sx={{ fontSize: "0.75rem" }}>

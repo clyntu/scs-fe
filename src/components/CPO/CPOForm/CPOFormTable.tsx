@@ -6,6 +6,18 @@ import type { CPOFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
 const CPOFormTable = ({
   items,
   selectedRow,
@@ -219,16 +231,14 @@ const CPOFormTable = ({
                 <td>
                   {selectedItem?.id !== null && (
                     <Input
-                      type="number"
                       sx={{ input: { textAlign: "right" } }}
-                      onChange={(e) => changePrice(e.target.value, index)}
-                      slotProps={{
-                        input: {
-                          min: 0,
-                          step: ".0001",
-                        },
+                      onChange={(e) => {
+                        const raw = stripCommas(e.target.value);
+                        if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                          changePrice(raw, index);
+                        }
                       }}
-                      value={selectedItem.price}
+                      value={formatWithCommas(selectedItem.price)}
                       disabled={isEditDisabled}
                       required
                     />
