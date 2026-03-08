@@ -185,7 +185,7 @@ export const generateMaturityPDF = (
     body: tableRows,
     margin: { top: 80, left: marginX, right: marginX, bottom: 60 },
     theme: "plain",
-    tableWidth: "auto",
+    tableWidth: "wrap",
     showHead: "everyPage",
     styles: {
       fontSize: 8,
@@ -200,16 +200,16 @@ export const generateMaturityPDF = (
       lineColor: [200, 200, 200],
     },
     columnStyles: {
-      0: { halign: "left" }, // Customer Name
-      1: { halign: "left" }, // Tran. No.
-      2: { halign: "left" }, // Reference No.
-      3: { halign: "center" }, // Trans. Date
-      4: { halign: "center" }, // Due Date
-      5: { halign: "right" }, // Gross
-      6: { halign: "right" }, // Tran-Disc
-      7: { halign: "right" }, // Cust-Disc
-      8: { halign: "right" }, // Net Amount
-      9: { halign: "right" }, // Net Balance
+      0: { cellWidth: 120, halign: "left" }, // Customer Name
+      1: { cellWidth: 55, halign: "left" }, // Tran. No.
+      2: { cellWidth: 100, halign: "left" }, // Reference No.
+      3: { cellWidth: 70, halign: "center" }, // Trans. Date
+      4: { cellWidth: 70, halign: "center" }, // Due Date
+      5: { cellWidth: 72, halign: "right" }, // Gross
+      6: { cellWidth: 65, halign: "right" }, // Tran-Disc
+      7: { cellWidth: 65, halign: "right" }, // Cust-Disc
+      8: { cellWidth: 72, halign: "right" }, // Net Amount
+      9: { cellWidth: 72, halign: "right" }, // Net Balance
     },
     didParseCell: (hookData) => {
       // Right-align amount column headers
