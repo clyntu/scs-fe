@@ -151,9 +151,10 @@ export const generateMaturityPDF = (
     startY: 80,
     head: [tableColumnHeaders],
     body: tableRows,
-    margin: { top: 50, left: marginX, right: marginX, bottom: 60 },
-    theme: "grid",
+    margin: { top: 80, left: marginX, right: marginX, bottom: 60 },
+    theme: "plain",
     tableWidth: "wrap",
+    showHead: "everyPage",
     columnStyles: {
       0: { cellWidth: 130, halign: "left" }, // Customer Name
       1: { cellWidth: 70, halign: "left" }, // Tran. No.
@@ -169,11 +170,14 @@ export const generateMaturityPDF = (
     styles: {
       fontSize: 8,
       cellPadding: { top: 3, right: 4, bottom: 3, left: 4 },
+      lineWidth: 0,
     },
     headStyles: {
       fillColor: [230, 230, 230],
       textColor: [0, 0, 0],
       fontStyle: "bold",
+      lineWidth: 0.5,
+      lineColor: [200, 200, 200],
     },
     didParseCell: (hookData) => {
       // Right-align amount column headers
@@ -183,92 +187,83 @@ export const generateMaturityPDF = (
         }
       }
     },
-
     didDrawPage: (pageData) => {
-      const footerFontSize = 9;
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const footerY = pageHeight - 50;
-
-      const currentPage = pageData.pageNumber;
-      const totalPages = doc.getNumberOfPages();
-
-      doc.setFontSize(footerFontSize);
-      doc.setFont("helvetica", "normal");
-
-      // Left footer: "Page X of Y"
-      doc.text(
-        `Page ${currentPage} of ${totalPages}`,
-        pageData.settings.margin.left,
-        footerY,
-      );
-
-      // Right footer: report run date
-      const rightText = `Report run on: ${formatDate(new Date())}`;
-      const textWidth = doc.getTextWidth(rightText);
-      doc.text(
-        rightText,
-        pageWidth - pageData.settings.margin.right - textWidth,
-        footerY,
-      );
-
-      // Add totals on the last page
-      if (currentPage === totalPages && pageData.pageNumber === totalPages) {
-        const finalY =
-          (pageData as any).cursor?.y || pageData.settings.startY;
-        const totalsStartY = finalY + 25;
-        const totalsSectionHeight = 50;
-
-        if (totalsStartY + totalsSectionHeight <= footerY - 10) {
-          doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
-
-          doc.text(
-            `Total Records: ${tableRows.length}`,
-            marginX,
-            totalsStartY,
-          );
-          doc.text(
-            `Total Gross: ${formatCurrency(data.total_gross)}`,
-            marginX,
-            totalsStartY + 15,
-          );
-          doc.text(
-            `Total Net Amount: ${formatCurrency(data.total_net_amount)}`,
-            marginX,
-            totalsStartY + 30,
-          );
-          doc.text(
-            `Total Net Balance: ${formatCurrency(data.total_net_balance)}`,
-            marginX,
-            totalsStartY + 45,
-          );
-        } else {
-          doc.addPage();
-          const newPageY = 80;
-
-          doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
-
-          doc.text(`Total Records: ${tableRows.length}`, marginX, newPageY);
-          doc.text(
-            `Total Gross: ${formatCurrency(data.total_gross)}`,
-            marginX,
-            newPageY + 15,
-          );
-          doc.text(
-            `Total Net Amount: ${formatCurrency(data.total_net_amount)}`,
-            marginX,
-            newPageY + 30,
-          );
-          doc.text(
-            `Total Net Balance: ${formatCurrency(data.total_net_balance)}`,
-            marginX,
-            newPageY + 45,
-          );
-        }
+      // Add custom header on pages after the first
+      if (pageData.pageNumber > 1) {
+        addCustomHeader(doc, companyId, data.report_date);
       }
     },
   });
+
+  // Add totals after the table
+  const finalY = (doc as any).lastAutoTable?.finalY || 80;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const footerY = pageHeight - 50;
+  const totalsStartY = finalY + 25;
+  const totalsSectionHeight = 50;
+
+  if (totalsStartY + totalsSectionHeight <= footerY - 10) {
+    // Enough space on current page
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Records: ${tableRows.length}`, marginX, totalsStartY);
+    doc.text(
+      `Total Gross: ${formatCurrency(data.total_gross)}`,
+      marginX,
+      totalsStartY + 15,
+    );
+    doc.text(
+      `Total Net Amount: ${formatCurrency(data.total_net_amount)}`,
+      marginX,
+      totalsStartY + 30,
+    );
+    doc.text(
+      `Total Net Balance: ${formatCurrency(data.total_net_balance)}`,
+      marginX,
+      totalsStartY + 45,
+    );
+  } else {
+    // Add totals on a new page
+    doc.addPage();
+    const newPageY = 80;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Records: ${tableRows.length}`, marginX, newPageY);
+    doc.text(
+      `Total Gross: ${formatCurrency(data.total_gross)}`,
+      marginX,
+      newPageY + 15,
+    );
+    doc.text(
+      `Total Net Amount: ${formatCurrency(data.total_net_amount)}`,
+      marginX,
+      newPageY + 30,
+    );
+    doc.text(
+      `Total Net Balance: ${formatCurrency(data.total_net_balance)}`,
+      marginX,
+      newPageY + 45,
+    );
+  }
+
+  // Second pass: add page numbers and report run date on every page
+  const totalPages = doc.getNumberOfPages();
+  const footerFontSize = 9;
+
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(footerFontSize);
+    doc.setFont("helvetica", "normal");
+
+    // Left footer: "Page X of Y"
+    doc.text(`Page ${i} of ${totalPages}`, marginX, footerY);
+
+    // Right footer: report run date
+    const rightText = `Report run on: ${formatDate(new Date())}`;
+    const textWidth = doc.getTextWidth(rightText);
+    doc.text(rightText, pageWidth - marginX - textWidth, footerY);
+  }
 
   // Open PDF in new tab
   const today = new Date();
