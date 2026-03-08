@@ -11,6 +11,10 @@ import {
   FormLabel,
   CircularProgress,
   Typography,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
 } from "@mui/joy";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import DeleteARModal from "./DeleteARModal";
@@ -290,24 +294,33 @@ const ViewAR = ({
         >
           <h2>AR Receipts</h2>
           <div>
-            <Button
-              variant="soft"
-              className="mt-2 bg-button-soft-primary"
-              sx={{ width: 140 }}
-              onClick={handleGenerateMaturityPDF}
-              loading={isPrintingMaturity}
-            >
-              Print Maturity
-            </Button>
-            <Button
-              variant="soft"
-              className="mt-2 bg-button-soft-primary"
-              sx={{ width: 140, ml: 2 }}
-              onClick={handleGeneratePDF}
-              loading={isPrinting}
-            >
-              Print Summary
-            </Button>
+            <Dropdown>
+              <MenuButton
+                variant="soft"
+                sx={{
+                  width: "140px",
+                  height: "36px",
+                }}
+                className="mt-2 bg-button-soft-primary"
+                loading={isPrinting || isPrintingMaturity}
+              >
+                Print Reports
+              </MenuButton>
+              <Menu>
+                <MenuItem
+                  onClick={handleGeneratePDF}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Summary
+                </MenuItem>
+                <MenuItem
+                  onClick={handleGenerateMaturityPDF}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Maturity of Receivables
+                </MenuItem>
+              </Menu>
+            </Dropdown>
             {isAdmin && (
               <Button
                 className="mt-2 bg-button-primary"

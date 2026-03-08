@@ -69,27 +69,32 @@ const addCustomHeader = (
   reportDate: string,
 ): void => {
   const pageWidth = doc.internal.pageSize.getWidth();
+  const marginX = 40;
 
   // Company Name (bold)
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
 
   const title = companyId === "company-a" ? "P.P.T." : "MA Inc.";
-  doc.text(title, 40, 40);
+  doc.text(title, marginX, 40);
 
-  // Report title aligned to the right
+  // Report title aligned to the right margin
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("Maturity of Receivables", pageWidth - 220, 40);
+  doc.text("Maturity of Receivables", pageWidth - marginX, 40, {
+    align: "right",
+  });
 
-  // Report date below the title
+  // Report date below the title, also right-aligned
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(`as of ${formatDisplayDate(reportDate)}`, pageWidth - 220, 55);
+  doc.text(`as of ${formatDisplayDate(reportDate)}`, pageWidth - marginX, 55, {
+    align: "right",
+  });
 
   // Bottom border line
   doc.setLineWidth(0.5);
-  doc.line(40, 65, pageWidth - 40, 65);
+  doc.line(marginX, 65, pageWidth - marginX, 65);
 };
 
 export const generateMaturityPDF = (
@@ -107,42 +112,69 @@ export const generateMaturityPDF = (
 
   const tableColumnHeaders = [
     "Customer Name",
-    "Tran.\nNo.",
+    "Tran. No.",
     "Reference No.",
-    "Trans.\nDate",
-    "Due\nDate",
+    "Trans. Date",
+    "Due Date",
     "Gross",
     "Tran-Disc",
     "Cust-Disc",
-    "Net\nAmount",
-    "Net\nBalance",
+    "Net Amount",
+    "Net Balance",
   ];
 
-  // Flatten customers → transactions into rows, sorted by transaction_date
-  const tableRows: string[][] = [];
-  for (const customer of data.customers) {
-    // Sort transactions by transaction_date
-    const sortedTransactions = [...customer.transactions].sort(
-      (a, b) =>
-        new Date(a.transaction_date).getTime() -
-        new Date(b.transaction_date).getTime(),
-    );
+  // Flatten customers → transactions into rows
+  interface RawRow {
+    customerName: string;
+    transactionNumber: string;
+    referenceNumber: string;
+    transactionDate: string;
+    dueDate: string;
+    grossAmount: string;
+    transactionDiscount: string;
+    customerDiscount: string;
+    netAmount: string;
+    netBalance: string;
+  }
 
-    for (const tx of sortedTransactions) {
-      tableRows.push([
-        customer.customer_name,
-        tx.transaction_number,
-        tx.reference_number || "",
-        formatDisplayDate(tx.transaction_date),
-        formatDisplayDate(tx.due_date),
-        formatCurrency(tx.gross_amount),
-        tx.transaction_discount || "0.00",
-        tx.customer_discount || "0.00",
-        formatCurrency(tx.net_amount),
-        formatCurrency(tx.net_balance),
-      ]);
+  const rawRows: RawRow[] = [];
+  for (const customer of data.customers) {
+    for (const tx of customer.transactions) {
+      rawRows.push({
+        customerName: customer.customer_name,
+        transactionNumber: tx.transaction_number.replace(/^DR /, "CDR "),
+        referenceNumber: tx.reference_number || "",
+        transactionDate: tx.transaction_date,
+        dueDate: tx.due_date,
+        grossAmount: tx.gross_amount,
+        transactionDiscount: tx.transaction_discount || "0.00",
+        customerDiscount: tx.customer_discount || "0.00",
+        netAmount: tx.net_amount,
+        netBalance: tx.net_balance,
+      });
     }
   }
+
+  // Sort all rows by transaction date ascending
+  rawRows.sort(
+    (a, b) =>
+      new Date(a.transactionDate).getTime() -
+      new Date(b.transactionDate).getTime(),
+  );
+
+  // Format rows for table
+  const tableRows: string[][] = rawRows.map((row) => [
+    row.customerName,
+    row.transactionNumber,
+    row.referenceNumber,
+    formatDisplayDate(row.transactionDate),
+    formatDisplayDate(row.dueDate),
+    formatCurrency(row.grossAmount),
+    row.transactionDiscount,
+    row.customerDiscount,
+    formatCurrency(row.netAmount),
+    formatCurrency(row.netBalance),
+  ]);
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const marginX = 40;
@@ -153,20 +185,8 @@ export const generateMaturityPDF = (
     body: tableRows,
     margin: { top: 80, left: marginX, right: marginX, bottom: 60 },
     theme: "plain",
-    tableWidth: "wrap",
+    tableWidth: "auto",
     showHead: "everyPage",
-    columnStyles: {
-      0: { cellWidth: 130, halign: "left" }, // Customer Name
-      1: { cellWidth: 70, halign: "left" }, // Tran. No.
-      2: { cellWidth: 110, halign: "left" }, // Reference No.
-      3: { cellWidth: 75, halign: "center" }, // Trans. Date
-      4: { cellWidth: 75, halign: "center" }, // Due Date
-      5: { cellWidth: 75, halign: "right" }, // Gross
-      6: { cellWidth: 55, halign: "right" }, // Tran-Disc
-      7: { cellWidth: 55, halign: "right" }, // Cust-Disc
-      8: { cellWidth: 75, halign: "right" }, // Net Amount
-      9: { cellWidth: 75, halign: "right" }, // Net Balance
-    },
     styles: {
       fontSize: 8,
       cellPadding: { top: 3, right: 4, bottom: 3, left: 4 },
@@ -178,6 +198,18 @@ export const generateMaturityPDF = (
       fontStyle: "bold",
       lineWidth: 0.5,
       lineColor: [200, 200, 200],
+    },
+    columnStyles: {
+      0: { halign: "left" }, // Customer Name
+      1: { halign: "left" }, // Tran. No.
+      2: { halign: "left" }, // Reference No.
+      3: { halign: "center" }, // Trans. Date
+      4: { halign: "center" }, // Due Date
+      5: { halign: "right" }, // Gross
+      6: { halign: "right" }, // Tran-Disc
+      7: { halign: "right" }, // Cust-Disc
+      8: { halign: "right" }, // Net Amount
+      9: { halign: "right" }, // Net Balance
     },
     didParseCell: (hookData) => {
       // Right-align amount column headers
