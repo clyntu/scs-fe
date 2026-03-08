@@ -268,7 +268,7 @@ const ViewAR = ({
   const handleGenerateMaturityPDF = (): void => {
     setIsPrintingMaturity(true);
     axiosInstance
-      .get("/customer-financial/maturity-of-receivables")
+      .get("/customer-financial/maturity")
       .then((response) => {
         setIsPrintingMaturity(false);
         generateMaturityPDF(response.data, companyId);
