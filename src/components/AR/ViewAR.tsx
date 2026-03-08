@@ -311,7 +311,7 @@ const ViewAR = ({
                   onClick={handleGeneratePDF}
                   sx={{ fontSize: "14px" }}
                 >
-                  Summary
+                  Summary of Receivables
                 </MenuItem>
                 <MenuItem
                   onClick={handleGenerateMaturityPDF}
