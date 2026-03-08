@@ -21,6 +21,7 @@ import type {
   PaginationQueryParams,
 } from "../../interface";
 import { generatePDF } from "./generatePDF";
+import { generateMaturityPDF } from "./generateMaturityPDF";
 
 import { convertToQueryParams, formatToDate } from "../../helper";
 import { CustomerReceivableResponse } from "./interface";
@@ -43,6 +44,7 @@ const ViewAR = ({
   const [status, setStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isPrintingMaturity, setIsPrintingMaturity] = useState(false);
   const companyId = getCompanyId();
 
   // Infinite scroll states
@@ -263,6 +265,20 @@ const ViewAR = ({
       });
   };
 
+  const handleGenerateMaturityPDF = (): void => {
+    setIsPrintingMaturity(true);
+    axiosInstance
+      .get("/customer-financial/maturity-of-receivables")
+      .then((response) => {
+        setIsPrintingMaturity(false);
+        generateMaturityPDF(response.data, companyId);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsPrintingMaturity(false);
+      });
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -278,6 +294,15 @@ const ViewAR = ({
               variant="soft"
               className="mt-2 bg-button-soft-primary"
               sx={{ width: 140 }}
+              onClick={handleGenerateMaturityPDF}
+              loading={isPrintingMaturity}
+            >
+              Print Maturity
+            </Button>
+            <Button
+              variant="soft"
+              className="mt-2 bg-button-soft-primary"
+              sx={{ width: 140, ml: 2 }}
               onClick={handleGeneratePDF}
               loading={isPrinting}
             >
