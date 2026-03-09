@@ -129,6 +129,7 @@ const CPOFormTable = ({
         sx={{
           "& tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
