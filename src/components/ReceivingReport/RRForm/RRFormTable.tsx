@@ -163,6 +163,10 @@ const RRFormTable = ({
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
         }}
         borderAxis="both"
       >
@@ -211,7 +215,7 @@ const RRFormTable = ({
 
                 return (
                   <tr key={key}>
-                    <td style={{ zIndex: 1 }}>{SDR.id}</td>
+                    <td>{SDR.id}</td>
                     <td>{PO.id}</td>
                     <td>{withTooltip(POItem?.item.stock_code, "120px")}</td>
                     <td>{withTooltip(POItem?.item.name, "180px")}</td>

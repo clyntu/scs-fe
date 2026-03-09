@@ -67,6 +67,10 @@ const DeallocFormTable = ({
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
         }}
         borderAxis="both"
       >
@@ -98,7 +102,6 @@ const DeallocFormTable = ({
               <td
                 style={{
                   width: "var(--Table-firstColumnWidth)",
-                  zIndex: 10,
                 }}
               >
                 {item.id}

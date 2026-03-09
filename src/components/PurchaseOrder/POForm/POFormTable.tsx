@@ -153,6 +153,10 @@ const POFormTable = ({
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
+          "& tr > *:not(:first-child):not(:last-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
           "& tr > *:last-child": {
             position: "sticky",
             right: 0,
@@ -201,7 +205,7 @@ const POFormTable = ({
                 />
               )}
 
-              <td style={{ zIndex: 1 }}>
+              <td>
                 <TooltipAutocomplete
                   placeholder="Select Stock Code"
                   options={items}
@@ -264,7 +268,7 @@ const POFormTable = ({
                   />
                 )}
               </td>
-              <td style={{ zIndex: 2 }}>
+              <td>
                 {selectedItem?.id !== null && (
                   <Input
                     sx={{ input: { textAlign: "right" } }}

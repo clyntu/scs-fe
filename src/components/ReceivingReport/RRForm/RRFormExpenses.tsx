@@ -114,6 +114,10 @@ const RRFormExpenses = ({
               boxShadow: "1px 0 var(--TableCell-borderColor)",
               bgcolor: "background.surface",
             },
+            "& tr > *:not(:first-child):not(:last-child)": {
+              position: "relative",
+              zIndex: 0,
+            },
             "& tr > *:last-child": {
               position: "sticky",
               right: 0,

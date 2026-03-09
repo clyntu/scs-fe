@@ -65,6 +65,10 @@ const STFormTable = ({
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
               },
+              "& tr > *:not(:first-child)": {
+                position: "relative",
+                zIndex: 0,
+              },
             }}
             borderAxis="both"
           >
@@ -92,7 +96,7 @@ const STFormTable = ({
               {warehouseItems.map((item: WarehouseItemsFE, index: number) => {
                 return (
                   <tr key={item.id}>
-                    <td style={{ zIndex: 10 }}>
+                    <td>
                       {withTooltip(item.name, "180px")}
                     </td>
                     <td>{withTooltip(item.stock_code, "120px")}</td>

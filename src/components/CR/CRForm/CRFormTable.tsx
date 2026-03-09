@@ -99,6 +99,10 @@ const CRFormTable = ({
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
         }}
         borderAxis="both"
       >
@@ -132,7 +136,7 @@ const CRFormTable = ({
 
             return (
               <tr key={key}>
-                <td style={{ zIndex: 1 }}>{item.id}</td>
+                <td>{item.id}</td>
                 <td>{item?.alloc_no}</td>
                 <td>{withTooltip(item?.stock_code, "120px")}</td>
                 <td>{withTooltip(item?.name, "180px")}</td>
