@@ -6,6 +6,18 @@ import { addCommaToNumberWithTwoPlaces, addTwoPlaces } from "../../../helper";
 import CircularProgress from "@mui/joy/CircularProgress";
 import TooltipTableCell from "../../shared/TooltipTableCell";
 
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
 const ARFormTable = ({
   outstandingTrans,
   setOutstandingTrans,
@@ -154,38 +166,27 @@ const ARFormTable = ({
                       </td>
                       <td>
                         <Input
-                          type="number"
                           sx={{ input: { textAlign: "right" } }}
                           name="payment"
                           size="sm"
                           placeholder="0"
-                          value={trans?.payment}
-                          slotProps={{
-                            input: {
-                              min:
-                                Number(trans.transaction_amount) > 0
-                                  ? 0
-                                  : trans.transaction_amount,
-                              max:
-                                Number(trans.transaction_amount) > 0
-                                  ? trans.transaction_amount
-                                  : 0,
-                              step: 0.01,
-                            },
+                          value={formatWithCommas(trans?.payment ?? "")}
+                          onChange={(e) => {
+                            const raw = stripCommas(e.target.value);
+                            if (raw === "" || /^-?\d*\.?\d*$/.test(raw)) {
+                              setOutstandingTrans(
+                                outstandingTrans.map((trans2) =>
+                                  trans.id === trans2.id &&
+                                  trans.source_type === trans2.source_type
+                                    ? {
+                                        ...trans2,
+                                        payment: raw,
+                                      }
+                                    : trans2,
+                                ),
+                              );
+                            }
                           }}
-                          onChange={(e) =>
-                            setOutstandingTrans(
-                              outstandingTrans.map((trans2) =>
-                                trans.id === trans2.id &&
-                                trans.source_type === trans2.source_type
-                                  ? {
-                                      ...trans2,
-                                      payment: String(e.target.value),
-                                    }
-                                  : trans2,
-                              ),
-                            )
-                          }
                           disabled={isEditDisabled}
                         />
                       </td>
