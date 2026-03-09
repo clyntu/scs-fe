@@ -6,6 +6,18 @@ import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import { withTooltip } from "../../shared/withTooltip";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
 const CRFormTable = ({
   selectedRow,
   warehouses,
@@ -205,34 +217,30 @@ const CRFormTable = ({
                 </td>
                 <td>
                   <Input
-                    type="number"
                     sx={{ input: { textAlign: "right" } }}
-                    value={item.price}
+                    value={formatWithCommas(item.price)}
                     onChange={(e) => {
-                      setFormattedDRs((prevDRItems) =>
-                        prevDRItems.map((DRItem) =>
-                          DRItem.id === item.id &&
-                          DRItem.stock_code === item.stock_code &&
-                          DRItem.cpo_id === item.cpo_id &&
-                          DRItem.alloc_no === item.alloc_no
-                            ? {
-                                ...DRItem,
-                                price: String(e.target.value),
-                                gross_amount: calculateNetForRow(
-                                  Number(item.return_qty),
-                                  Number(e.target.value),
-                                  DRItem,
-                                ),
-                              } // Update the matching item
-                            : DRItem,
-                        ),
-                      );
-                    }}
-                    slotProps={{
-                      input: {
-                        min: 0,
-                        step: ".0001",
-                      },
+                      const raw = stripCommas(e.target.value);
+                      if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                        setFormattedDRs((prevDRItems) =>
+                          prevDRItems.map((DRItem) =>
+                            DRItem.id === item.id &&
+                            DRItem.stock_code === item.stock_code &&
+                            DRItem.cpo_id === item.cpo_id &&
+                            DRItem.alloc_no === item.alloc_no
+                              ? {
+                                  ...DRItem,
+                                  price: raw,
+                                  gross_amount: calculateNetForRow(
+                                    Number(item.return_qty),
+                                    Number(raw),
+                                    DRItem,
+                                  ),
+                                }
+                              : DRItem,
+                          ),
+                        );
+                      }
                     }}
                     placeholder="0"
                     disabled={isEditDisabled}
