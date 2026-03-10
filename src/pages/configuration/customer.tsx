@@ -15,13 +15,16 @@ import {
   Typography,
 } from "@mui/joy";
 import CustomersModal from "../../components/Customers/CustomersModal";
-import axiosInstance from "../../utils/axiosConfig";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import type { User } from "../Login";
 import { toast } from "react-toastify";
 
 import type { Customer, PaginatedCustomers } from "../../interface";
 
 import { convertToQueryParams, formatToCP, formatToDate } from "../../helper";
+import { generatePDF } from "../../components/AR/generatePDF";
+import { generateMaturityPDF } from "../../components/AR/generateMaturityPDF";
+import { CustomerReceivableResponse } from "../../components/AR/interface";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
@@ -42,6 +45,9 @@ const CustomerForm = (): JSX.Element => {
   const [selectedRow, setSelectedRow] = useState<Customer>();
   const [userId, setUserId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [isPrintingMaturity, setIsPrintingMaturity] = useState(false);
+  const companyId = getCompanyId();
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -250,6 +256,54 @@ const CustomerForm = (): JSX.Element => {
     }
   };
 
+  const handleGeneratePDF = () => {
+    setIsPrinting(true);
+    axiosInstance
+      .get<CustomerReceivableResponse>(
+        `/customer-financial/receivables?${convertToQueryParams({
+          sort_by: "customer_name",
+          sort_order: "asc",
+        })}`,
+      )
+      .then((response) => {
+        const res = response.data;
+        const total = {
+          total_receivable: res.total_receivable,
+          total_uncleared: res.total_uncleared,
+          total_bounced: res.total_bounced,
+        };
+        const customers = res.items;
+        const data = customers.map((customer) => {
+          return {
+            customer_name: customer.customer_name,
+            amount_receivable: customer.amount_receivable,
+            uncleared_payment: customer.uncleared_payment,
+            bounced_payment: customer.bounced_payment,
+          };
+        });
+        setIsPrinting(false);
+        generatePDF(data, total, companyId);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsPrinting(false);
+      });
+  };
+
+  const handleGenerateMaturityPDF = (): void => {
+    setIsPrintingMaturity(true);
+    axiosInstance
+      .get("/customer-financial/maturity")
+      .then((response) => {
+        setIsPrintingMaturity(false);
+        generateMaturityPDF(response.data, companyId);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsPrintingMaturity(false);
+      });
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -271,6 +325,7 @@ const CustomerForm = (): JSX.Element => {
                   height: "36px",
                 }}
                 className="bg-button-soft-primary"
+                loading={isPrinting || isPrintingMaturity}
               >
                 Print Reports
               </MenuButton>
@@ -292,6 +347,18 @@ const CustomerForm = (): JSX.Element => {
                   sx={{ fontSize: "14px" }}
                 >
                   Top Customers by Sales
+                </MenuItem>
+                <MenuItem
+                  onClick={handleGeneratePDF}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Summary of Receivables
+                </MenuItem>
+                <MenuItem
+                  onClick={handleGenerateMaturityPDF}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Maturity of Receivables
                 </MenuItem>
               </Menu>
             </Dropdown>

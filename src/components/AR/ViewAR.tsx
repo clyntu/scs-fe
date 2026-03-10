@@ -11,12 +11,8 @@ import {
   FormLabel,
   CircularProgress,
   Typography,
-  Dropdown,
-  Menu,
-  MenuButton,
-  MenuItem,
 } from "@mui/joy";
-import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
+import axiosInstance from "../../utils/axiosConfig";
 import DeleteARModal from "./DeleteARModal";
 import { toast } from "react-toastify";
 import type {
@@ -24,11 +20,7 @@ import type {
   PaginatedAR,
   PaginationQueryParams,
 } from "../../interface";
-import { generatePDF } from "./generatePDF";
-import { generateMaturityPDF } from "./generateMaturityPDF";
-
 import { convertToQueryParams, formatToDate } from "../../helper";
-import { CustomerReceivableResponse } from "./interface";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 
@@ -47,9 +39,6 @@ const ViewAR = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
-  const [isPrinting, setIsPrinting] = useState(false);
-  const [isPrintingMaturity, setIsPrintingMaturity] = useState(false);
-  const companyId = getCompanyId();
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -234,55 +223,6 @@ const ViewAR = ({
     }
   };
 
-  const handleGeneratePDF = () => {
-    // Fetch data
-    setIsPrinting(true);
-    axiosInstance
-      .get<CustomerReceivableResponse>(
-        `/customer-financial/receivables?${convertToQueryParams({
-          sort_by: "customer_name",
-          sort_order: "asc",
-        })}`,
-      )
-      .then((response) => {
-        const res = response.data;
-        const total = {
-          total_receivable: res.total_receivable,
-          total_uncleared: res.total_uncleared,
-          total_bounced: res.total_bounced,
-        };
-        const customers = res.items;
-        const data = customers.map((customer) => {
-          return {
-            customer_name: customer.customer_name,
-            amount_receivable: customer.amount_receivable,
-            uncleared_payment: customer.uncleared_payment,
-            bounced_payment: customer.bounced_payment,
-          };
-        });
-        setIsPrinting(false);
-        generatePDF(data, total, companyId);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setIsPrinting(false);
-      });
-  };
-
-  const handleGenerateMaturityPDF = (): void => {
-    setIsPrintingMaturity(true);
-    axiosInstance
-      .get("/customer-financial/maturity")
-      .then((response) => {
-        setIsPrintingMaturity(false);
-        generateMaturityPDF(response.data, companyId);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setIsPrintingMaturity(false);
-      });
-  };
-
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -294,33 +234,6 @@ const ViewAR = ({
         >
           <h2>AR Receipts</h2>
           <div>
-            <Dropdown>
-              <MenuButton
-                variant="soft"
-                sx={{
-                  width: "140px",
-                  height: "36px",
-                }}
-                className="mt-2 bg-button-soft-primary"
-                loading={isPrinting || isPrintingMaturity}
-              >
-                Print Reports
-              </MenuButton>
-              <Menu>
-                <MenuItem
-                  onClick={handleGeneratePDF}
-                  sx={{ fontSize: "14px" }}
-                >
-                  Summary of Receivables
-                </MenuItem>
-                <MenuItem
-                  onClick={handleGenerateMaturityPDF}
-                  sx={{ fontSize: "14px" }}
-                >
-                  Maturity of Receivables
-                </MenuItem>
-              </Menu>
-            </Dropdown>
             {isAdmin && (
               <Button
                 className="mt-2 bg-button-primary"
