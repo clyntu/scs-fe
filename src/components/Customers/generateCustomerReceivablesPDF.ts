@@ -304,7 +304,7 @@ export const generateCustomerReceivablesPDF = (
   const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
   const customerNameForFilename = customerName.replace(/[^a-zA-Z0-9]/g, "_");
 
-  doc.output("dataurlnewwindow", {
-    filename: `customer_receivables_${customerNameForFilename}_${dateString}.pdf`,
-  });
+  const pdfBlob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, "_blank");
 };

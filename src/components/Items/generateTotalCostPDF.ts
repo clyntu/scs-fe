@@ -157,7 +157,7 @@ export const generateTotalCostPDF = (
   const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
 
   // Open in new tab instead of downloading
-  doc.output("dataurlnewwindow", {
-    filename: `total_cost_${dateString}.pdf`,
-  });
+  const pdfBlob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, "_blank");
 };

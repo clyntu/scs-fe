@@ -126,7 +126,7 @@ export const generatePricelistPDF = (data: any[], companyId: string): void => {
   // 5. Open PDF in new tab for preview
   const today = new Date();
   const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-  doc.output("dataurlnewwindow", {
-    filename: `total_cost_detail_${dateString}.pdf`,
-  });
+  const pdfBlob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, "_blank");
 };
