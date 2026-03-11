@@ -251,7 +251,7 @@ const ViewReceivingReport = ({
               size="sm"
               value={status}
             >
-              <Option value="all">All</Option>
+              <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
               <Option value="archived">Archived</Option>
