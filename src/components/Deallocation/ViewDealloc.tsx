@@ -24,6 +24,7 @@ import { convertToQueryParams, formatToDate } from "../../helper";
 import DeleteDeallocModal from "./DeleteDeallocModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
+import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewDealloc = ({
   setOpenCreate,
@@ -38,6 +39,8 @@ const ViewDealloc = ({
   const [openDelete, setOpenDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
+  const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +74,8 @@ const ViewDealloc = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -110,6 +115,8 @@ const ViewDealloc = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -139,7 +146,7 @@ const ViewDealloc = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, limit]);
+  }, [isLoadingMore, hasMore, page, searchTerm, status, limit, dateFrom, dateTo]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -184,7 +191,7 @@ const ViewDealloc = ({
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, dateFrom, dateTo]);
 
   const handleDeleteDealloc = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -251,6 +258,12 @@ const ViewDealloc = ({
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+          />
           {/* <Button
             onClick={getAllDealloc}
             sx={{

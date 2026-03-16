@@ -23,6 +23,7 @@ import type {
 import { convertToQueryParams, formatToDate, addCommaToNumberWithTwoPlaces } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
+import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewAR = ({
   setOpenCreate,
@@ -39,6 +40,8 @@ const ViewAR = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
+  const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +75,8 @@ const ViewAR = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -113,6 +118,8 @@ const ViewAR = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -144,7 +151,7 @@ const ViewAR = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, paymentStatus]);
+  }, [isLoadingMore, hasMore, page, searchTerm, status, paymentStatus, dateFrom, dateTo]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -189,7 +196,7 @@ const ViewAR = ({
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status, paymentStatus]);
+  }, [searchTerm, status, paymentStatus, dateFrom, dateTo]);
 
   useEffect(() => {
     // Process uncleared receipts that are beyond clear date
@@ -297,6 +304,12 @@ const ViewAR = ({
               <Option value="cancelled">Cancelled</Option>
             </Select>
           </FormControl>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+          />
           {/* <Button
             onClick={getAllAR}
             sx={{

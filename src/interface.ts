@@ -288,6 +288,8 @@ export interface PaginationQueryParams {
   status?: string;
   unassigned_to_rr?: boolean;
   payment_status?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface Warehouse {

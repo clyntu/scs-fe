@@ -26,6 +26,7 @@ import {
 } from "../../helper";
 import { withTooltip } from "../shared/withTooltip";
 import { AdjustmentTypeChip } from "../../utils/statusUtils";
+import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewStockAdjustment = ({
   setOpenCreate,
@@ -39,6 +40,8 @@ const ViewStockAdjustment = ({
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [adjustmentType, setAdjustmentType] = useState("all");
+  const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +80,8 @@ const ViewStockAdjustment = ({
       limit,
       sort_by: "date_created",
       sort_order: "desc",
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (searchTerm) {
@@ -119,6 +124,8 @@ const ViewStockAdjustment = ({
       limit,
       sort_by: "date_created",
       sort_order: "desc",
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (searchTerm) {
@@ -152,7 +159,7 @@ const ViewStockAdjustment = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, adjustmentType, limit]);
+  }, [isLoadingMore, hasMore, page, searchTerm, adjustmentType, dateFrom, dateTo, limit]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -197,7 +204,7 @@ const ViewStockAdjustment = ({
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // cancel if any dep changes
-  }, [searchTerm, adjustmentType]);
+  }, [searchTerm, adjustmentType, dateFrom, dateTo]);
 
   return (
     <>
@@ -251,6 +258,12 @@ const ViewStockAdjustment = ({
               <Option value="deficit">Deficit</Option>
             </Select>
           </FormControl>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+          />
         </Box>
 
         {/* Table */}

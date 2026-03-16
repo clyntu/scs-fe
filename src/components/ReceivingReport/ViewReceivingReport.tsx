@@ -29,6 +29,7 @@ import {
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
+import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewReceivingReport = ({
   setOpenCreate,
@@ -43,6 +44,8 @@ const ViewReceivingReport = ({
   const [openDelete, setOpenDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
+  const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -76,6 +79,8 @@ const ViewReceivingReport = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -115,6 +120,8 @@ const ViewReceivingReport = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -144,7 +151,7 @@ const ViewReceivingReport = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, limit]);
+  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo, limit]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -189,7 +196,7 @@ const ViewReceivingReport = ({
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, dateFrom, dateTo]);
 
   const handleDeleteRR = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -257,6 +264,12 @@ const ViewReceivingReport = ({
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+          />
           {/* <Button
             onClick={getAllRR}
             sx={{

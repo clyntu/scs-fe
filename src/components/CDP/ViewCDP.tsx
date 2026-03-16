@@ -28,6 +28,7 @@ import {
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
+import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewCDP = ({
   setOpenCreate,
@@ -42,6 +43,8 @@ const ViewCDP = ({
   const [openDelete, setOpenDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
+  const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
   const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +78,8 @@ const ViewCDP = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -114,6 +119,8 @@ const ViewCDP = ({
       sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -143,7 +150,7 @@ const ViewCDP = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, limit]);
+  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo, limit]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -188,7 +195,7 @@ const ViewCDP = ({
     }, 300); // wait 300 ms after the last key-press
 
     return () => clearTimeout(timeout); // 💨 cancel if any dep changes
-  }, [searchTerm, status]);
+  }, [searchTerm, status, dateFrom, dateTo]);
 
   const handleDeleteCDP = async (): Promise<void> => {
     if (selectedRow !== undefined) {
@@ -256,6 +263,12 @@ const ViewCDP = ({
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+          />
           {/* <Button
             onClick={getAllCDP}
             sx={{
