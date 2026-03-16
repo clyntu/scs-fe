@@ -53,28 +53,28 @@ export function formatToDateTime(dateStr: string | undefined): string {
   return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
-export function addCommaToNumberWithFourPlaces(num: number | undefined): any {
+export function addCommaToNumberWithFourPlaces(num: number | string | undefined): any {
   if (num === undefined || num === null) return num;
 
-  return num.toFixed(4).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  return Number(num).toFixed(4).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-export function addCommaToNumberWithTwoPlaces(num: number | undefined): any {
+export function addCommaToNumberWithTwoPlaces(num: number | string | undefined): any {
   if (num === undefined || num === null) return num;
 
-  return num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  return Number(num).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-export function addTwoPlaces(num: number | undefined): any {
+export function addTwoPlaces(num: number | string | undefined): any {
   if (num === undefined || num === null) return num;
 
-  return num.toFixed(2);
+  return Number(num).toFixed(2);
 }
 
-export function addFourPlaces(num: number | undefined): any {
+export function addFourPlaces(num: number | string | undefined): any {
   if (num === undefined || num === null) return num;
 
-  return num.toFixed(4);
+  return Number(num).toFixed(4);
 }
 
 export function removeCommas(numberString: string): string {
