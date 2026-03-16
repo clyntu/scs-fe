@@ -20,7 +20,7 @@ import type {
   PaginatedAR,
   PaginationQueryParams,
 } from "../../interface";
-import { convertToQueryParams, formatToDate } from "../../helper";
+import { convertToQueryParams, formatToDate, addCommaToNumberWithTwoPlaces } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 
@@ -375,7 +375,7 @@ const ViewAR = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={13} style={{ textAlign: "center", padding: "20px" }}>
+                  <td colSpan={14} style={{ textAlign: "center", padding: "20px" }}>
                     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
                       <CircularProgress size="sm" />
                       <Typography level="body-sm">Loading receipts...</Typography>
@@ -394,6 +394,7 @@ const ViewAR = ({
                     <th style={{ width: 250 }}>Customer</th>
                     <th style={{ width: 150 }}>Check No.</th>
                     <th style={{ width: 110 }}>Status</th>
+                    <th style={{ width: 150 }}>Payment Amount</th>
                     <th style={{ width: 150 }}>Payment Status</th>
                     <th style={{ width: 100 }}>Method</th>
                     <th style={{ width: 200 }}>Remarks</th>
@@ -422,6 +423,11 @@ const ViewAR = ({
                       <td>{withTooltip(AR.reference_number, "160px")}</td>
                       <td>
                         <StatusChip status={AR.status} />
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {AR.status === "posted"
+                          ? addCommaToNumberWithTwoPlaces(AR.payment_amount)
+                          : "N/A"}
                       </td>
                       <td className="capitalize">{AR.payment_status}</td>
                       <td className="capitalize">{AR.payment_method}</td>
