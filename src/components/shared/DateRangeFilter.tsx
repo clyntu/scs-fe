@@ -7,14 +7,21 @@ interface DateRangeFilterProps {
   onDateToChange: (value: string) => void;
 }
 
+function toLocalDateString(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function getDefaultDateFrom(): string {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 1);
-  return d.toISOString().slice(0, 10);
+  return toLocalDateString(d);
 }
 
 export function getDefaultDateTo(): string {
-  return new Date().toISOString().slice(0, 10);
+  return toLocalDateString(new Date());
 }
 
 const DateRangeFilter = ({
