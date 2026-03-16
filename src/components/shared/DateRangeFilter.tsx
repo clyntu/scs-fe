@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { FormControl, FormLabel, Input } from "@mui/joy";
 
 interface DateRangeFilterProps {
@@ -30,6 +31,17 @@ const DateRangeFilter = ({
   onDateFromChange,
   onDateToChange,
 }: DateRangeFilterProps): JSX.Element => {
+  const [localFrom, setLocalFrom] = useState(dateFrom);
+  const [localTo, setLocalTo] = useState(dateTo);
+
+  useEffect(() => {
+    setLocalFrom(dateFrom);
+  }, [dateFrom]);
+
+  useEffect(() => {
+    setLocalTo(dateTo);
+  }, [dateTo]);
+
   return (
     <>
       <FormControl sx={{ ml: 2 }}>
@@ -38,8 +50,11 @@ const DateRangeFilter = ({
           type="date"
           size="sm"
           sx={{ width: 160 }}
-          value={dateFrom}
-          onChange={(e) => onDateFromChange(e.target.value)}
+          value={localFrom}
+          onChange={(e) => setLocalFrom(e.target.value)}
+          onBlur={() => {
+            if (localFrom !== dateFrom) onDateFromChange(localFrom);
+          }}
         />
       </FormControl>
       <FormControl sx={{ ml: 2 }}>
@@ -48,8 +63,11 @@ const DateRangeFilter = ({
           type="date"
           size="sm"
           sx={{ width: 160 }}
-          value={dateTo}
-          onChange={(e) => onDateToChange(e.target.value)}
+          value={localTo}
+          onChange={(e) => setLocalTo(e.target.value)}
+          onBlur={() => {
+            if (localTo !== dateTo) onDateToChange(localTo);
+          }}
         />
       </FormControl>
     </>
