@@ -134,7 +134,15 @@ export interface POItemValues {
 }
 
 export interface Expense {
-  id: string;
+  id: number;
+  expense: string;
+  amount: number;
+  comments: string;
+}
+
+export interface ExpenseFormRow {
+  id?: number;
+  clientKey: string;
   expense: string;
   amount: number | string | undefined;
   comments: string;

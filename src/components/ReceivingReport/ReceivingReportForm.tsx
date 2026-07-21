@@ -16,10 +16,22 @@ import type {
   DeliveryReceipt,
   ReceivingReport,
 } from "../../interface";
-import { Expense } from "./interface";
+import type { ExpenseFormRow } from "./interface";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
 import { addCommaToNumberWithTwoPlaces, removeCommas } from "../../helper";
+
+const createEmptyExpense = (): ExpenseFormRow => ({
+  clientKey: uuid(),
+  expense: "",
+  amount: undefined,
+  comments: "",
+});
+
+const normalizeExpenseAmount = (amount: ExpenseFormRow["amount"]): number => {
+  const parsedAmount = Number(removeCommas(String(amount ?? "")));
+  return Number.isFinite(parsedAmount) ? parsedAmount : 0;
+};
 
 const ReceivingReportForm = ({
   setOpen,
@@ -29,12 +41,6 @@ const ReceivingReportForm = ({
   title,
 }: RRFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
-  const initialExpense: Expense = {
-    id: uuid(),
-    expense: "",
-    amount: undefined,
-    comments: "",
-  };
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
     total: 0,
     items: [],
@@ -54,7 +60,9 @@ const ReceivingReportForm = ({
   const [totalGross, setTotalGross] = useState(0);
   const [totalNet, setTotalNet] = useState(0);
   const [servedAmt, setServedAmt] = useState<Record<string, number>>({});
-  const [expenses, setExpenses] = useState([initialExpense]);
+  const [expenses, setExpenses] = useState<ExpenseFormRow[]>(() => [
+    createEmptyExpense(),
+  ]);
   const [totalExpense, setTotalExpense] = useState(0);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -113,8 +121,9 @@ const ReceivingReportForm = ({
           selectedRow.expenses.map((expense) => {
             return {
               id: expense.id,
+              clientKey: uuid(),
               expense: expense.expense,
-              amount: Number(removeCommas(String(expense.amount))) || 0,
+              amount: normalizeExpenseAmount(expense.amount),
               comments: expense.comments,
             };
           }),
@@ -149,7 +158,7 @@ const ReceivingReportForm = ({
     setReferenceNumber("");
     setRemarks("");
     setAmountDiscount(0);
-    setExpenses([initialExpense]);
+    setExpenses([createEmptyExpense()]);
   };
 
   const handleCreateReceivingReport = async (): Promise<void> => {
@@ -176,7 +185,7 @@ const ReceivingReportForm = ({
       expenses: expenses.map((expense) => {
         return {
           expense: expense.expense,
-          amount: Number(removeCommas(String(expense.amount))) || 0,
+          amount: normalizeExpenseAmount(expense.amount),
           currency: "",
           comments: expense.comments,
           created_by: userId,
@@ -222,14 +231,17 @@ const ReceivingReportForm = ({
       modified_by: userId,
       sdr_ids: selectedSDRs.map((SDR) => SDR.id),
       expenses: expenses.map((expense) => {
-        return {
-          id: expense.id,
+        const expensePayload = {
           expense: expense.expense,
-          amount: expense.amount || 0,
+          amount: normalizeExpenseAmount(expense.amount),
           currency: "",
           comments: expense.comments,
           modified_by: userId,
         };
+
+        return expense.id === undefined
+          ? expensePayload
+          : { ...expensePayload, id: expense.id };
       }),
     };
 

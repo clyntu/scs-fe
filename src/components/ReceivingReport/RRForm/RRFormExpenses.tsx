@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Sheet, Table, Autocomplete, Input, Button, Textarea } from "@mui/joy";
 import axiosInstance from "../../../utils/axiosConfig";
 import type { DeliveryReceipt } from "../../../interface";
-import type { Expense } from "../interface";
+import type { ExpenseFormRow } from "../interface";
 import type { Dispatch, SetStateAction } from "react";
 import { v4 as uuid } from "uuid";
 
@@ -15,8 +15,8 @@ const RRFormExpenses = ({
 }: {
   selectedSDRs: DeliveryReceipt[];
   setTotalExpense: Dispatch<SetStateAction<number>>;
-  expenses: Expense[];
-  setExpenses: Dispatch<SetStateAction<Expense[]>>;
+  expenses: ExpenseFormRow[];
+  setExpenses: Dispatch<SetStateAction<ExpenseFormRow[]>>;
   isEditDisabled: boolean;
 }): JSX.Element => {
   const [expenseOptions, setExpenseOptions] = useState<string[]>([
@@ -46,32 +46,13 @@ const RRFormExpenses = ({
     setTotalExpense(totalExpense);
   }, [expenses]);
 
-  const handleSelectChange = (id: any, value: string): void => {
-    if (value !== null) {
-      setExpenses(
-        expenses.map((expense) =>
-          expense.id === id ? { ...expense, expense: value } : expense,
-        ),
-      );
-    }
-  };
-
-  const handleInputChange = (id: any, field: string, value: string): void => {
-    setExpenses(
-      expenses.map((expense) =>
-        expense.id === id ? { ...expense, [field]: value } : expense,
-      ),
-    );
-  };
-
-  const handleStringInputChange = (
-    id: any,
-    field: string,
-    value: string,
+  const updateExpense = (
+    clientKey: string,
+    changes: Partial<Pick<ExpenseFormRow, "expense" | "amount" | "comments">>,
   ): void => {
-    setExpenses(
-      expenses.map((expense) =>
-        expense.id === id ? { ...expense, [field]: value } : expense,
+    setExpenses((currentExpenses) =>
+      currentExpenses.map((expense) =>
+        expense.clientKey === clientKey ? { ...expense, ...changes } : expense,
       ),
     );
   };
@@ -139,15 +120,14 @@ const RRFormExpenses = ({
           <tbody>
             {selectedSDRs.length > 0 &&
               expenses.map((expense) => (
-                <tr key={expense.id}>
+                <tr key={expense.clientKey}>
                   <td>
                     <Autocomplete
                       freeSolo
                       options={expenseOptions}
                       value={expense.expense}
-                      onInputChange={(event, value) => {
-                        if (value !== null)
-                          handleSelectChange(expense.id, value);
+                      onInputChange={(_event, value) => {
+                        updateExpense(expense.clientKey, { expense: value });
                       }}
                       placeholder="Select or type expense"
                       disabled={isEditDisabled}
@@ -158,18 +138,16 @@ const RRFormExpenses = ({
                   <td>
                     <Input
                       onChange={(event) =>
-                        handleInputChange(
-                          expense.id,
-                          "amount",
-                          event.target.value,
-                        )
+                        updateExpense(expense.clientKey, {
+                          amount: event.target.value,
+                        })
                       }
                       sx={{
                         input: {
                           textAlign: "right",
                         },
                       }}
-                      value={expense.amount}
+                      value={expense.amount ?? ""}
                       placeholder="0"
                       disabled={isEditDisabled}
                     />
@@ -178,11 +156,9 @@ const RRFormExpenses = ({
                     <Textarea
                       placeholder="Comments"
                       onChange={(event) =>
-                        handleStringInputChange(
-                          expense.id,
-                          "comments",
-                          event.target.value,
-                        )
+                        updateExpense(expense.clientKey, {
+                          comments: event.target.value,
+                        })
                       }
                       value={expense.comments}
                       disabled={isEditDisabled}
@@ -196,8 +172,10 @@ const RRFormExpenses = ({
                         color="danger"
                         className="bg-delete-red"
                         onClick={() =>
-                          setExpenses(
-                            expenses.filter((e) => e.id !== expense.id),
+                          setExpenses((currentExpenses) =>
+                            currentExpenses.filter(
+                              (row) => row.clientKey !== expense.clientKey,
+                            ),
                           )
                         }
                         disabled={expenses.length === 1 || isEditDisabled}
@@ -219,9 +197,14 @@ const RRFormExpenses = ({
             sx={{ mt: 4 }}
             className="bg-button-primary"
             onClick={() =>
-              setExpenses([
-                ...expenses,
-                { id: uuid(), expense: "", amount: 0, comments: "" },
+              setExpenses((currentExpenses) => [
+                ...currentExpenses,
+                {
+                  clientKey: uuid(),
+                  expense: "",
+                  amount: undefined,
+                  comments: "",
+                },
               ])
             }
             disabled={isEditDisabled}
