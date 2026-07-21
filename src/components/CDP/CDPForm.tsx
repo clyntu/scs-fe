@@ -227,12 +227,12 @@ const CDPForm = ({
   };
 
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
-    if (formattedAllocs.length === 0) {
-      toast.error("Please choose a valid Allocation.");
+    const payload = createPayload();
+    if (payload.delivery_plan_items.length === 0) {
+      toast.error("Delivery Plan must contain at least one positive quantity.");
       return;
     }
 
-    const payload = createPayload();
     try {
       setIsSaving(true);
       await axiosInstance.post("/api/delivery-plans/", payload);
@@ -250,12 +250,11 @@ const CDPForm = ({
   };
 
   const handleEditDeliveryPlanning = async (): Promise<void> => {
-    if (formattedAllocs.length === 0) {
-      toast.error("Please choose a valid Allocation.");
+    const payload = createPayload();
+    if (payload.delivery_plan_items.length === 0) {
+      toast.error("Delivery Plan must contain at least one positive quantity.");
       return;
     }
-
-    const payload = createPayload();
 
     try {
       setIsSaving(true);

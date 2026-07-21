@@ -57,7 +57,10 @@ const CDRFormDetails = ({
         .then((response) =>
           setUnservedDPs(
             response.data
-              .filter((dp) => dp.status === "posted")
+              .filter(
+                (dp) =>
+                  dp.status === "posted" && dp.delivery_plan_items.length > 0,
+              )
               .sort((a, b) => b.id - a.id),
           ),
         )

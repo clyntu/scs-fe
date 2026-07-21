@@ -231,12 +231,14 @@ const CRForm = ({
   };
 
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
-    if (formattedDRs.length === 0) {
-      toast.error("Please choose a valid Delivery Receipt.");
+    const payload = createPayload();
+    if (payload.items.length === 0) {
+      toast.error(
+        "Customer Return must contain at least one positive quantity.",
+      );
       return;
     }
 
-    const payload = createPayload();
     try {
       setIsSaving(true);
       await axiosInstance.post("/api/customer-returns/", payload);
@@ -254,12 +256,13 @@ const CRForm = ({
   };
 
   const handleEditDeliveryReceipt = async (): Promise<void> => {
-    if (formattedDRs.length === 0) {
-      toast.error("Please choose a valid Delivery Receipt.");
+    const payload = createPayload();
+    if (payload.items.length === 0) {
+      toast.error(
+        "Customer Return must contain at least one positive quantity.",
+      );
       return;
     }
-
-    const payload = createPayload();
 
     try {
       setIsSaving(true);

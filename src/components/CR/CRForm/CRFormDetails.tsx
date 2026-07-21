@@ -55,6 +55,7 @@ const CRFormDetails = ({
       const params = {
         customer_id: selectedCustomer.customer_id,
         status: "posted",
+        raw_items: true,
       };
 
       axiosInstance

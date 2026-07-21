@@ -1,6 +1,6 @@
 import CDRFormDetails from "./CDRForm/CDRFormDetails";
 import CDRFormTable from "./CDRForm/CDRFormTable";
-import { Button, Divider } from "@mui/joy";
+import { Alert, Button, Divider } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
@@ -13,8 +13,6 @@ import type {
   PaginatedCustomers,
   Customer,
   Alloc,
-  DeliveryPlanItem,
-  CPO,
   CDP,
   CDR,
   PaginatedCDP,
@@ -22,6 +20,108 @@ import type {
 } from "../../interface";
 import { generateDeliveryReceiptPDF } from "./generatePDF";
 import CircularProgress from "@mui/joy/CircularProgress";
+
+interface DiscountedPurchaseOrder {
+  customer_discount_1: string;
+  customer_discount_2: string;
+  customer_discount_3: string;
+  transaction_discount_1: string;
+  transaction_discount_2: string;
+  transaction_discount_3: string;
+  items: Array<{
+    item_id: number;
+    price: number;
+    item: {
+      stock_code: string;
+      name: string;
+    };
+  }>;
+}
+
+interface FormDeliveryPlanItem {
+  id: number;
+  planned_qty: number;
+  allocation_item: {
+    allocation_id: number;
+    customer_purchase_order_id: number;
+    item_id: number;
+    customer_purchase_order: DiscountedPurchaseOrder;
+  };
+}
+
+const calculateNetForRow = (
+  newValue: number,
+  allocItem: DiscountedPurchaseOrder,
+  price: number,
+): number => {
+  let result = newValue * price;
+
+  if (allocItem.customer_discount_1.includes("%")) {
+    const cd1 = allocItem.customer_discount_1.slice(0, -1);
+    result = result - result * (parseFloat(cd1) / 100);
+  }
+
+  if (allocItem.customer_discount_2.includes("%")) {
+    const cd2 = allocItem.customer_discount_2.slice(0, -1);
+    result = result - result * (parseFloat(cd2) / 100);
+  }
+
+  if (allocItem.customer_discount_3.includes("%")) {
+    const cd3 = allocItem.customer_discount_3.slice(0, -1);
+    result = result - result * (parseFloat(cd3) / 100);
+  }
+
+  if (allocItem.transaction_discount_1.includes("%")) {
+    const td1 = allocItem.transaction_discount_1.slice(0, -1);
+    result = result - result * (parseFloat(td1) / 100);
+  }
+
+  if (allocItem.transaction_discount_2.includes("%")) {
+    const td2 = allocItem.transaction_discount_2.slice(0, -1);
+    result = result - result * (parseFloat(td2) / 100);
+  }
+
+  if (allocItem.transaction_discount_3.includes("%")) {
+    const td3 = allocItem.transaction_discount_3.slice(0, -1);
+    result = result - result * (parseFloat(td3) / 100);
+  }
+
+  if (isNaN(result)) return 0;
+
+  return result;
+};
+
+const formatDeliveryPlanItems = (
+  deliveryPlanItems: FormDeliveryPlanItem[],
+): AllocItemsFE[] =>
+  deliveryPlanItems.map((DPItem) => {
+    const cpo = DPItem.allocation_item.customer_purchase_order;
+    const itemObj = cpo.items.find(
+      (item) => item.item_id === DPItem.allocation_item.item_id,
+    );
+
+    return {
+      id: DPItem.allocation_item.allocation_id,
+      stock_code: itemObj?.item.stock_code ?? "",
+      cpo_id: DPItem.allocation_item.customer_purchase_order_id,
+      name: itemObj?.item.name ?? "",
+      dp_qty: String(DPItem.planned_qty),
+      price: itemObj?.price ?? 0,
+      gross_amount: (itemObj?.price ?? 0) * DPItem.planned_qty,
+      net_amount: calculateNetForRow(
+        Number(DPItem.planned_qty),
+        cpo,
+        itemObj?.price ?? 0,
+      ),
+      delivery_plan_item_id: DPItem.id,
+      customer_discount_1: cpo.customer_discount_1,
+      customer_discount_2: cpo.customer_discount_2,
+      customer_discount_3: cpo.customer_discount_3,
+      transaction_discount_1: cpo.transaction_discount_1,
+      transaction_discount_2: cpo.transaction_discount_2,
+      transaction_discount_3: cpo.transaction_discount_3,
+    };
+  });
 
 const CDRForm = ({
   setOpen,
@@ -40,6 +140,7 @@ const CDRForm = ({
   );
 
   const [selectedDP, setSelectedDP] = useState<CDP | null>(null);
+  const [expectedPlanItemIds, setExpectedPlanItemIds] = useState<number[]>([]);
   const [formattedAllocs, setFormattedAllocs] = useState<AllocItemsFE[]>([]);
 
   const [status, setStatus] = useState("unposted");
@@ -69,6 +170,10 @@ const CDRForm = ({
 
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
+  const hasInvalidSavedReceipt =
+    selectedRow !== undefined &&
+    selectedRow.status !== "unposted" &&
+    selectedRow.receipt_items.length === 0;
 
   useEffect(() => {
     // Fetch customers
@@ -91,54 +196,18 @@ const CDRForm = ({
       setRemarks(selectedRow?.remarks ?? "");
       setAmountDiscount(Number(selectedRow?.discount_amount));
 
-      // Fill in formatted allocs for table
-      const formattedAllocs = selectedRow.receipt_items.map((DRItem) => {
-        const DPItem = DRItem.delivery_plan_item;
-
-        const itemObj =
-          DPItem.allocation_item.customer_purchase_order.items.find(
-            (item) => item.item_id === DPItem.allocation_item.item_id,
-          );
-
-        return {
-          id: DPItem.allocation_item.allocation_id,
-          stock_code: itemObj?.item.stock_code ?? "",
-          cpo_id: DPItem.allocation_item.customer_purchase_order_id,
-          name: itemObj?.item.name ?? "",
-          dp_qty: String(DPItem.planned_qty),
-          price: itemObj?.price ?? 0,
-          gross_amount: (itemObj?.price ?? 0) * DPItem.planned_qty,
-          net_amount: calculateNetForRow(
-            Number(DPItem.planned_qty),
-            DPItem.allocation_item.customer_purchase_order,
-            itemObj?.price ?? 0,
+      setFormattedAllocs(
+        formatDeliveryPlanItems(
+          selectedRow.receipt_items.map(
+            (receiptItem) => receiptItem.delivery_plan_item,
           ),
-          delivery_plan_item_id: DPItem.id,
-
-          customer_discount_1:
-            DPItem.allocation_item.customer_purchase_order.customer_discount_1,
-          customer_discount_2:
-            DPItem.allocation_item.customer_purchase_order.customer_discount_2,
-          customer_discount_3:
-            DPItem.allocation_item.customer_purchase_order.customer_discount_3,
-
-          transaction_discount_1:
-            DPItem.allocation_item.customer_purchase_order
-              .transaction_discount_1,
-          transaction_discount_2:
-            DPItem.allocation_item.customer_purchase_order
-              .transaction_discount_2,
-          transaction_discount_3:
-            DPItem.allocation_item.customer_purchase_order
-              .transaction_discount_3,
-        };
-      });
-
-      setFormattedAllocs(formattedAllocs);
+        ),
+      );
     };
 
     if (selectedRow !== null && selectedRow !== undefined) {
       setIsFetching(true);
+      setExpectedPlanItemIds([]);
       fetchValues(selectedRow);
       const promises: Promise<any>[] = [];
 
@@ -148,6 +217,31 @@ const CDRForm = ({
         .catch((error) => console.error("Error:", error));
 
       promises.push(dpPromise);
+
+      const receiptPromise = axiosInstance
+        .get<GetOneCDR>(`/api/delivery-receipts/${selectedRow.id}`)
+        .then((response) => {
+          const rawReceipt = response.data;
+          const rawPlanItems = rawReceipt.delivery_plan.delivery_plan_items;
+          setExpectedPlanItemIds(rawPlanItems.map((item) => item.id));
+
+          if (rawReceipt.receipt_items.length > 0) {
+            setFormattedAllocs(
+              formatDeliveryPlanItems(
+                rawReceipt.receipt_items.map(
+                  (receiptItem) => receiptItem.delivery_plan_item,
+                ),
+              ),
+            );
+          } else if (selectedRow.status === "unposted") {
+            setFormattedAllocs(formatDeliveryPlanItems(rawPlanItems));
+          } else {
+            setFormattedAllocs([]);
+          }
+        })
+        .catch((error) => console.error("Error:", error));
+
+      promises.push(receiptPromise);
 
       // Get Customer for Edit
       const selectedCustPromise = axiosInstance
@@ -167,50 +261,9 @@ const CDRForm = ({
     }
   }, [selectedRow]);
 
-  const calculateNetForRow = (
-    newValue: number,
-    allocItem: any,
-    price: number,
-  ): number => {
-    let result = newValue * price;
-
-    if (allocItem.customer_discount_1.includes("%")) {
-      const cd1 = allocItem.customer_discount_1.slice(0, -1);
-      result = result - result * (parseFloat(cd1) / 100);
-    }
-
-    if (allocItem.customer_discount_2.includes("%")) {
-      const cd2 = allocItem.customer_discount_2.slice(0, -1);
-      result = result - result * (parseFloat(cd2) / 100);
-    }
-
-    if (allocItem.customer_discount_3.includes("%")) {
-      const cd3 = allocItem.customer_discount_3.slice(0, -1);
-      result = result - result * (parseFloat(cd3) / 100);
-    }
-
-    if (allocItem.transaction_discount_1.includes("%")) {
-      const td1 = allocItem.transaction_discount_1.slice(0, -1);
-      result = result - result * (parseFloat(td1) / 100);
-    }
-
-    if (allocItem.transaction_discount_2.includes("%")) {
-      const td2 = allocItem.transaction_discount_2.slice(0, -1);
-      result = result - result * (parseFloat(td2) / 100);
-    }
-
-    if (allocItem.transaction_discount_3.includes("%")) {
-      const td3 = allocItem.transaction_discount_3.slice(0, -1);
-      result = result - result * (parseFloat(td3) / 100);
-    }
-
-    if (isNaN(result)) return 0;
-
-    return result;
-  };
-
   const resetForm = (): void => {
     setSelectedCustomer(null);
+    setExpectedPlanItemIds([]);
     setFormattedAllocs([]);
     setStatus("unposted");
     setTransactionDate(currentDate);
@@ -240,8 +293,41 @@ const CDRForm = ({
     return payload;
   };
 
+  const validatePayload = (
+    payload: ReturnType<typeof createPayload>,
+  ): boolean => {
+    if (selectedDP === null || payload.receipt_items.length === 0) {
+      toast.error("Delivery Receipt must contain at least one item.");
+      return false;
+    }
+
+    const planItemIds = new Set(
+      selectedRow !== undefined &&
+        selectedDP.id === selectedRow.delivery_plan_id &&
+        expectedPlanItemIds.length > 0
+        ? expectedPlanItemIds
+        : selectedDP.delivery_plan_items.map((item) => item.id),
+    );
+    const receiptItemIds = payload.receipt_items.map(
+      (item) => item.delivery_plan_item_id,
+    );
+    const hasCompleteCoverage =
+      receiptItemIds.length === planItemIds.size &&
+      new Set(receiptItemIds).size === receiptItemIds.length &&
+      receiptItemIds.every((itemId) => planItemIds.has(itemId));
+
+    if (!hasCompleteCoverage) {
+      toast.error("Delivery Receipt must include every Delivery Plan item.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleCreateDeliveryReceipt = async (): Promise<void> => {
     const payload = createPayload();
+    if (!validatePayload(payload)) return;
+
     try {
       setIsSaving(true);
       await axiosInstance.post("/api/delivery-receipts/", payload);
@@ -260,6 +346,7 @@ const CDRForm = ({
 
   const handleEditDeliveryReceipt = async (): Promise<void> => {
     const payload = createPayload();
+    if (!validatePayload(payload)) return;
 
     try {
       setIsSaving(true);
@@ -302,6 +389,7 @@ const CDRForm = ({
             className="w-[130px] h-[35px] bg-button-neutral"
             size="sm"
             color="neutral"
+            disabled={hasInvalidSavedReceipt}
           >
             <LocalPrintshopIcon className="mr-2" />
             Print
@@ -314,6 +402,12 @@ const CDRForm = ({
         </div>
       ) : (
         <>
+          {hasInvalidSavedReceipt && (
+            <Alert color="danger" sx={{ mb: 2 }}>
+              This saved Delivery Receipt has no item lines and requires data
+              repair before it can be printed or used downstream.
+            </Alert>
+          )}
           <CDRFormDetails
             openEdit={openEdit}
             selectedRow={selectedRow}
