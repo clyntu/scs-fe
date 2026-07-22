@@ -9,6 +9,7 @@ import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { type DRItemsFE } from "./interface";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { calculateTotalWithDiscounts } from "./CRForm/helpers";
 import type {
   CRFormProps,
   PaginatedCustomers,
@@ -160,37 +161,22 @@ const CRForm = ({
     price: number,
     DRItem: any,
   ): number => {
-    let result = newValue * price;
+    const grossAmount = newValue * price;
 
-    if (DRItem.customer_discount_1.includes("%")) {
-      const cd1 = DRItem.customer_discount_1.slice(0, -1);
-      result = result - result * (parseFloat(cd1) / 100);
-    }
-
-    if (DRItem.customer_discount_2.includes("%")) {
-      const cd2 = DRItem.customer_discount_2.slice(0, -1);
-      result = result - result * (parseFloat(cd2) / 100);
-    }
-
-    if (DRItem.customer_discount_3.includes("%")) {
-      const cd3 = DRItem.customer_discount_3.slice(0, -1);
-      result = result - result * (parseFloat(cd3) / 100);
-    }
-
-    if (DRItem.transaction_discount_1.includes("%")) {
-      const td1 = DRItem.transaction_discount_1.slice(0, -1);
-      result = result - result * (parseFloat(td1) / 100);
-    }
-
-    if (DRItem.transaction_discount_2.includes("%")) {
-      const td2 = DRItem.transaction_discount_2.slice(0, -1);
-      result = result - result * (parseFloat(td2) / 100);
-    }
-
-    if (DRItem.transaction_discount_3.includes("%")) {
-      const td3 = DRItem.transaction_discount_3.slice(0, -1);
-      result = result - result * (parseFloat(td3) / 100);
-    }
+    // Matches the backend's apply_cpo_discounts exactly: interleaved
+    // customer/transaction order, percentage and flat discounts both applied
+    // sequentially against the running subtotal.
+    const result = calculateTotalWithDiscounts(
+      [
+        DRItem.customer_discount_1,
+        DRItem.transaction_discount_1,
+        DRItem.customer_discount_2,
+        DRItem.transaction_discount_2,
+        DRItem.customer_discount_3,
+        DRItem.transaction_discount_3,
+      ],
+      grossAmount,
+    );
 
     if (isNaN(result)) return 0;
 
