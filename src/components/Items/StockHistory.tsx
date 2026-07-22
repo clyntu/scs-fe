@@ -9,6 +9,9 @@ import { withTooltip } from "../shared/withTooltip";
 
 import { type IStockHistory, type ViewStockHistory } from "../../interface";
 
+const getRowKey = (history: IStockHistory): string =>
+  `${history.transaction_type}-${history.transaction_number}-${history.transaction_date}`;
+
 const StockHistory = ({
   open,
   setOpen,
@@ -30,7 +33,7 @@ const StockHistory = ({
 
   // Reset and fetch initial data when row changes or modal opens
   useEffect(() => {
-    if (!row?.stock_code || !open) return;
+    if (row == null || row.id <= 0 || !open) return;
 
     // Clear any pending scroll timeout
     if (scrollTimeoutRef.current) {
@@ -45,7 +48,7 @@ const StockHistory = ({
     isLoadingRef.current = false; // Reset loading ref
 
     axiosInstance
-      .get(`/api/items/stock-history/?stock_code=${row?.stock_code}&page=1&limit=${limit}`)
+      .get(`/api/items/stock-history/?item_id=${row.id}&page=1&limit=${limit}`)
       .then((response) => {
         setStockHistory(response.data.items as IStockHistory[]);
         setTotal(response.data.total);
@@ -56,12 +59,18 @@ const StockHistory = ({
         console.error("Error:", error);
         setIsLoading(false);
       });
-  }, [row?.stock_code, open, refetchTrigger]);
+  }, [row?.id, open, refetchTrigger]);
 
   // Load more data
   const loadMore = useCallback(() => {
     // Prevent duplicate requests using ref (synchronous check)
-    if (isLoadingRef.current || isLoadingMore || !hasMore || !row?.stock_code) {
+    if (
+      isLoadingRef.current ||
+      isLoadingMore ||
+      !hasMore ||
+      row == null ||
+      row.id <= 0
+    ) {
       return;
     }
 
@@ -73,7 +82,9 @@ const StockHistory = ({
     console.log('Loading page:', nextPage);
 
     axiosInstance
-      .get(`/api/items/stock-history/?stock_code=${row.stock_code}&page=${nextPage}&limit=${limit}`)
+      .get(
+        `/api/items/stock-history/?item_id=${row.id}&page=${nextPage}&limit=${limit}`,
+      )
       .then((response) => {
         const newItems = response.data.items as IStockHistory[];
         setStockHistory((prev) => {
@@ -90,7 +101,7 @@ const StockHistory = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false; // Reset ref on error
       });
-  }, [isLoadingMore, hasMore, page, row?.stock_code]);
+  }, [isLoadingMore, hasMore, page, row?.id]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -237,7 +248,7 @@ const StockHistory = ({
 
                     <tbody>
                       {stockHistory.map((history: IStockHistory, index) => {
-                        const rowKey = `${history.transaction_number}-${history.transaction_date}`;
+                        const rowKey = getRowKey(history);
                         const isSelected = selectedRows.has(rowKey);
 
                         const handleRowClick = (
@@ -261,9 +272,7 @@ const StockHistory = ({
                           ) {
                             // Shift + Click: Select range from last selected to current
                             const lastIndex = stockHistory.findIndex(
-                              (h) =>
-                                `${h.transaction_number}-${h.transaction_date}` ===
-                                lastSelectedRow,
+                              (h) => getRowKey(h) === lastSelectedRow,
                             );
                             const currentIndex = index;
                             const startIndex = Math.min(
@@ -275,7 +284,7 @@ const StockHistory = ({
                             setSelectedRows((prev) => {
                               const newSelection = new Set(prev);
                               for (let i = startIndex; i <= endIndex; i++) {
-                                const key = `${stockHistory[i].transaction_number}-${stockHistory[i].transaction_date}`;
+                                const key = getRowKey(stockHistory[i]);
                                 newSelection.add(key);
                               }
                               return newSelection;
