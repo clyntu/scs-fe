@@ -229,6 +229,7 @@ const StockTransferForm = ({
         .then((response): void => {
           const item = response.data.items[0];
           warehouseItemFE.on_stock = item?.on_stock ?? 0;
+          warehouseItemFE.allocated = item?.allocated ?? 0;
         })
         .catch((error) => console.error("Error:", error));
     }
@@ -261,6 +262,7 @@ const StockTransferForm = ({
               stock_code: item.stock_code,
               total_quantity: 0,
               on_stock: item.available_stock, // Use RR-specific available stock
+              allocated: 0, // RR-based transfers validate availability separately
               warehouse_1: null,
               warehouse_1_qty: undefined,
               warehouse_2: null,
@@ -303,6 +305,7 @@ const StockTransferForm = ({
               stock_code: warehouseItem.item.stock_code,
               total_quantity: 0,
               on_stock: warehouseItem.on_stock,
+              allocated: warehouseItem.allocated,
               warehouse_1: null,
               warehouse_1_qty: undefined,
               warehouse_2: null,
@@ -336,6 +339,7 @@ const StockTransferForm = ({
           stock_code: item.stock_code,
           total_quantity: 0,
           on_stock: 0,
+          allocated: 0,
           warehouse_1: null,
           warehouse_1_qty: undefined,
           warehouse_2: null,

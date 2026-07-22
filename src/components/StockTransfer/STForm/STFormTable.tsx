@@ -100,7 +100,9 @@ const STFormTable = ({
                       {withTooltip(item.name, "180px")}
                     </td>
                     <td>{withTooltip(item.stock_code, "120px")}</td>
-                    {!isEditDisabled && <td>{item.on_stock}</td>}
+                    {!isEditDisabled && (
+                      <td>{item.on_stock - item.allocated}</td>
+                    )}
                     <td>
                       {Number(item.warehouse_1_qty ?? 0) +
                         Number(item.warehouse_2_qty ?? 0) +

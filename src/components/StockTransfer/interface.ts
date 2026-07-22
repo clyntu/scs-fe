@@ -44,6 +44,7 @@ export interface WarehouseItemsFE {
   stock_code: string;
   total_quantity: number;
   on_stock: number;
+  allocated: number;
   warehouse_1: Warehouse | null; // Name or identifier for Warehouse 1
   warehouse_1_qty: string | undefined; // Quantity allocated to Warehouse 1
   warehouse_2: Warehouse | null; // Name or identifier for Warehouse 2
