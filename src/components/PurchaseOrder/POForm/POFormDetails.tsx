@@ -1,7 +1,6 @@
 import {
   FormControl,
   FormLabel,
-  FormHelperText,
   Input,
   Textarea,
   Card,
@@ -220,10 +219,9 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 0, e.target.value)
                   }
-                  placeholder="e.g. 10% or 50"
+                  placeholder="10% or 50 (fixed)"
                   disabled={isEditDisabled}
                 />
-                <FormHelperText>Add % for percent, omit for fixed</FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Trans Disc. 1</FormLabel>
@@ -232,7 +230,7 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 0, e.target.value)
                   }
-                  placeholder="e.g. 10% or 50"
+                  placeholder="10% or 50 (fixed)"
                   disabled={isEditDisabled}
                 />
               </FormControl>
@@ -245,7 +243,7 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 1, e.target.value)
                   }
-                  placeholder="e.g. 10% or 50"
+                  placeholder="10% or 50 (fixed)"
                   disabled={isEditDisabled}
                 />
               </FormControl>
@@ -256,32 +254,10 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 1, e.target.value)
                   }
-                  placeholder="e.g. 10% or 50"
+                  placeholder="10% or 50 (fixed)"
                   disabled={isEditDisabled}
                 />
               </FormControl>
-              {/* <FormControl size="sm" sx={{ width: "22%" }}>
-                <FormLabel>Supp Disc. 3</FormLabel>
-                <Input
-                  value={discounts.supplier[2]}
-                  onChange={(e) =>
-                    handleDiscountChange("supplier", 2, e.target.value)
-                  }
-                  placeholder="% or Fixed Amt"
-                  disabled={isEditDisabled}
-                />
-              </FormControl>
-              <FormControl size="sm" sx={{ width: "22%" }}>
-                <FormLabel>Trans Disc. 3</FormLabel>
-                <Input
-                  value={discounts.transaction[2]}
-                  onChange={(e) =>
-                    handleDiscountChange("transaction", 2, e.target.value)
-                  }
-                  placeholder="% or Fixed Amt"
-                  disabled={isEditDisabled}
-                />
-              </FormControl> */}
             </Stack>
           </Stack>
         </div>
