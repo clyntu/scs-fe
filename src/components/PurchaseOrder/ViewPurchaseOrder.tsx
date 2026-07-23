@@ -204,13 +204,11 @@ const ViewPurchaseOrder = ({
       const url = `/api/purchase_orders/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setPurchaseOrders((prevPO) => ({
           ...prevPO,
-          items: prevPO.items.map((PO) =>
-            PO.id === selectedRow.id ? { ...PO, status: "archived" } : PO,
-          ),
-          total: prevPO.total,
+          items: prevPO.items.filter((PO) => PO.id !== selectedRow.id),
+          total: prevPO.total - 1,
         }));
       } catch (error: any) {
         toast.error(`Error message: ${error.response.data.detail}`);
