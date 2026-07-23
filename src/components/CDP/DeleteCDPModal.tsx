@@ -38,7 +38,7 @@ const DeleteCDPModal = ({
             <h4 className="mb-6">{title}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to archive this Delivery Plan?
+                Are you sure you want to delete this Delivery Plan?
               </p>
             </div>
             <div className="flex justify-end mt-5">
@@ -63,7 +63,7 @@ const DeleteCDPModal = ({
                   setIsDeleting(false);
                 }}
               >
-                Archive
+                Delete
               </Button>
             </div>
           </Box>

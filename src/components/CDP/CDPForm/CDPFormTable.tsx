@@ -145,6 +145,8 @@ const CDPFormTable = ({
                     value={item.dp_qty}
                     sx={{ input: { textAlign: "right" } }}
                     onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw !== "" && !/^\d+$/.test(raw)) return;
                       setFormattedAllocs((prevAllocItems) =>
                         prevAllocItems.map((allocItem) =>
                           allocItem.id === item.id &&
@@ -152,11 +154,10 @@ const CDPFormTable = ({
                           allocItem.cpo_id === item.cpo_id
                             ? {
                                 ...allocItem,
-                                dp_qty: e.target.value,
-                                gross_amount:
-                                  Number(item.price) * Number(e.target.value),
+                                dp_qty: raw,
+                                gross_amount: Number(item.price) * Number(raw),
                                 net_amount: calculateNetForRow(
-                                  Number(e.target.value),
+                                  Number(raw),
                                   allocItem,
                                 ),
                               } // Update the matching item
@@ -167,6 +168,7 @@ const CDPFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
+                        step: 1,
                       },
                     }}
                     placeholder="0"

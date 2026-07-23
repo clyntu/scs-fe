@@ -202,16 +202,16 @@ const ViewCDP = ({
       const url = `/api/delivery-plans/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setCDPs((prevCDP) => ({
           ...prevCDP,
-          items: prevCDP.items.map((CDP) =>
-            CDP.id === selectedRow.id ? { ...CDP, status: "archived" } : CDP,
-          ),
-          total: prevCDP.total,
+          items: prevCDP.items.filter((CDP) => CDP.id !== selectedRow.id),
+          total: prevCDP.total - 1,
         }));
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
       }
     }
   };
@@ -260,7 +260,6 @@ const ViewCDP = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -435,7 +434,7 @@ const ViewCDP = ({
                             }}
                             disabled={CDP.status !== "unposted"}
                           >
-                            Archive
+                            Delete
                           </Button>
                         </Box>
                       </td>
@@ -479,7 +478,7 @@ const ViewCDP = ({
       <DeleteCDPModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Delivery Planning"
+        title="Delete Delivery Planning"
         onDelete={handleDeleteCDP}
       />
     </>
