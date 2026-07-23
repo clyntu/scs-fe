@@ -11,7 +11,6 @@ import {
 } from "@mui/joy";
 import type { STFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
-import { type Warehouse } from "../../../interface";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const STFormDetails = ({
@@ -30,6 +29,7 @@ const STFormDetails = ({
   warehouses,
   selectedWarehouse,
   setSelectedWarehouse,
+  receivingAreaWarehouse,
   receivingReports,
   selectedRR,
   setSelectedRR,
@@ -50,11 +50,8 @@ const STFormDetails = ({
         fetchWarehouseItems(selectedWarehouse?.id ?? 1, null);
       } else {
         setWarehouseItems([]);
-        const receivingArea: Warehouse | undefined = warehouses.items.find(
-          (warehouse) => warehouse.id === 1,
-        );
-        if (receivingArea !== undefined) {
-          setSelectedWarehouse(receivingArea);
+        if (receivingAreaWarehouse !== null) {
+          setSelectedWarehouse(receivingAreaWarehouse);
         }
       }
       setRRTransfer(value);

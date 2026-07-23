@@ -23,6 +23,7 @@ export interface STFormDetailsProps {
   warehouses: PaginatedWarehouse;
   selectedWarehouse: Warehouse | null;
   setSelectedWarehouse: (warehouse: Warehouse | null) => void;
+  receivingAreaWarehouse: Warehouse | null;
   receivingReports: PaginatedRR;
   selectedRR: ReceivingReport | null;
   setSelectedRR: (receivingReport: ReceivingReport | null) => void;

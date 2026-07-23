@@ -440,6 +440,7 @@ const StockTransferForm = ({
         toast.error(
           "Error: At least one warehouse and quantity input is required.",
         );
+        return;
       }
 
       const payload = {
@@ -476,6 +477,7 @@ const StockTransferForm = ({
         toast.error(
           "Error: At least one warehouse and quantity input is required.",
         );
+        return;
       }
 
       const payload = {
@@ -546,6 +548,7 @@ const StockTransferForm = ({
             warehouses={warehouses}
             selectedWarehouse={selectedWarehouse}
             setSelectedWarehouse={setSelectedWarehouse}
+            receivingAreaWarehouse={receivingAreaWarehouse}
             receivingReports={filteredReceivingReports}
             selectedRR={selectedRR}
             setSelectedRR={setSelectedRR}
