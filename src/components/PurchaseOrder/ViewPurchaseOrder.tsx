@@ -28,7 +28,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   formatToDate,
 } from "../../helper";
-import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
+import { StatusChip, canArchiveTransaction } from "../../utils/statusUtils";
 import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewPurchaseOrder = ({
@@ -227,7 +227,7 @@ const ViewPurchaseOrder = ({
         setPurchaseOrders((prevPO) => ({
           ...prevPO,
           items: prevPO.items.map((PO) =>
-            PO.id === selectedRow.id ? { ...PO, status: "cancelled" } : PO,
+            PO.id === selectedRow.id ? { ...PO, status: "archived" } : PO,
           ),
           total: prevPO.total,
         }));
@@ -281,7 +281,6 @@ const ViewPurchaseOrder = ({
               <Option value="all">Active</Option>
               <Option value="posted">Posted</Option>
               <Option value="unposted">Unposted</Option>
-              <Option value="cancelled">Cancelled</Option>
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
@@ -459,7 +458,7 @@ const ViewPurchaseOrder = ({
                         {purchaseOrder.status !== "unposted" ? "View" : "Edit"}
                       </Button>
 
-                      {canCancelTransaction(purchaseOrder.status) && (
+                      {canArchiveTransaction(purchaseOrder.status) && (
                         <Button
                           size="sm"
                           variant="soft"

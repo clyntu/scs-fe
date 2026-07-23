@@ -28,7 +28,7 @@ import {
   addCommaToNumberWithFourPlaces,
   formatToDate,
 } from "../../helper";
-import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
+import { StatusChip, canArchiveTransaction } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
@@ -229,7 +229,7 @@ const ViewDeliveryReceipt = ({
         setDeliveryReceipts((prevSDR) => ({
           ...prevSDR,
           items: prevSDR.items.map((SDR) =>
-            SDR.id === selectedRow.id ? { ...SDR, status: "cancelled" } : SDR,
+            SDR.id === selectedRow.id ? { ...SDR, status: "archived" } : SDR,
           ),
           total: prevSDR.total,
         }));
@@ -283,7 +283,6 @@ const ViewDeliveryReceipt = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="cancelled">Cancelled</Option>
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
@@ -464,7 +463,7 @@ const ViewDeliveryReceipt = ({
                           : "Edit"}
                       </Button>
 
-                      {canCancelTransaction(deliveryReceipt.status) && (
+                      {canArchiveTransaction(deliveryReceipt.status) && (
                         <Button
                           size="sm"
                           variant="soft"

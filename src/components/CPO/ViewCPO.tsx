@@ -298,8 +298,7 @@ const ViewCPO = ({
               <Option value="all">Active</Option>
               <Option value="posted">Posted</Option>
               <Option value="unposted">Unposted</Option>
-              <Option value="cancelled">Cancelled</Option>
-              <Option value="archived">Archived</Option>
+              <Option value="archived">Cancelled</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -432,7 +431,10 @@ const ViewCPO = ({
                       <td>{withTooltip(CPO?.customer?.name, "280px")}</td>
                       <td>{withTooltip(CPO.reference_number, "200px")}</td>
                       <td>
-                        <StatusChip status={CPO.status} />
+                        <StatusChip
+                          status={CPO.status}
+                          label={CPO.status === "archived" ? "cancelled" : undefined}
+                        />
                       </td>
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(CPO.net_total)}
@@ -469,7 +471,7 @@ const ViewCPO = ({
                               setOpenDelete(true);
                               setSelectedRow(CPO);
                             }}
-                            disabled={CPO.status === "cancelled"}
+                            disabled={CPO.status === "archived"}
                           >
                             {CPO.status === "unposted" ? "Delete" : "Cancel"}
                           </Button>

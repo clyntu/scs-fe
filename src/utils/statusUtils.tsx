@@ -3,6 +3,7 @@ import { Chip } from "@mui/joy";
 
 interface StatusChipProps {
   status: string;
+  label?: string;
 }
 
 export const getStatusColor = (
@@ -13,10 +14,8 @@ export const getStatusColor = (
       return "success";
     case "unposted":
       return "warning";
-    case "cancelled":
-      return "danger";
     case "archived":
-      return "neutral";
+      return "warning";
     default:
       return "primary";
   }
@@ -25,17 +24,17 @@ export const getStatusColor = (
 export const getStatusVariant = (
   status: string,
 ): "solid" | "soft" | "outlined" => {
-  return status.toLowerCase() === "cancelled" ? "outlined" : "soft";
+  return "soft";
 };
 
-export const StatusChip: React.FC<StatusChipProps> = ({ status }) => {
+export const StatusChip: React.FC<StatusChipProps> = ({ status, label }) => {
   return (
     <Chip
       color={getStatusColor(status)}
       variant={getStatusVariant(status)}
       size="sm"
     >
-      {status.toUpperCase()}
+      {(label ?? status).toUpperCase()}
     </Chip>
   );
 };
@@ -44,16 +43,12 @@ export const formatStatusText = (status: string): string => {
   return status.toUpperCase();
 };
 
-export const isTransactionCancelled = (status: string): boolean => {
-  return status.toLowerCase() === "cancelled";
-};
-
 export const isTransactionPosted = (status: string): boolean => {
   return status.toLowerCase() === "posted";
 };
 
-export const canCancelTransaction = (status: string): boolean => {
-  return isTransactionPosted(status) && !isTransactionCancelled(status);
+export const canArchiveTransaction = (status: string): boolean => {
+  return isTransactionPosted(status);
 };
 
 // Stock Adjustment Type Helpers

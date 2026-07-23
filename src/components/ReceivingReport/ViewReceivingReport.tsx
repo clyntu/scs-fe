@@ -203,17 +203,15 @@ const ViewReceivingReport = ({
       const url = `/api/receiving-reports/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setReceivingReports((prevRR) => ({
           ...prevRR,
-          items: prevRR.items.map((RR) =>
-            RR.id === selectedRow.id ? { ...RR, status: "archived" } : RR,
-          ),
-          total: prevRR.total,
+          items: prevRR.items.filter((RR) => RR.id !== selectedRow.id),
+          total: prevRR.total - 1,
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
         );
       }
     }
@@ -263,7 +261,6 @@ const ViewReceivingReport = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -452,7 +449,7 @@ const ViewReceivingReport = ({
                             }}
                             disabled={receivingReport.status !== "unposted"}
                           >
-                            Archive
+                            Delete
                           </Button>
                         </Box>
                       </td>
@@ -498,7 +495,7 @@ const ViewReceivingReport = ({
       <DeleteReceivingReportModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Delivery Receipt"
+        title="Delete Receiving Report"
         onDelete={handleDeleteRR}
       />
     </>

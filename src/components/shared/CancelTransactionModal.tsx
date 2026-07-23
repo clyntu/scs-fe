@@ -98,7 +98,7 @@ const CancelTransactionModal: React.FC<CancelTransactionModalProps> = ({
               </Button>
               <Button
                 variant="plain"
-                color="danger"
+                color="warning"
                 onClick={handleCancel}
                 loading={loading}
               >

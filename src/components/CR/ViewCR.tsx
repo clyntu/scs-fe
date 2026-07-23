@@ -198,16 +198,16 @@ const ViewCR = ({
       const url = `/api/customer-returns/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setCRs((prevCR) => ({
           ...prevCR,
-          items: prevCR.items.map((CR) =>
-            CR.id === selectedRow.id ? { ...CR, status: "archived" } : CR,
-          ),
-          total: prevCR.total,
+          items: prevCR.items.filter((CR) => CR.id !== selectedRow.id),
+          total: prevCR.total - 1,
         }));
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
       }
     }
   };
@@ -256,7 +256,6 @@ const ViewCR = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -419,7 +418,7 @@ const ViewCR = ({
                             }}
                             disabled={CR.status !== "unposted"}
                           >
-                            Archive
+                            Delete
                           </Button>
                         </Box>
                       </td>
@@ -463,7 +462,7 @@ const ViewCR = ({
       <DeleteCRModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Customer Return"
+        title="Delete Customer Return"
         onDelete={handleDeleteCR}
       />
     </>

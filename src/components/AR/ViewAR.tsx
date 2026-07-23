@@ -469,7 +469,7 @@ const ViewAR = ({
                             <Button
                               size="sm"
                               variant="soft"
-                              color="danger"
+                              color="warning"
                               className="bg-delete-red"
                               onClick={() => {
                                 setOpenDelete(true);

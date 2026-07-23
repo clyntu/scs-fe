@@ -197,14 +197,16 @@ const ViewStockTransfer = ({
       const url = `/api/stock-transfers/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setStockTransfers((prevST) => ({
           ...prevST,
           items: prevST.items.filter((ST) => ST.id !== selectedRow.id),
           total: prevST.total - 1,
         }));
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
       }
     }
   };
@@ -253,7 +255,6 @@ const ViewStockTransfer = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -419,7 +420,7 @@ const ViewStockTransfer = ({
                             }}
                             disabled={stockTransfer.status !== "unposted"}
                           >
-                            Archive
+                            Delete
                           </Button>
                         </Box>
                       </td>
@@ -465,7 +466,7 @@ const ViewStockTransfer = ({
       <DeleteSTModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Stock Transfer"
+        title="Delete Stock Transfer"
         onDelete={handleDeleteST}
       />
     </>

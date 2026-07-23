@@ -252,7 +252,7 @@ const ViewAlloc = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
+              <Option value="archived">Cancelled</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -381,7 +381,10 @@ const ViewAlloc = ({
                       <td>{alloc?.transaction_date}</td>
                       <td>{withTooltip(alloc?.customer.name, "330px")}</td>
                       <td>
-                        <StatusChip status={alloc.status} />
+                        <StatusChip
+                          status={alloc.status}
+                          label={alloc.status === "archived" ? "cancelled" : undefined}
+                        />
                       </td>
                       <td>{withTooltip(alloc?.remarks, "180px")}</td>
                       <td>{withTooltip(alloc?.creator?.username, "130px")}</td>

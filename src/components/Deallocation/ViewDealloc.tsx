@@ -416,7 +416,7 @@ const ViewDealloc = ({
                           <Button
                             size="sm"
                             variant="soft"
-                            color="danger"
+                            color={dealloc.status === "unposted" ? "danger" : "warning"}
                             className="bg-delete-red"
                             onClick={() => {
                               setOpenDelete(true);

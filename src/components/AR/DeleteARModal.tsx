@@ -53,7 +53,7 @@ const DeleteCDPModal = ({
               <Button
                 className="bg-button-warning"
                 sx={{ ml: 2, width: 130 }}
-                color="danger"
+                color="warning"
                 size="sm"
                 loading={isDeleting}
                 onClick={async () => {

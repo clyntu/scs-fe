@@ -101,7 +101,7 @@ const CPOFormDetails = ({
               >
                 <Option value="unposted">Unposted</Option>
                 <Option value="posted">Posted</Option>
-                <Option value="archived">Archived</Option>
+                <Option value="archived">Cancelled</Option>
               </Select>
             </FormControl>
 

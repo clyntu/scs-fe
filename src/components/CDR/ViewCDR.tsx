@@ -210,16 +210,16 @@ const ViewCDR = ({
       const url = `/api/delivery-receipts/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setCDRs((prevCDR) => ({
           ...prevCDR,
-          items: prevCDR.items.map((CDR) =>
-            CDR.id === selectedRow.id ? { ...CDR, status: "archived" } : CDR,
-          ),
-          total: prevCDR.total,
+          items: prevCDR.items.filter((CDR) => CDR.id !== selectedRow.id),
+          total: prevCDR.total - 1,
         }));
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
       }
     }
   };
@@ -268,7 +268,6 @@ const ViewCDR = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -445,7 +444,7 @@ const ViewCDR = ({
                             }}
                             disabled={CDR.status !== "unposted"}
                           >
-                            Archive
+                            Delete
                           </Button>
                         </Box>
                       </td>
@@ -489,7 +488,7 @@ const ViewCDR = ({
       <DeleteCDRModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Delivery Receipt"
+        title="Delete Delivery Receipt"
         onDelete={handleDeleteCDR}
       />
     </>
