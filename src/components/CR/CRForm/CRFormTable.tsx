@@ -173,6 +173,8 @@ const CRFormTable = ({
                     sx={{ input: { textAlign: "right" } }}
                     value={item.return_qty}
                     onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw !== "" && !/^\d+$/.test(raw)) return;
                       setFormattedDRs((prevDRItems) =>
                         prevDRItems.map((DRItem) =>
                           DRItem.id === item.id &&
@@ -181,9 +183,9 @@ const CRFormTable = ({
                           DRItem.alloc_no === item.alloc_no
                             ? {
                                 ...DRItem,
-                                return_qty: e.target.value,
+                                return_qty: raw,
                                 gross_amount: calculateNetForRow(
-                                  Number(e.target.value),
+                                  Number(raw),
                                   Number(item.price),
                                   DRItem,
                                 ),
@@ -195,6 +197,7 @@ const CRFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
+                        step: 1,
                       },
                     }}
                     placeholder="0"
