@@ -138,13 +138,15 @@ const DeallocFormTable = ({
                   type="number"
                   value={item.warehouse_1_qty}
                   onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw !== "" && !/^\d+$/.test(raw)) return;
                     setAllocItems((prevAllocItems) =>
                       prevAllocItems.map((allocItem) =>
                         allocItem.id === item.id &&
                         allocItem.customer_purchase_order_id ===
                           item.customer_purchase_order_id &&
                         allocItem.stock_code === item.stock_code
-                          ? { ...allocItem, warehouse_1_qty: e.target.value }
+                          ? { ...allocItem, warehouse_1_qty: raw }
                           : allocItem,
                       ),
                     );
@@ -152,6 +154,7 @@ const DeallocFormTable = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 1,
                     },
                   }}
                   placeholder="0"
@@ -187,13 +190,15 @@ const DeallocFormTable = ({
                   type="number"
                   value={item.warehouse_2_qty}
                   onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw !== "" && !/^\d+$/.test(raw)) return;
                     setAllocItems((prevAllocItems) =>
                       prevAllocItems.map((allocItem) =>
                         allocItem.id === item.id &&
                         allocItem.customer_purchase_order_id ===
                           item.customer_purchase_order_id &&
                         allocItem.stock_code === item.stock_code
-                          ? { ...allocItem, warehouse_2_qty: e.target.value }
+                          ? { ...allocItem, warehouse_2_qty: raw }
                           : allocItem,
                       ),
                     );
@@ -201,6 +206,7 @@ const DeallocFormTable = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 1,
                     },
                   }}
                   placeholder="0"
@@ -236,13 +242,15 @@ const DeallocFormTable = ({
                   type="number"
                   value={item.warehouse_3_qty}
                   onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw !== "" && !/^\d+$/.test(raw)) return;
                     setAllocItems((prevAllocItems) =>
                       prevAllocItems.map((allocItem) =>
                         allocItem.id === item.id &&
                         allocItem.customer_purchase_order_id ===
                           item.customer_purchase_order_id &&
                         allocItem.stock_code === item.stock_code
-                          ? { ...allocItem, warehouse_3_qty: e.target.value }
+                          ? { ...allocItem, warehouse_3_qty: raw }
                           : allocItem,
                       ),
                     );
@@ -250,6 +258,7 @@ const DeallocFormTable = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 1,
                     },
                   }}
                   placeholder="0"

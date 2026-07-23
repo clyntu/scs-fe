@@ -197,16 +197,18 @@ const ViewDealloc = ({
     if (selectedRow !== undefined) {
       const url = `/api/deallocations/${selectedRow.id}`;
       try {
+        await axiosInstance.delete(url);
+        toast.success("Delete successful!");
         setDeallocs({
           items: deallocs.items.filter(
             (dealloc) => dealloc.id !== selectedRow.id,
           ),
           total: deallocs.total - 1,
         });
-        await axiosInstance.delete(url);
-        toast.success("Delete successful!");
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
       }
     }
   };
