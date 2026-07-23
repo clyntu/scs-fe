@@ -10,7 +10,9 @@ const DeleteAllocModal = ({
   title,
   setOpen,
   onDelete,
-}: DeleteModalProps): JSX.Element => {
+  isUnposted,
+}: DeleteModalProps & { isUnposted: boolean }): JSX.Element => {
+  const actionLabel = isUnposted ? "Delete" : "Cancel";
   const [isDeleting, setIsDeleting] = useState(false);
   return (
     <Modal
@@ -38,7 +40,7 @@ const DeleteAllocModal = ({
             <h4 className="mb-6">{title}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to archive this Allocation?
+                Are you sure you want to {isUnposted ? "delete" : "cancel"} this Allocation?
               </p>
             </div>
             <div className="flex justify-end mt-5">
@@ -48,7 +50,7 @@ const DeleteAllocModal = ({
                 sx={{ ml: 2, width: 130 }}
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                Close
               </Button>
               <Button
                 className="bg-button-warning"
@@ -63,7 +65,7 @@ const DeleteAllocModal = ({
                   setIsDeleting(false);
                 }}
               >
-                Archive
+                {actionLabel}
               </Button>
             </div>
           </Box>

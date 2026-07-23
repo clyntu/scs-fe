@@ -414,7 +414,7 @@ const ViewAlloc = ({
                               setSelectedRow(alloc);
                             }}
                           >
-                            Archive
+                            {alloc.status === "unposted" ? "Delete" : "Cancel"}
                           </Button>
                         </Box>
                       </td>
@@ -459,7 +459,12 @@ const ViewAlloc = ({
       <DeleteAllocModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Allocation"
+        title={
+          selectedRow?.status === "unposted"
+            ? "Delete Allocation"
+            : "Cancel Allocation"
+        }
+        isUnposted={selectedRow?.status === "unposted"}
         onDelete={handleDeleteAlloc}
       />
     </>
