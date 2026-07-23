@@ -256,10 +256,16 @@ const POFormTable = ({
                 {selectedItem?.id !== null && (
                   <Input
                     type="number"
-                    onChange={(e) => addItemVolume(e.target.value, index)}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "" || /^\d+$/.test(raw)) {
+                        addItemVolume(raw, index);
+                      }
+                    }}
                     slotProps={{
                       input: {
                         min: 0,
+                        step: 1,
                       },
                     }}
                     value={selectedItem.volume}

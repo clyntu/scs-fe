@@ -3,10 +3,10 @@ export const areDiscountsValid = (discounts: {
   transaction: string[];
 }): boolean => {
   const isSupplierValid = discounts.supplier.every(
-    (str) => /^(?:\d+|\d+%?)?$/.test(str), // Allows an empty string
+    (str) => /^(?:\d+(?:\.\d+)?%?)?$/.test(str), // Allows an empty string
   );
   const isTransactionValid = discounts.transaction.every(
-    (str) => /^(?:\d+|\d+%?)?$/.test(str), // Allows an empty string
+    (str) => /^(?:\d+(?:\.\d+)?%?)?$/.test(str), // Allows an empty string
   );
 
   return isSupplierValid && isTransactionValid;
