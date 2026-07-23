@@ -89,7 +89,7 @@ const RRFormDetails = ({
   };
 
   useEffect(() => {
-    if (!openEdit) getFixedAmtDiscounts();
+    getFixedAmtDiscounts();
 
     if (selectedSDRs.length > 0) {
       // Get reference number from first SDR
