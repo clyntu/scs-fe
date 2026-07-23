@@ -1,6 +1,7 @@
 import {
   FormControl,
   FormLabel,
+  FormHelperText,
   Input,
   Textarea,
   Card,
@@ -219,9 +220,10 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 0, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="e.g. 10% or 50"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText>Add % for percent, omit for fixed</FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Trans Disc. 1</FormLabel>
@@ -230,7 +232,7 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 0, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="e.g. 10% or 50"
                   disabled={isEditDisabled}
                 />
               </FormControl>
@@ -243,7 +245,7 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 1, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="e.g. 10% or 50"
                   disabled={isEditDisabled}
                 />
               </FormControl>
@@ -254,7 +256,7 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 1, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="e.g. 10% or 50"
                   disabled={isEditDisabled}
                 />
               </FormControl>
