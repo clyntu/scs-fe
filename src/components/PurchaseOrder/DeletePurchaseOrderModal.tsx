@@ -38,7 +38,7 @@ const DeletePurchaseOrderModal = ({
             <h4 className="mb-6">{title}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to archive this Purchase Order?
+                Are you sure you want to delete this Purchase Order?
               </p>
             </div>
             <div className="flex justify-end mt-5">
@@ -63,7 +63,7 @@ const DeletePurchaseOrderModal = ({
                   setOpen(false);
                 }}
               >
-                Archive
+                Delete
               </Button>
             </div>
           </Box>

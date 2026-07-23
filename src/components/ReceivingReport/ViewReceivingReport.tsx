@@ -203,7 +203,7 @@ const ViewReceivingReport = ({
       const url = `/api/receiving-reports/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Delete successful!");
+        toast.success("Archive successful!");
         setReceivingReports((prevRR) => ({
           ...prevRR,
           items: prevRR.items.map((RR) =>
@@ -211,8 +211,10 @@ const ViewReceivingReport = ({
           ),
           total: prevRR.total,
         }));
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
       }
     }
   };

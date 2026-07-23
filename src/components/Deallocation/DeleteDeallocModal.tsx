@@ -10,7 +10,9 @@ const DeleteDeallocModal = ({
   title,
   setOpen,
   onDelete,
-}: DeleteModalProps): JSX.Element => {
+  isUnposted,
+}: DeleteModalProps & { isUnposted: boolean }): JSX.Element => {
+  const actionLabel = isUnposted ? "Delete" : "Archive";
   const [isDeleting, setIsDeleting] = useState(false);
   return (
     <Modal
@@ -38,7 +40,7 @@ const DeleteDeallocModal = ({
             <h4 className="mb-6">{title}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to archive this Deallocation?
+                Are you sure you want to {isUnposted ? "delete" : "archive"} this Deallocation?
               </p>
             </div>
             <div className="flex justify-end mt-5">
@@ -63,7 +65,7 @@ const DeleteDeallocModal = ({
                   setIsDeleting(false);
                 }}
               >
-                Archive
+                {actionLabel}
               </Button>
             </div>
           </Box>

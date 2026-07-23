@@ -225,7 +225,7 @@ const ViewPurchaseOrder = ({
         await axiosInstance.delete(url, {
           data: { cancellation_reason: reason },
         });
-        toast.success("Purchase Order cancelled successfully!");
+        toast.success("Purchase Order archived successfully!");
         setPurchaseOrders((prevPO) => ({
           ...prevPO,
           items: prevPO.items.map((PO) =>
@@ -471,7 +471,7 @@ const ViewPurchaseOrder = ({
                             setSelectedRow(purchaseOrder);
                           }}
                         >
-                          Cancel
+                          Archive
                         </Button>
                       )}
 
@@ -530,13 +530,13 @@ const ViewPurchaseOrder = ({
       <DeletePurchaseOrderModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Purchase Order"
+        title="Delete Purchase Order"
         onDelete={handleDeletePurchaseOrder}
       />
       <CancelTransactionModal
         open={openCancel}
         setOpen={setOpenCancel}
-        title="Cancel Purchase Order"
+        title="Archive Purchase Order"
         transactionType="Purchase Order"
         transactionId={selectedRow?.id ?? ""}
         onCancel={handleCancelPurchaseOrder}

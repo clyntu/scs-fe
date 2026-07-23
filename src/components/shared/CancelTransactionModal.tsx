@@ -66,12 +66,12 @@ const CancelTransactionModal: React.FC<CancelTransactionModalProps> = ({
         <DialogContent>
           <Stack spacing={2}>
             <Typography level="body-md">
-              Are you sure you want to cancel this {transactionType}?
+              Are you sure you want to archive this {transactionType}?
             </Typography>
 
             <Box sx={{ p: 2, bgcolor: "warning.softBg", borderRadius: "sm" }}>
               <Typography level="body-sm" sx={{ color: "warning.main" }}>
-                <strong>Warning:</strong> Once cancelled, this transaction
+                <strong>Warning:</strong> Once archived, this transaction
                 cannot be edited or reversed. This action will not affect
                 inventory levels.
               </Typography>
@@ -82,9 +82,9 @@ const CancelTransactionModal: React.FC<CancelTransactionModalProps> = ({
             </Typography>
 
             <FormControl required>
-              <FormLabel>Cancellation Reason</FormLabel>
+              <FormLabel>Archiving Reason</FormLabel>
               <Textarea
-                placeholder="Please provide a reason for cancelling this transaction..."
+                placeholder="Please provide a reason for archiving this transaction..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 minRows={3}
@@ -102,7 +102,7 @@ const CancelTransactionModal: React.FC<CancelTransactionModalProps> = ({
                 onClick={handleCancel}
                 loading={loading}
               >
-                Cancel Transaction
+                Archive Transaction
               </Button>
             </Stack>
           </Stack>

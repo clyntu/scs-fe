@@ -204,16 +204,16 @@ const ViewDeliveryReceipt = ({
       const url = `/api/supplier-delivery-receipts/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
         setDeliveryReceipts((prevSDR) => ({
           ...prevSDR,
-          items: prevSDR.items.map((SDR) =>
-            SDR.id === selectedRow.id ? { ...SDR, status: "archived" } : SDR,
-          ),
-          total: prevSDR.total,
+          items: prevSDR.items.filter((SDR) => SDR.id !== selectedRow.id),
+          total: prevSDR.total - 1,
         }));
-      } catch (error) {
-        console.error("Error:", error);
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
       }
     }
   };
@@ -225,7 +225,7 @@ const ViewDeliveryReceipt = ({
         await axiosInstance.delete(url, {
           data: { cancellation_reason: reason },
         });
-        toast.success("Delivery Receipt cancelled successfully!");
+        toast.success("Delivery Receipt archived successfully!");
         setDeliveryReceipts((prevSDR) => ({
           ...prevSDR,
           items: prevSDR.items.map((SDR) =>
@@ -474,7 +474,7 @@ const ViewDeliveryReceipt = ({
                             setSelectedRow(deliveryReceipt);
                           }}
                         >
-                          Cancel
+                          Archive
                         </Button>
                       )}
 
@@ -533,13 +533,13 @@ const ViewDeliveryReceipt = ({
       <DeleteDeliveryReceiptModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Delivery Receipt"
+        title="Delete Delivery Receipt"
         onDelete={handleDeleteDeliveryReceipt}
       />
       <CancelTransactionModal
         open={openCancel}
         setOpen={setOpenCancel}
-        title="Cancel Delivery Receipt"
+        title="Archive Delivery Receipt"
         transactionType="Delivery Receipt"
         transactionId={selectedRow?.id ?? ""}
         onCancel={handleCancelDeliveryReceipt}

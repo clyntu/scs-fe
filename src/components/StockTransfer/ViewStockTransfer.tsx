@@ -197,7 +197,7 @@ const ViewStockTransfer = ({
       const url = `/api/stock-transfers/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Delete successful!");
+        toast.success("Archive successful!");
         setStockTransfers((prevST) => ({
           ...prevST,
           items: prevST.items.filter((ST) => ST.id !== selectedRow.id),

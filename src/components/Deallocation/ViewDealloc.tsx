@@ -198,7 +198,11 @@ const ViewDealloc = ({
       const url = `/api/deallocations/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Delete successful!");
+        toast.success(
+          selectedRow.status === "unposted"
+            ? "Delete successful!"
+            : "Archive successful!",
+        );
         setDeallocs({
           items: deallocs.items.filter(
             (dealloc) => dealloc.id !== selectedRow.id,
@@ -207,7 +211,7 @@ const ViewDealloc = ({
         });
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${error?.response?.data?.detail || "Action unsuccessful"}`,
         );
       }
     }
@@ -419,7 +423,7 @@ const ViewDealloc = ({
                               setSelectedRow(dealloc);
                             }}
                           >
-                            Archive
+                            {dealloc.status === "unposted" ? "Delete" : "Archive"}
                           </Button>
                         </Box>
                       </td>
@@ -464,7 +468,12 @@ const ViewDealloc = ({
       <DeleteDeallocModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Deallocation"
+        title={
+          selectedRow?.status === "unposted"
+            ? "Delete Deallocation"
+            : "Archive Deallocation"
+        }
+        isUnposted={selectedRow?.status === "unposted"}
         onDelete={handleDeleteDealloc}
       />
     </>
