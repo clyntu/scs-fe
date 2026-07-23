@@ -115,7 +115,7 @@ const SDRFormDetails = ({
   }, [selectedSupplier]);
 
   useEffect(() => {
-    if (!openEdit) getFixedAmtDiscounts();
+    getFixedAmtDiscounts();
   }, [selectedPOs]);
 
   return (
