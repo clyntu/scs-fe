@@ -28,7 +28,7 @@ import {
   addCommaToNumberWithFourPlaces,
   formatToDate,
 } from "../../helper";
-import { StatusChip, canArchiveTransaction } from "../../utils/statusUtils";
+import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
@@ -225,11 +225,11 @@ const ViewDeliveryReceipt = ({
         await axiosInstance.delete(url, {
           data: { cancellation_reason: reason },
         });
-        toast.success("Delivery Receipt archived successfully!");
+        toast.success("Delivery Receipt cancelled successfully!");
         setDeliveryReceipts((prevSDR) => ({
           ...prevSDR,
           items: prevSDR.items.map((SDR) =>
-            SDR.id === selectedRow.id ? { ...SDR, status: "archived" } : SDR,
+            SDR.id === selectedRow.id ? { ...SDR, status: "cancelled" } : SDR,
           ),
           total: prevSDR.total,
         }));
@@ -283,6 +283,7 @@ const ViewDeliveryReceipt = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
+              <Option value="cancelled">Cancelled</Option>
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
@@ -463,17 +464,17 @@ const ViewDeliveryReceipt = ({
                           : "Edit"}
                       </Button>
 
-                      {canArchiveTransaction(deliveryReceipt.status) && (
+                      {canCancelTransaction(deliveryReceipt.status) && (
                         <Button
                           size="sm"
                           variant="soft"
-                          color="warning"
+                          color="danger"
                           onClick={() => {
                             setOpenCancel(true);
                             setSelectedRow(deliveryReceipt);
                           }}
                         >
-                          Archive
+                          Cancel
                         </Button>
                       )}
 
@@ -538,7 +539,7 @@ const ViewDeliveryReceipt = ({
       <CancelTransactionModal
         open={openCancel}
         setOpen={setOpenCancel}
-        title="Archive Delivery Receipt"
+        title="Cancel Delivery Receipt"
         transactionType="Delivery Receipt"
         transactionId={selectedRow?.id ?? ""}
         onCancel={handleCancelDeliveryReceipt}

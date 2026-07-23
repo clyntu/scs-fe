@@ -14,6 +14,8 @@ export const getStatusColor = (
       return "success";
     case "unposted":
       return "warning";
+    case "cancelled":
+      return "danger";
     case "archived":
       return "warning";
     default:
@@ -24,7 +26,7 @@ export const getStatusColor = (
 export const getStatusVariant = (
   status: string,
 ): "solid" | "soft" | "outlined" => {
-  return "soft";
+  return status.toLowerCase() === "cancelled" ? "outlined" : "soft";
 };
 
 export const StatusChip: React.FC<StatusChipProps> = ({ status, label }) => {
@@ -43,12 +45,16 @@ export const formatStatusText = (status: string): string => {
   return status.toUpperCase();
 };
 
+export const isTransactionCancelled = (status: string): boolean => {
+  return status.toLowerCase() === "cancelled";
+};
+
 export const isTransactionPosted = (status: string): boolean => {
   return status.toLowerCase() === "posted";
 };
 
-export const canArchiveTransaction = (status: string): boolean => {
-  return isTransactionPosted(status);
+export const canCancelTransaction = (status: string): boolean => {
+  return isTransactionPosted(status) && !isTransactionCancelled(status);
 };
 
 // Stock Adjustment Type Helpers

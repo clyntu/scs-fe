@@ -28,7 +28,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   formatToDate,
 } from "../../helper";
-import { StatusChip, canArchiveTransaction } from "../../utils/statusUtils";
+import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
 import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
 
 const ViewPurchaseOrder = ({
@@ -223,11 +223,11 @@ const ViewPurchaseOrder = ({
         await axiosInstance.delete(url, {
           data: { cancellation_reason: reason },
         });
-        toast.success("Purchase Order archived successfully!");
+        toast.success("Purchase Order cancelled successfully!");
         setPurchaseOrders((prevPO) => ({
           ...prevPO,
           items: prevPO.items.map((PO) =>
-            PO.id === selectedRow.id ? { ...PO, status: "archived" } : PO,
+            PO.id === selectedRow.id ? { ...PO, status: "cancelled" } : PO,
           ),
           total: prevPO.total,
         }));
@@ -281,6 +281,7 @@ const ViewPurchaseOrder = ({
               <Option value="all">Active</Option>
               <Option value="posted">Posted</Option>
               <Option value="unposted">Unposted</Option>
+              <Option value="cancelled">Cancelled</Option>
               <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
@@ -458,17 +459,17 @@ const ViewPurchaseOrder = ({
                         {purchaseOrder.status !== "unposted" ? "View" : "Edit"}
                       </Button>
 
-                      {canArchiveTransaction(purchaseOrder.status) && (
+                      {canCancelTransaction(purchaseOrder.status) && (
                         <Button
                           size="sm"
                           variant="soft"
-                          color="warning"
+                          color="danger"
                           onClick={() => {
                             setOpenCancel(true);
                             setSelectedRow(purchaseOrder);
                           }}
                         >
-                          Archive
+                          Cancel
                         </Button>
                       )}
 
@@ -533,7 +534,7 @@ const ViewPurchaseOrder = ({
       <CancelTransactionModal
         open={openCancel}
         setOpen={setOpenCancel}
-        title="Archive Purchase Order"
+        title="Cancel Purchase Order"
         transactionType="Purchase Order"
         transactionId={selectedRow?.id ?? ""}
         onCancel={handleCancelPurchaseOrder}
