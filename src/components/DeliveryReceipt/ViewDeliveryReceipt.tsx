@@ -284,7 +284,6 @@ const ViewDeliveryReceipt = ({
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
               <Option value="cancelled">Cancelled</Option>
-              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
