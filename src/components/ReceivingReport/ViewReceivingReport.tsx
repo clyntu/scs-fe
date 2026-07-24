@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteReceivingReportModal from "./DeleteRRModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   PaginatedRR,
@@ -42,6 +43,7 @@ const ViewReceivingReport = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -217,6 +219,27 @@ const ViewReceivingReport = ({
     }
   };
 
+  const handleArchiveRR = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/receiving-reports/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Receiving Report archived successfully!");
+        setReceivingReports((prevRR) => ({
+          ...prevRR,
+          items: prevRR.items.map((RR) =>
+            RR.id === selectedRow.id ? { ...RR, ...response.data } : RR,
+          ),
+          total: prevRR.total,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -261,6 +284,7 @@ const ViewReceivingReport = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -438,19 +462,36 @@ const ViewReceivingReport = ({
                               ? "View"
                               : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(receivingReport);
-                            }}
-                            disabled={receivingReport.status !== "unposted"}
-                          >
-                            Delete
-                          </Button>
+                          {(receivingReport.status === "posted" ||
+                            receivingReport.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(receivingReport);
+                              }}
+                              disabled={receivingReport.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+
+                          {receivingReport.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(receivingReport);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -497,6 +538,13 @@ const ViewReceivingReport = ({
         setOpen={setOpenDelete}
         title="Delete Receiving Report"
         onDelete={handleDeleteRR}
+      />
+
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Receiving Report"
+        onArchive={handleArchiveRR}
       />
     </>
   );

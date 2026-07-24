@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteCDRModal from "./DeleteCDRModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewCDRProps,
@@ -41,6 +42,7 @@ const ViewCDR = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -224,6 +226,27 @@ const ViewCDR = ({
     }
   };
 
+  const handleArchiveCDR = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/delivery-receipts/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Delivery Receipt archived successfully!");
+        setCDRs((prevCDR) => ({
+          ...prevCDR,
+          items: prevCDR.items.map((CDR) =>
+            CDR.id === selectedRow.id ? { ...CDR, ...response.data } : CDR,
+          ),
+          total: prevCDR.total,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -268,6 +291,7 @@ const ViewCDR = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -433,19 +457,36 @@ const ViewCDR = ({
                           >
                             {CDR.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(CDR);
-                            }}
-                            disabled={CDR.status !== "unposted"}
-                          >
-                            Delete
-                          </Button>
+                          {(CDR.status === "posted" ||
+                            CDR.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(CDR);
+                              }}
+                              disabled={CDR.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+
+                          {CDR.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(CDR);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -490,6 +531,13 @@ const ViewCDR = ({
         setOpen={setOpenDelete}
         title="Delete Delivery Receipt"
         onDelete={handleDeleteCDR}
+      />
+
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Delivery Receipt"
+        onArchive={handleArchiveCDR}
       />
     </>
   );

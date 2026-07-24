@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteCDPModal from "./DeleteCDPModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewCDPProps,
@@ -41,6 +42,7 @@ const ViewCDP = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -216,6 +218,27 @@ const ViewCDP = ({
     }
   };
 
+  const handleArchiveCDP = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/delivery-plans/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Delivery Plan archived successfully!");
+        setCDPs((prevCDP) => ({
+          ...prevCDP,
+          items: prevCDP.items.map((CDP) =>
+            CDP.id === selectedRow.id ? { ...CDP, ...response.data } : CDP,
+          ),
+          total: prevCDP.total,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -260,6 +283,7 @@ const ViewCDP = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -423,19 +447,36 @@ const ViewCDP = ({
                           >
                             {CDP.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(CDP);
-                            }}
-                            disabled={CDP.status !== "unposted"}
-                          >
-                            Delete
-                          </Button>
+                          {(CDP.status === "posted" ||
+                            CDP.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(CDP);
+                              }}
+                              disabled={CDP.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+
+                          {CDP.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(CDP);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -480,6 +521,13 @@ const ViewCDP = ({
         setOpen={setOpenDelete}
         title="Delete Delivery Planning"
         onDelete={handleDeleteCDP}
+      />
+
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Delivery Plan"
+        onArchive={handleArchiveCDP}
       />
     </>
   );

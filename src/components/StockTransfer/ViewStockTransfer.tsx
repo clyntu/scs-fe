@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteSTModal from "./DeleteSTModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   PaginatedST,
@@ -37,6 +38,7 @@ const ViewStockTransfer = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -211,6 +213,27 @@ const ViewStockTransfer = ({
     }
   };
 
+  const handleArchiveST = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/stock-transfers/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Stock Transfer archived successfully!");
+        setStockTransfers((prevST) => ({
+          ...prevST,
+          items: prevST.items.map((ST) =>
+            ST.id === selectedRow.id ? { ...ST, ...response.data } : ST,
+          ),
+          total: prevST.total,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -255,6 +278,7 @@ const ViewStockTransfer = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -410,19 +434,36 @@ const ViewStockTransfer = ({
                           >
                             {stockTransfer.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(stockTransfer);
-                            }}
-                            disabled={stockTransfer.status !== "unposted"}
-                          >
-                            Delete
-                          </Button>
+                          {(stockTransfer.status === "posted" ||
+                            stockTransfer.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(stockTransfer);
+                              }}
+                              disabled={stockTransfer.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+
+                          {stockTransfer.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(stockTransfer);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -469,6 +510,13 @@ const ViewStockTransfer = ({
         setOpen={setOpenDelete}
         title="Delete Stock Transfer"
         onDelete={handleDeleteST}
+      />
+
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Stock Transfer"
+        onArchive={handleArchiveST}
       />
     </>
   );

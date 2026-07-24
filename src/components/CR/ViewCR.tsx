@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteCRModal from "./DeleteCRModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewCRProps,
@@ -37,6 +38,7 @@ const ViewCR = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -212,6 +214,27 @@ const ViewCR = ({
     }
   };
 
+  const handleArchiveCR = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/customer-returns/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Customer Return archived successfully!");
+        setCRs((prevCR) => ({
+          ...prevCR,
+          items: prevCR.items.map((CR) =>
+            CR.id === selectedRow.id ? { ...CR, ...response.data } : CR,
+          ),
+          total: prevCR.total,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -256,6 +279,7 @@ const ViewCR = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -407,19 +431,36 @@ const ViewCR = ({
                           >
                             {CR.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(CR);
-                            }}
-                            disabled={CR.status !== "unposted"}
-                          >
-                            Delete
-                          </Button>
+                          {(CR.status === "posted" ||
+                            CR.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(CR);
+                              }}
+                              disabled={CR.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+
+                          {CR.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(CR);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -464,6 +505,13 @@ const ViewCR = ({
         setOpen={setOpenDelete}
         title="Delete Customer Return"
         onDelete={handleDeleteCR}
+      />
+
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Customer Return"
+        onArchive={handleArchiveCR}
       />
     </>
   );
