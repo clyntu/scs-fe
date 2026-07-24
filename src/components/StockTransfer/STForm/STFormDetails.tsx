@@ -141,7 +141,6 @@ const STFormDetails = ({
               >
                 <Option value="posted">Posted</Option>
                 <Option value="unposted">Unposted</Option>
-                <Option value="archived">Archived</Option>
               </Select>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
