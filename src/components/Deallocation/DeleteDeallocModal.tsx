@@ -12,7 +12,7 @@ const DeleteDeallocModal = ({
   onDelete,
   isUnposted,
 }: DeleteModalProps & { isUnposted: boolean }): JSX.Element => {
-  const actionLabel = isUnposted ? "Delete" : "Archive";
+  const actionLabel = isUnposted ? "Delete" : "Cancel";
   const [isDeleting, setIsDeleting] = useState(false);
   return (
     <Modal
@@ -40,7 +40,8 @@ const DeleteDeallocModal = ({
             <h4 className="mb-6">{title}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to {isUnposted ? "delete" : "archive"} this Deallocation?
+                Are you sure you want to {isUnposted ? "delete" : "cancel"} this
+                Deallocation?
               </p>
             </div>
             <div className="flex justify-end mt-5">
@@ -50,7 +51,7 @@ const DeleteDeallocModal = ({
                 sx={{ ml: 2, width: 130 }}
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                Go Back
               </Button>
               <Button
                 className="bg-button-warning"

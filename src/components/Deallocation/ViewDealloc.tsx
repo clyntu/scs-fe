@@ -201,7 +201,7 @@ const ViewDealloc = ({
         toast.success(
           selectedRow.status === "unposted"
             ? "Delete successful!"
-            : "Archive successful!",
+            : "Cancel successful!",
         );
         setDeallocs({
           items: deallocs.items.filter(
@@ -261,7 +261,7 @@ const ViewDealloc = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Archived</Option>
+              <Option value="archived">Cancelled</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -391,7 +391,10 @@ const ViewDealloc = ({
                       <td>{dealloc?.transaction_date}</td>
                       <td>{withTooltip(dealloc?.customer?.name, "230px")}</td>
                       <td>
-                        <StatusChip status={dealloc.status} />
+                        <StatusChip
+                          status={dealloc.status}
+                          label={dealloc.status === "archived" ? "cancelled" : undefined}
+                        />
                       </td>
                       <td>{dealloc?.allocation_id}</td>
                       <td>{withTooltip(dealloc?.remarks, "180px")}</td>
@@ -423,7 +426,7 @@ const ViewDealloc = ({
                               setSelectedRow(dealloc);
                             }}
                           >
-                            {dealloc.status === "unposted" ? "Delete" : "Archive"}
+                            {dealloc.status === "unposted" ? "Delete" : "Cancel"}
                           </Button>
                         </Box>
                       </td>
@@ -471,7 +474,7 @@ const ViewDealloc = ({
         title={
           selectedRow?.status === "unposted"
             ? "Delete Deallocation"
-            : "Archive Deallocation"
+            : "Cancel Deallocation"
         }
         isUnposted={selectedRow?.status === "unposted"}
         onDelete={handleDeleteDealloc}
