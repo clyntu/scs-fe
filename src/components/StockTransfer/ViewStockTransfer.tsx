@@ -399,6 +399,7 @@ const ViewStockTransfer = ({
                       <td>
                         <Box sx={{ display: "flex", gap: 1 }}>
                           <Button
+                            sx={{ minWidth: 60 }}
                             size="sm"
                             variant="plain"
                             color="neutral"
