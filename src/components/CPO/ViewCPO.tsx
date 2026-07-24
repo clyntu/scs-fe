@@ -205,20 +205,13 @@ const ViewCPO = ({
     return () => clearTimeout(timeout); // cancel if any dep changes
   }, [searchTerm, status, dateFrom, dateTo]);
 
-  const handleDeleteCPO = async (
-    reason?: string,
-    forceDeallocation?: boolean,
-  ): Promise<void> => {
+  const handleDeleteCPO = async (reason?: string): Promise<void> => {
     if (selectedRow !== undefined) {
       const url = `/api/customer_purchase_orders/${selectedRow.id}`;
 
-      // Prepare request body based on parameters
       const requestBody: any = {};
       if (reason !== undefined && reason.trim() !== "") {
         requestBody.cancellation_reason = reason;
-      }
-      if (forceDeallocation !== undefined) {
-        requestBody.force_deallocate = forceDeallocation;
       }
 
       const response = await axiosInstance.delete(url, {
@@ -237,13 +230,7 @@ const ViewCPO = ({
       } else if (response.status === 200) {
         // Soft cancel (posted CPO)
         const cancelledCPO = response.data;
-        if (forceDeallocation === true) {
-          toast.success(
-            "CPO cancelled and allocations automatically deallocated!",
-          );
-        } else {
-          toast.success("CPO cancelled successfully!");
-        }
+        toast.success("CPO cancelled successfully!");
         setCPOs((prevCPO) => ({
           ...prevCPO,
           items: prevCPO.items.map((CPO) =>
