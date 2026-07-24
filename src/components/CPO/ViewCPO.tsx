@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteCPOModal from "./DeleteCPOModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewCPOProps,
@@ -28,7 +29,10 @@ import {
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewCPO = ({
   setOpenCreate,
@@ -41,6 +45,7 @@ const ViewCPO = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -150,15 +155,7 @@ const ViewCPO = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [
-    isLoadingMore,
-    hasMore,
-    page,
-    searchTerm,
-    status,
-    dateFrom,
-    dateTo,
-  ]);
+  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -205,38 +202,42 @@ const ViewCPO = ({
     return () => clearTimeout(timeout); // cancel if any dep changes
   }, [searchTerm, status, dateFrom, dateTo]);
 
-  const handleDeleteCPO = async (reason?: string): Promise<void> => {
+  const handleDeleteCPO = async (): Promise<void> => {
     if (selectedRow !== undefined) {
       const url = `/api/customer_purchase_orders/${selectedRow.id}`;
-
-      const requestBody: any = {};
-      if (reason !== undefined && reason.trim() !== "") {
-        requestBody.cancellation_reason = reason;
-      }
-
-      const response = await axiosInstance.delete(url, {
-        data: requestBody,
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.status === 204) {
-        // Hard delete (unposted CPO)
+      try {
+        await axiosInstance.delete(url);
         toast.success("CPO deleted successfully!");
         setCPOs((prevCPO) => ({
           ...prevCPO,
           items: prevCPO.items.filter((CPO) => CPO.id !== selectedRow.id),
           total: prevCPO.total - 1,
         }));
-      } else if (response.status === 200) {
-        // Soft cancel (posted CPO)
-        const cancelledCPO = response.data;
-        toast.success("CPO cancelled successfully!");
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
+      }
+    }
+  };
+
+  const handleArchiveCPO = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/customer_purchase_orders/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("CPO archived successfully!");
+        const archivedCPO = response.data;
         setCPOs((prevCPO) => ({
           ...prevCPO,
           items: prevCPO.items.map((CPO) =>
-            CPO.id === selectedRow.id ? { ...CPO, ...cancelledCPO } : CPO,
+            CPO.id === selectedRow.id ? { ...CPO, ...archivedCPO } : CPO,
           ),
         }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
       }
     }
   };
@@ -285,7 +286,7 @@ const ViewCPO = ({
               <Option value="all">Active</Option>
               <Option value="posted">Posted</Option>
               <Option value="unposted">Unposted</Option>
-              <Option value="archived">Cancelled</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -372,10 +373,22 @@ const ViewCPO = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={13} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={13}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading customer purchase orders...</Typography>
+                      <Typography level="body-sm">
+                        Loading customer purchase orders...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -418,10 +431,7 @@ const ViewCPO = ({
                       <td>{withTooltip(CPO?.customer?.name, "280px")}</td>
                       <td>{withTooltip(CPO.reference_number, "200px")}</td>
                       <td>
-                        <StatusChip
-                          status={CPO.status}
-                          label={CPO.status === "archived" ? "cancelled" : undefined}
-                        />
+                        <StatusChip status={CPO.status} />
                       </td>
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(CPO.net_total)}
@@ -448,20 +458,37 @@ const ViewCPO = ({
                           >
                             {CPO.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            sx={{ minWidth: 70 }}
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(CPO);
-                            }}
-                            disabled={CPO.status === "archived"}
-                          >
-                            {CPO.status === "unposted" ? "Delete" : "Cancel"}
-                          </Button>
+                          {(CPO.status === "posted" ||
+                            CPO.status === "archived") && (
+                            <Button
+                              sx={{ minWidth: 70 }}
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(CPO);
+                              }}
+                              disabled={CPO.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+                          {CPO.status === "unposted" && (
+                            <Button
+                              sx={{ minWidth: 70 }}
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(CPO);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -491,7 +518,8 @@ const ViewCPO = ({
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {CPOs.items.length} of {CPOs.total} items • Scroll for more
+                Showing {CPOs.items.length} of {CPOs.total} items • Scroll for
+                more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
@@ -504,8 +532,14 @@ const ViewCPO = ({
       <DeleteCPOModal
         open={openDelete}
         setOpen={setOpenDelete}
-        selectedCPO={selectedRow ?? null}
+        title="Delete Customer Purchase Order"
         onDelete={handleDeleteCPO}
+      />
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Customer Purchase Order"
+        onArchive={handleArchiveCPO}
       />
     </>
   );

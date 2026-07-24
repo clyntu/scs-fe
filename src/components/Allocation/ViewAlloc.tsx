@@ -22,6 +22,7 @@ import type {
 
 import { convertToQueryParams, formatToDate } from "../../helper";
 import DeleteAllocModal from "./DeleteAllocModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
@@ -37,6 +38,7 @@ const ViewAlloc = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -208,6 +210,27 @@ const ViewAlloc = ({
     }
   };
 
+  const handleArchiveAlloc = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/allocations/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Allocation archived successfully!");
+        const archivedAlloc = response.data;
+        setAllocs((prevAlloc) => ({
+          ...prevAlloc,
+          items: prevAlloc.items.map((Alloc) =>
+            Alloc.id === selectedRow.id ? { ...Alloc, ...archivedAlloc } : Alloc,
+          ),
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
+      }
+    }
+  };
+
   return (
     <>
       <Box sx={{ width: "100%" }}>
@@ -252,7 +275,7 @@ const ViewAlloc = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Cancelled</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -381,10 +404,7 @@ const ViewAlloc = ({
                       <td>{alloc?.transaction_date}</td>
                       <td>{withTooltip(alloc?.customer.name, "330px")}</td>
                       <td>
-                        <StatusChip
-                          status={alloc.status}
-                          label={alloc.status === "archived" ? "cancelled" : undefined}
-                        />
+                        <StatusChip status={alloc.status} />
                       </td>
                       <td>{withTooltip(alloc?.remarks, "180px")}</td>
                       <td>{withTooltip(alloc?.creator?.username, "130px")}</td>
@@ -407,18 +427,35 @@ const ViewAlloc = ({
                           >
                             {alloc.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(alloc);
-                            }}
-                          >
-                            {alloc.status === "unposted" ? "Delete" : "Cancel"}
-                          </Button>
+                          {(alloc.status === "posted" ||
+                            alloc.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(alloc);
+                              }}
+                              disabled={alloc.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+                          {alloc.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(alloc);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -462,13 +499,14 @@ const ViewAlloc = ({
       <DeleteAllocModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title={
-          selectedRow?.status === "unposted"
-            ? "Delete Allocation"
-            : "Cancel Allocation"
-        }
-        isUnposted={selectedRow?.status === "unposted"}
+        title="Delete Allocation"
         onDelete={handleDeleteAlloc}
+      />
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Allocation"
+        onArchive={handleArchiveAlloc}
       />
     </>
   );

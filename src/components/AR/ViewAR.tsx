@@ -14,6 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteARModal from "./DeleteARModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewARProps,
@@ -37,6 +38,7 @@ const ViewAR = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
@@ -212,20 +214,37 @@ const ViewAR = ({
       const url = `/api/ar-receipts/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Delete successful!");
+        setARs((prevAR) => ({
+          ...prevAR,
+          items: prevAR.items.filter((AR) => AR.id !== selectedRow.id),
+          total: prevAR.total - 1,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
+      }
+    }
+  };
 
-        // Update the AR's status to archived in the list
+  const handleArchiveAR = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/ar-receipts/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Archive successful!");
+        const archivedAR = response.data;
         setARs((prevAR) => ({
           ...prevAR,
           items: prevAR.items.map((AR) =>
-            AR.id === selectedRow.id ? { ...AR, status: "archived" } : AR,
+            AR.id === selectedRow.id ? { ...AR, ...archivedAR } : AR,
           ),
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
+          `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Archive unsuccessful"}`,
         );
-        return;
       }
     }
   };
@@ -465,19 +484,34 @@ const ViewAR = ({
                           >
                             {AR.status !== "unposted" || !isAdmin ? "View" : "Edit"}
                           </Button>
-                          {isAdmin && (
+                          {isAdmin &&
+                            (AR.status === "posted" ||
+                              AR.status === "archived") && (
+                              <Button
+                                size="sm"
+                                variant="soft"
+                                color="warning"
+                                onClick={() => {
+                                  setOpenArchive(true);
+                                  setSelectedRow(AR);
+                                }}
+                                disabled={AR.status === "archived"}
+                              >
+                                Archive
+                              </Button>
+                            )}
+                          {isAdmin && AR.status === "unposted" && (
                             <Button
                               size="sm"
                               variant="soft"
-                              color="warning"
+                              color="danger"
                               className="bg-delete-red"
                               onClick={() => {
                                 setOpenDelete(true);
                                 setSelectedRow(AR);
                               }}
-                              disabled={AR.status !== "unposted"}
                             >
-                              Archive
+                              Delete
                             </Button>
                           )}
                         </Box>
@@ -523,8 +557,14 @@ const ViewAR = ({
       <DeleteARModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Customer Return"
+        title="Delete AR Receipt"
         onDelete={handleDeleteAR}
+      />
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="AR Receipt"
+        onArchive={handleArchiveAR}
       />
     </>
   );

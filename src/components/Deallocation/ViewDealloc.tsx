@@ -22,6 +22,7 @@ import type {
 
 import { convertToQueryParams, formatToDate } from "../../helper";
 import DeleteDeallocModal from "./DeleteDeallocModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
@@ -37,6 +38,7 @@ const ViewDealloc = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -198,11 +200,7 @@ const ViewDealloc = ({
       const url = `/api/deallocations/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success(
-          selectedRow.status === "unposted"
-            ? "Delete successful!"
-            : "Cancel successful!",
-        );
+        toast.success("Delete successful!");
         setDeallocs({
           items: deallocs.items.filter(
             (dealloc) => dealloc.id !== selectedRow.id,
@@ -211,7 +209,30 @@ const ViewDealloc = ({
         });
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Action unsuccessful"}`,
+          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+        );
+      }
+    }
+  };
+
+  const handleArchiveDealloc = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/deallocations/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("Archive successful!");
+        const archivedDealloc = response.data;
+        setDeallocs((prev) => ({
+          ...prev,
+          items: prev.items.map((dealloc) =>
+            dealloc.id === selectedRow.id
+              ? { ...dealloc, ...archivedDealloc }
+              : dealloc,
+          ),
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
         );
       }
     }
@@ -261,7 +282,7 @@ const ViewDealloc = ({
               <Option value="all">Active</Option>
               <Option value="unposted">Unposted</Option>
               <Option value="posted">Posted</Option>
-              <Option value="archived">Cancelled</Option>
+              <Option value="archived">Archived</Option>
             </Select>
           </FormControl>
           <DateRangeFilter
@@ -391,10 +412,7 @@ const ViewDealloc = ({
                       <td>{dealloc?.transaction_date}</td>
                       <td>{withTooltip(dealloc?.customer?.name, "230px")}</td>
                       <td>
-                        <StatusChip
-                          status={dealloc.status}
-                          label={dealloc.status === "archived" ? "cancelled" : undefined}
-                        />
+                        <StatusChip status={dealloc.status} />
                       </td>
                       <td>{dealloc?.allocation_id}</td>
                       <td>{withTooltip(dealloc?.remarks, "180px")}</td>
@@ -416,18 +434,35 @@ const ViewDealloc = ({
                           >
                             {dealloc.status !== "unposted" ? "View" : "Edit"}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="soft"
-                            color={dealloc.status === "unposted" ? "danger" : "warning"}
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(dealloc);
-                            }}
-                          >
-                            {dealloc.status === "unposted" ? "Delete" : "Cancel"}
-                          </Button>
+                          {(dealloc.status === "posted" ||
+                            dealloc.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(dealloc);
+                              }}
+                              disabled={dealloc.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+                          {dealloc.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(dealloc);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </Box>
                       </td>
                     </tr>
@@ -471,13 +506,14 @@ const ViewDealloc = ({
       <DeleteDeallocModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title={
-          selectedRow?.status === "unposted"
-            ? "Delete Deallocation"
-            : "Cancel Deallocation"
-        }
-        isUnposted={selectedRow?.status === "unposted"}
+        title="Delete Deallocation"
         onDelete={handleDeleteDealloc}
+      />
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Deallocation"
+        onArchive={handleArchiveDealloc}
       />
     </>
   );

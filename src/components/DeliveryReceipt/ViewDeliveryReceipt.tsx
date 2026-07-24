@@ -14,7 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteDeliveryReceiptModal from "./DeleteDeliveryReceiptModal";
-import CancelTransactionModal from "../shared/CancelTransactionModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewDeliveryReceiptProps,
@@ -28,9 +28,12 @@ import {
   addCommaToNumberWithFourPlaces,
   formatToDate,
 } from "../../helper";
-import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
+import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewDeliveryReceipt = ({
   setOpenCreate,
@@ -43,7 +46,7 @@ const ViewDeliveryReceipt = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
-  const [openCancel, setOpenCancel] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -152,7 +155,16 @@ const ViewDeliveryReceipt = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo, limit]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    dateFrom,
+    dateTo,
+    limit,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -218,23 +230,23 @@ const ViewDeliveryReceipt = ({
     }
   };
 
-  const handleCancelDeliveryReceipt = async (reason: string): Promise<void> => {
+  const handleArchiveDeliveryReceipt = async (): Promise<void> => {
     if (selectedRow !== undefined) {
       const url = `/api/supplier-delivery-receipts/${selectedRow.id}`;
       try {
-        await axiosInstance.delete(url, {
-          data: { cancellation_reason: reason },
-        });
-        toast.success("Delivery Receipt cancelled successfully!");
+        await axiosInstance.delete(url);
+        toast.success("Delivery Receipt archived successfully!");
         setDeliveryReceipts((prevSDR) => ({
           ...prevSDR,
           items: prevSDR.items.map((SDR) =>
-            SDR.id === selectedRow.id ? { ...SDR, status: "cancelled" } : SDR,
+            SDR.id === selectedRow.id ? { ...SDR, status: "archived" } : SDR,
           ),
           total: prevSDR.total,
         }));
       } catch (error: any) {
-        toast.error(`Error message: ${error.response.data.detail}`);
+        toast.error(
+          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+        );
       }
     }
   };
@@ -370,7 +382,10 @@ const ViewDeliveryReceipt = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={14} style={{ textAlign: "center", padding: "20px" }}>
+                  <td
+                    colSpan={14}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
                     <Box
                       sx={{
                         display: "flex",
@@ -414,86 +429,95 @@ const ViewDeliveryReceipt = ({
                 </thead>
                 <tbody>
                   {deliveryReceipts.items.map((deliveryReceipt) => (
-                <tr
-                  key={deliveryReceipt.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(deliveryReceipt);
-                  }}
-                >
-                  <td>{deliveryReceipt.id}</td>
-                  <td>{deliveryReceipt.transaction_date}</td>
-                  <td>{withTooltip(deliveryReceipt.supplier.name, "230px")}</td>
-                  <td>
-                    {withTooltip(deliveryReceipt.reference_number, "160px")}
-                  </td>
-                  <td>
-                    <StatusChip status={deliveryReceipt.status} />
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(deliveryReceipt.net_amount)}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithFourPlaces(
-                      deliveryReceipt.landed_total,
-                    )}
-                  </td>
-                  <td>{withTooltip(deliveryReceipt.remarks, "180px")}</td>
-                  <td>{deliveryReceipt?.creator?.username}</td>
-                  <td>{deliveryReceipt?.modifier?.username}</td>
-                  <td>{formatToDate(deliveryReceipt.date_created)}</td>
-                  <td>{formatToDate(deliveryReceipt.date_modified)}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        sx={{ minWidth: 60 }}
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(deliveryReceipt);
-                        }}
-                      >
-                        {deliveryReceipt.status !== "unposted"
-                          ? "View"
-                          : "Edit"}
-                      </Button>
+                    <tr
+                      key={deliveryReceipt.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(deliveryReceipt);
+                      }}
+                    >
+                      <td>{deliveryReceipt.id}</td>
+                      <td>{deliveryReceipt.transaction_date}</td>
+                      <td>
+                        {withTooltip(deliveryReceipt.supplier.name, "230px")}
+                      </td>
+                      <td>
+                        {withTooltip(deliveryReceipt.reference_number, "160px")}
+                      </td>
+                      <td>
+                        <StatusChip status={deliveryReceipt.status} />
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          deliveryReceipt.net_amount,
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          deliveryReceipt.fob_total,
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithFourPlaces(
+                          deliveryReceipt.landed_total,
+                        )}
+                      </td>
+                      <td>{withTooltip(deliveryReceipt.remarks, "180px")}</td>
+                      <td>{deliveryReceipt?.creator?.username}</td>
+                      <td>{deliveryReceipt?.modifier?.username}</td>
+                      <td>{formatToDate(deliveryReceipt.date_created)}</td>
+                      <td>{formatToDate(deliveryReceipt.date_modified)}</td>
+                      <td>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button
+                            sx={{ minWidth: 60 }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(deliveryReceipt);
+                            }}
+                          >
+                            {deliveryReceipt.status !== "unposted"
+                              ? "View"
+                              : "Edit"}
+                          </Button>
 
-                      {canCancelTransaction(deliveryReceipt.status) && (
-                        <Button
-                          size="sm"
-                          variant="soft"
-                          color="danger"
-                          onClick={() => {
-                            setOpenCancel(true);
-                            setSelectedRow(deliveryReceipt);
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      )}
+                          {(deliveryReceipt.status === "posted" ||
+                            deliveryReceipt.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(deliveryReceipt);
+                              }}
+                              disabled={deliveryReceipt.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
 
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(deliveryReceipt);
-                        }}
-                        disabled={deliveryReceipt.status !== "unposted"}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </td>
-                </tr>
-              ))}
+                          {deliveryReceipt.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(deliveryReceipt);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </>
             )}
@@ -535,13 +559,11 @@ const ViewDeliveryReceipt = ({
         title="Delete Delivery Receipt"
         onDelete={handleDeleteDeliveryReceipt}
       />
-      <CancelTransactionModal
-        open={openCancel}
-        setOpen={setOpenCancel}
-        title="Cancel Delivery Receipt"
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
         transactionType="Delivery Receipt"
-        transactionId={selectedRow?.id ?? ""}
-        onCancel={handleCancelDeliveryReceipt}
+        onArchive={handleArchiveDeliveryReceipt}
       />
     </>
   );

@@ -14,7 +14,7 @@ import {
 } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import DeletePurchaseOrderModal from "./DeletePurchaseOrderModal";
-import CancelTransactionModal from "../shared/CancelTransactionModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { withTooltip } from "../shared/withTooltip";
 import { toast } from "react-toastify";
 import type {
@@ -28,8 +28,11 @@ import {
   addCommaToNumberWithTwoPlaces,
   formatToDate,
 } from "../../helper";
-import { StatusChip, canCancelTransaction } from "../../utils/statusUtils";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import { StatusChip } from "../../utils/statusUtils";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewPurchaseOrder = ({
   setOpenCreate,
@@ -42,7 +45,7 @@ const ViewPurchaseOrder = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
-  const [openCancel, setOpenCancel] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
@@ -152,7 +155,16 @@ const ViewPurchaseOrder = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, limit, dateFrom, dateTo]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    limit,
+    dateFrom,
+    dateTo,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
@@ -216,18 +228,16 @@ const ViewPurchaseOrder = ({
     }
   };
 
-  const handleCancelPurchaseOrder = async (reason: string): Promise<void> => {
+  const handleArchivePurchaseOrder = async (): Promise<void> => {
     if (selectedRow !== undefined) {
       const url = `/api/purchase_orders/${selectedRow.id}`;
       try {
-        await axiosInstance.delete(url, {
-          data: { cancellation_reason: reason },
-        });
-        toast.success("Purchase Order cancelled successfully!");
+        await axiosInstance.delete(url);
+        toast.success("Purchase Order archived successfully!");
         setPurchaseOrders((prevPO) => ({
           ...prevPO,
           items: prevPO.items.map((PO) =>
-            PO.id === selectedRow.id ? { ...PO, status: "cancelled" } : PO,
+            PO.id === selectedRow.id ? { ...PO, status: "archived" } : PO,
           ),
           total: prevPO.total,
         }));
@@ -369,10 +379,22 @@ const ViewPurchaseOrder = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={16} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={16}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading purchase orders...</Typography>
+                      <Typography level="body-sm">
+                        Loading purchase orders...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -406,89 +428,103 @@ const ViewPurchaseOrder = ({
                 </thead>
                 <tbody>
                   {purchaseOrders.items.map((purchaseOrder) => (
-                <tr
-                  key={purchaseOrder.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(purchaseOrder);
-                  }}
-                >
-                  <td>{purchaseOrder.id}</td>
-                  <td>{purchaseOrder.transaction_date}</td>
-                  <td>{withTooltip(purchaseOrder?.supplier?.name, "280px")}</td>
-                  <td>
-                    {withTooltip(purchaseOrder.reference_number, "160px")}
-                  </td>
-                  <td>
-                    <StatusChip status={purchaseOrder.status} />
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(purchaseOrder.net_amount)}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(purchaseOrder.fob_total)}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(purchaseOrder.landed_total)}
-                  </td>
-                  <td>{purchaseOrder.currency_used}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {addCommaToNumberWithTwoPlaces(purchaseOrder.peso_rate)}
-                  </td>
-                  <td>{withTooltip(purchaseOrder.remarks, "180px")}</td>
-                  <td>
-                    {withTooltip(purchaseOrder?.creator?.username, "130px")}
-                  </td>
-                  <td>
-                    {withTooltip(purchaseOrder?.modifier?.username, "130px")}
-                  </td>
-                  <td>{formatToDate(purchaseOrder.date_created)}</td>
-                  <td>{formatToDate(purchaseOrder.date_modified)}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        sx={{ minWidth: 60 }}
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(purchaseOrder);
-                        }}
-                      >
-                        {purchaseOrder.status !== "unposted" ? "View" : "Edit"}
-                      </Button>
+                    <tr
+                      key={purchaseOrder.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(purchaseOrder);
+                      }}
+                    >
+                      <td>{purchaseOrder.id}</td>
+                      <td>{purchaseOrder.transaction_date}</td>
+                      <td>
+                        {withTooltip(purchaseOrder?.supplier?.name, "280px")}
+                      </td>
+                      <td>
+                        {withTooltip(purchaseOrder.reference_number, "160px")}
+                      </td>
+                      <td>
+                        <StatusChip status={purchaseOrder.status} />
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          purchaseOrder.net_amount,
+                        )}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(purchaseOrder.fob_total)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          purchaseOrder.landed_total,
+                        )}
+                      </td>
+                      <td>{purchaseOrder.currency_used}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(purchaseOrder.peso_rate)}
+                      </td>
+                      <td>{withTooltip(purchaseOrder.remarks, "180px")}</td>
+                      <td>
+                        {withTooltip(purchaseOrder?.creator?.username, "130px")}
+                      </td>
+                      <td>
+                        {withTooltip(
+                          purchaseOrder?.modifier?.username,
+                          "130px",
+                        )}
+                      </td>
+                      <td>{formatToDate(purchaseOrder.date_created)}</td>
+                      <td>{formatToDate(purchaseOrder.date_modified)}</td>
+                      <td>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button
+                            sx={{ minWidth: 60 }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(purchaseOrder);
+                            }}
+                          >
+                            {purchaseOrder.status !== "unposted"
+                              ? "View"
+                              : "Edit"}
+                          </Button>
 
-                      {canCancelTransaction(purchaseOrder.status) && (
-                        <Button
-                          size="sm"
-                          variant="soft"
-                          color="danger"
-                          onClick={() => {
-                            setOpenCancel(true);
-                            setSelectedRow(purchaseOrder);
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      )}
+                          {(purchaseOrder.status === "posted" ||
+                            purchaseOrder.status === "archived") && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(purchaseOrder);
+                              }}
+                              disabled={purchaseOrder.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
 
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(purchaseOrder);
-                        }}
-                        disabled={purchaseOrder.status !== "unposted"}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </td>
-                </tr>
+                          {purchaseOrder.status === "unposted" && (
+                            <Button
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(purchaseOrder);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </Box>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </>
@@ -515,7 +551,8 @@ const ViewPurchaseOrder = ({
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {purchaseOrders.items.length} of {purchaseOrders.total} items • Scroll for more
+                Showing {purchaseOrders.items.length} of {purchaseOrders.total}{" "}
+                items • Scroll for more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
@@ -531,13 +568,11 @@ const ViewPurchaseOrder = ({
         title="Delete Purchase Order"
         onDelete={handleDeletePurchaseOrder}
       />
-      <CancelTransactionModal
-        open={openCancel}
-        setOpen={setOpenCancel}
-        title="Cancel Purchase Order"
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
         transactionType="Purchase Order"
-        transactionId={selectedRow?.id ?? ""}
-        onCancel={handleCancelPurchaseOrder}
+        onArchive={handleArchivePurchaseOrder}
       />
     </>
   );

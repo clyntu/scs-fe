@@ -2,16 +2,16 @@ import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box } from "@mui/joy";
-import type { DeleteModalProps } from "../../interface";
+import type { ArchiveModalProps } from "../../interface";
 import { useState } from "react";
 
-const DeleteCDPModal = ({
+const ArchiveConfirmModal = ({
   open,
-  title,
   setOpen,
-  onDelete,
-}: DeleteModalProps): JSX.Element => {
-  const [isDeleting, setIsDeleting] = useState(false);
+  transactionType,
+  onArchive,
+}: ArchiveModalProps): JSX.Element => {
+  const [isArchiving, setIsArchiving] = useState(false);
   return (
     <Modal
       aria-labelledby="modal-title"
@@ -35,10 +35,10 @@ const DeleteCDPModal = ({
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
           <Box>
-            <h4 className="mb-6">{title}</h4>
+            <h4 className="mb-6">Archive {transactionType}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to delete this AR Receipt?
+                Are you sure you want to archive this {transactionType}?
               </p>
             </div>
             <div className="flex justify-end mt-5">
@@ -48,21 +48,22 @@ const DeleteCDPModal = ({
                 sx={{ ml: 2, width: 130 }}
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                Close
               </Button>
               <Button
                 sx={{ ml: 2, width: 130 }}
-                color="danger"
+                className="bg-button-warning"
+                color="warning"
                 size="sm"
-                loading={isDeleting}
+                loading={isArchiving}
                 onClick={async () => {
-                  setIsDeleting(true);
-                  await onDelete(); // Call the onDelete function when the button is clicked
+                  setIsArchiving(true);
+                  await onArchive();
+                  setIsArchiving(false);
                   setOpen(false);
-                  setIsDeleting(false);
                 }}
               >
-                Delete
+                Archive
               </Button>
             </div>
           </Box>
@@ -72,4 +73,4 @@ const DeleteCDPModal = ({
   );
 };
 
-export default DeleteCDPModal;
+export default ArchiveConfirmModal;

@@ -101,6 +101,13 @@ export interface DeleteModalProps {
   onDelete: () => Promise<void>;
 }
 
+export interface ArchiveModalProps {
+  open: boolean;
+  setOpen: (isOpen: boolean) => void;
+  transactionType: string;
+  onArchive: () => Promise<void>;
+}
+
 export interface ItemsModalProps {
   open: boolean;
   title: string;
