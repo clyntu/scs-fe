@@ -261,15 +261,7 @@ const AllocFormTable = ({
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
-                          slotProps={{
-                            input: {
-                              sx: {
-                                "& .MuiAutocomplete-input": {
-                                  fontSize: "14px",
-                                },
-                              },
-                            },
-                          }}
+                          sx={{ fontSize: "xs" }}
                         />
                       </td>
                       <td style={{ width: 150 }}>
@@ -284,7 +276,7 @@ const AllocFormTable = ({
                         )}
                         <Input
                           type="number"
-                          sx={{ width: "100%", minWidth: 0 }}
+                          sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
                           value={item.warehouse_1_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -401,15 +393,7 @@ const AllocFormTable = ({
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
-                          slotProps={{
-                            input: {
-                              sx: {
-                                "& .MuiAutocomplete-input": {
-                                  fontSize: "14px",
-                                },
-                              },
-                            },
-                          }}
+                          sx={{ fontSize: "xs" }}
                         />
                       </td>
                       <td style={{ width: 150 }}>
@@ -424,7 +408,7 @@ const AllocFormTable = ({
                         )}
                         <Input
                           type="number"
-                          sx={{ width: "100%", minWidth: 0 }}
+                          sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
                           value={item.warehouse_2_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -541,15 +525,7 @@ const AllocFormTable = ({
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
-                          slotProps={{
-                            input: {
-                              sx: {
-                                "& .MuiAutocomplete-input": {
-                                  fontSize: "14px",
-                                },
-                              },
-                            },
-                          }}
+                          sx={{ fontSize: "xs" }}
                         />
                       </td>
                       <td style={{ width: 150 }}>
@@ -564,7 +540,7 @@ const AllocFormTable = ({
                         )}
                         <Input
                           type="number"
-                          sx={{ width: "100%", minWidth: 0 }}
+                          sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
                           value={item.warehouse_3_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
