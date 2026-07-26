@@ -135,8 +135,8 @@ const RRFormExpenses = ({
               <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                 Expense
               </th>
-              <th style={{ width: 100, textAlign: "right" }}>Amount</th>
-              <th style={{ width: 100 }}>Comments</th>
+              <th style={{ width: 150, textAlign: "right" }}>Amount</th>
+              <th style={{ width: 200 }}>Comments</th>
               <th
                 aria-label="actions"
                 style={{ width: "var(--Table-lastColumnWidth)" }}
@@ -190,6 +190,7 @@ const RRFormExpenses = ({
                       }
                       value={expense.comments}
                       disabled={isEditDisabled}
+                      sx={{ fontSize: "xs" }}
                     />
                   </td>
                   <td>
