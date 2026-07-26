@@ -168,6 +168,7 @@ const ViewWHModal = ({
                   stickyHeader
                   hoverRow
                   sx={{
+                    fontSize: "13px",
                     tableLayout: "fixed",
                     "& tbody tr > *:first-of-type": {
                       position: "sticky",

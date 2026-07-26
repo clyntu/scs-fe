@@ -367,6 +367,7 @@ const ViewPurchaseOrder = ({
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
@@ -536,7 +537,7 @@ const ViewPurchaseOrder = ({
                           }}
                         >
                           <Button
-                            sx={{ minWidth: 70, fontSize: "xs" }}
+                            sx={{ minWidth: 70, fontSize: "13px" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -553,7 +554,7 @@ const ViewPurchaseOrder = ({
                           {(purchaseOrder.status === "posted" ||
                             purchaseOrder.status === "archived") && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -569,7 +570,7 @@ const ViewPurchaseOrder = ({
 
                           {purchaseOrder.status === "unposted" && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="danger"

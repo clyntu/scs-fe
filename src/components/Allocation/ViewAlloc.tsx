@@ -362,6 +362,7 @@ const ViewAlloc = ({
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
@@ -476,7 +477,7 @@ const ViewAlloc = ({
                           }}
                         >
                           <Button
-                            sx={{ minWidth: 70, fontSize: "xs" }}
+                            sx={{ minWidth: 70, fontSize: "13px" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -490,7 +491,7 @@ const ViewAlloc = ({
                           {(alloc.status === "posted" ||
                             alloc.status === "archived") && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -505,7 +506,7 @@ const ViewAlloc = ({
                           )}
                           {alloc.status === "unposted" && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="danger"

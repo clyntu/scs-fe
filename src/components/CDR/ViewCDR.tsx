@@ -378,6 +378,7 @@ const ViewCDR = ({
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
@@ -512,7 +513,7 @@ const ViewCDR = ({
                           }}
                         >
                           <Button
-                            sx={{ minWidth: 70, fontSize: "xs" }}
+                            sx={{ minWidth: 70, fontSize: "13px" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -526,7 +527,7 @@ const ViewCDR = ({
                           {(CDR.status === "posted" ||
                             CDR.status === "archived") && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -542,7 +543,7 @@ const ViewCDR = ({
 
                           {CDR.status === "unposted" && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="danger"

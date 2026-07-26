@@ -93,6 +93,7 @@ const CDPFormTable = ({
         stickyHeader
         hoverRow
         sx={{
+          fontSize: "13px",
           tableLayout: "fixed",
           "& tbody tr > *:first-child": {
             position: "sticky",
@@ -168,7 +169,7 @@ const CDPFormTable = ({
                     type="number"
                     value={item.dp_qty}
                     sx={{
-                      fontSize: "xs",
+                      fontSize: "13px",
                       width: "100%",
                       minWidth: 0,
                       input: { textAlign: "right", minWidth: 0 },

@@ -94,6 +94,7 @@ const CRFormTable = ({
         stickyHeader
         hoverRow
         sx={{
+          fontSize: "13px",
           tableLayout: "fixed",
           "& tbody tr > *:first-child": {
             position: "sticky",
@@ -189,14 +190,14 @@ const CRFormTable = ({
                     className="w-[100%]"
                     placeholder="Select Warehouse"
                     disabled={isEditDisabled}
-                    sx={{ fontSize: "xs" }}
+                    sx={{ fontSize: "13px" }}
                   />
                 </td>
                 <td>
                   <Input
                     type="number"
                     sx={{
-                      fontSize: "xs",
+                      fontSize: "13px",
                       width: "100%",
                       minWidth: 0,
                       input: { textAlign: "right", minWidth: 0 },
@@ -237,7 +238,7 @@ const CRFormTable = ({
                 <td>
                   <Input
                     sx={{
-                      fontSize: "xs",
+                      fontSize: "13px",
                       width: "100%",
                       minWidth: 0,
                       input: { textAlign: "right", minWidth: 0 },

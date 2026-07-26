@@ -266,6 +266,7 @@ const ViewUsers = (): JSX.Element => {
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
@@ -376,7 +377,7 @@ const ViewUsers = (): JSX.Element => {
                       <td>
                         <Box sx={{ display: "flex", justifyContent: "center" }}>
                           <Button
-                            sx={{ fontSize: "xs" }}
+                            sx={{ fontSize: "13px" }}
                             variant="soft"
                             color={user.disabled ? "success" : "warning"}
                             size="sm"

@@ -72,6 +72,7 @@ const ARFormTable = ({
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               tableLayout: "fixed",
               "& tbody tr > *:first-child": {
                 position: "sticky",
@@ -188,7 +189,7 @@ const ARFormTable = ({
                       <td>
                         <Input
                           sx={{
-                            fontSize: "xs",
+                            fontSize: "13px",
                             width: "100%",
                             minWidth: 0,
                             input: { textAlign: "right", minWidth: 0 },

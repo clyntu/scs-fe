@@ -210,6 +210,7 @@ const StockHistory = ({
                 size="sm"
                 stickyHeader
                 sx={{
+                  fontSize: "13px",
                   tableLayout: "fixed",
                   "& tbody tr > *:first-child": {
                     position: "sticky",

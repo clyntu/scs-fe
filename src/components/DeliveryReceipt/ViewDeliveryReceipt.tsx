@@ -382,6 +382,7 @@ const ViewDeliveryReceipt = ({
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
@@ -538,7 +539,7 @@ const ViewDeliveryReceipt = ({
                           }}
                         >
                           <Button
-                            sx={{ minWidth: 70, fontSize: "xs" }}
+                            sx={{ minWidth: 70, fontSize: "13px" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -555,7 +556,7 @@ const ViewDeliveryReceipt = ({
                           {(deliveryReceipt.status === "posted" ||
                             deliveryReceipt.status === "archived") && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -571,7 +572,7 @@ const ViewDeliveryReceipt = ({
 
                           {deliveryReceipt.status === "unposted" && (
                             <Button
-                              sx={{ fontSize: "xs" }}
+                              sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
                               color="danger"

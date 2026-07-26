@@ -106,6 +106,7 @@ const AllocFormTable = ({
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               tableLayout: "fixed",
               "& tbody tr > *:first-child": {
                 position: "sticky",
@@ -261,13 +262,13 @@ const AllocFormTable = ({
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
-                          sx={{ fontSize: "xs" }}
+                          sx={{ fontSize: "13px" }}
                         />
                       </td>
                       <td style={{ width: 100 }}>
                         <Input
                           type="number"
-                          sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
+                          sx={{ fontSize: "13px", width: "100%", minWidth: 0 }}
                           value={item.warehouse_1_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -396,13 +397,13 @@ const AllocFormTable = ({
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
-                          sx={{ fontSize: "xs" }}
+                          sx={{ fontSize: "13px" }}
                         />
                       </td>
                       <td style={{ width: 100 }}>
                         <Input
                           type="number"
-                          sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
+                          sx={{ fontSize: "13px", width: "100%", minWidth: 0 }}
                           value={item.warehouse_2_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -531,13 +532,13 @@ const AllocFormTable = ({
                           className="w-[100%]"
                           placeholder="Select Warehouse"
                           disabled={isEditDisabled}
-                          sx={{ fontSize: "xs" }}
+                          sx={{ fontSize: "13px" }}
                         />
                       </td>
                       <td style={{ width: 100 }}>
                         <Input
                           type="number"
-                          sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
+                          sx={{ fontSize: "13px", width: "100%", minWidth: 0 }}
                           value={item.warehouse_3_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>

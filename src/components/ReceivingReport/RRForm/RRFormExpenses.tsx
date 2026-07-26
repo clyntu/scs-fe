@@ -91,6 +91,7 @@ const RRFormExpenses = ({
           stickyHeader
           hoverRow
           sx={{
+            fontSize: "13px",
             tableLayout: "fixed",
             "& tr > *:not(:first-child):not(:last-child)": {
               position: "relative",
@@ -159,7 +160,7 @@ const RRFormExpenses = ({
                       disabled={isEditDisabled}
                       size="sm"
                       required
-                      sx={{ fontSize: "xs" }}
+                      sx={{ fontSize: "13px" }}
                     />
                   </td>
                   <td>
@@ -170,7 +171,7 @@ const RRFormExpenses = ({
                         })
                       }
                       sx={{
-                        fontSize: "xs",
+                        fontSize: "13px",
                         width: "100%",
                         minWidth: 0,
                         input: { textAlign: "right", minWidth: 0 },
@@ -190,7 +191,7 @@ const RRFormExpenses = ({
                       }
                       value={expense.comments}
                       disabled={isEditDisabled}
-                      sx={{ fontSize: "xs" }}
+                      sx={{ fontSize: "13px" }}
                     />
                   </td>
                   <td>

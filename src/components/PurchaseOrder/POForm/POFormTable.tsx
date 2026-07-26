@@ -149,6 +149,7 @@ const POFormTable = ({
         stickyHeader
         hoverRow
         sx={{
+          fontSize: "13px",
           tableLayout: "fixed",
           "& tr > *:not(:first-child):not(:last-child)": {
             position: "relative",
@@ -239,7 +240,7 @@ const POFormTable = ({
                   value={selectedItem}
                   disabled={isEditDisabled}
                   size="sm"
-                  sx={{ fontSize: "xs" }}
+                  sx={{ fontSize: "13px" }}
                   slotProps={{
                     listbox: {
                       sx: {
@@ -263,7 +264,7 @@ const POFormTable = ({
                   value={selectedItem}
                   disabled={isEditDisabled}
                   size="sm"
-                  sx={{ fontSize: "xs" }}
+                  sx={{ fontSize: "13px" }}
                   slotProps={{
                     listbox: {
                       sx: {
@@ -281,7 +282,7 @@ const POFormTable = ({
                     type="number"
                     size="sm"
                     sx={{
-                      fontSize: "xs",
+                      fontSize: "13px",
                       width: "100%",
                       minWidth: 0,
                       input: { minWidth: 0 },
@@ -309,7 +310,7 @@ const POFormTable = ({
                   <Input
                     size="sm"
                     sx={{
-                      fontSize: "xs",
+                      fontSize: "13px",
                       width: "100%",
                       minWidth: 0,
                       input: { textAlign: "right", minWidth: 0 },
