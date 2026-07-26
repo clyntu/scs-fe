@@ -227,6 +227,9 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
         ) : (
           <Box sx={{ maxHeight: 320, overflowY: "auto", mb: 2 }}>
             <Table
+              size="sm"
+              stickyHeader
+              hoverRow
               sx={{
                 "& th": {
                   backgroundColor: "var(--joy-palette-background-level2)",

@@ -179,14 +179,13 @@ const StockHistory = ({
                 "--TableCell-height": "40px",
                 // the number is the amount of the header rows.
                 "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-                "--Table-firstColumnWidth": "100px",
-                "--Table-lastColumnWidth": "144px",
+                "--Table-firstColumnWidth": "120px",
+                "--Table-lastColumnWidth": "150px",
                 // background needs to have transparency to show the scrolling shadows
-                "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-                "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+                "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
                 overflow: "auto",
                 overflowY: "scroll",
-                borderRadius: 8,
+                borderRadius: "sm",
                 background: (
                   theme,
                 ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -208,17 +207,31 @@ const StockHistory = ({
             >
               <Table
                 className="h-5"
+                size="sm"
+                stickyHeader
                 sx={{
-                  "& tr > *:first-child": {
+                  tableLayout: "fixed",
+                  "& tbody tr > *:first-child": {
                     position: "sticky",
                     zIndex: 2,
                     left: 0,
                     boxShadow: "1px 0 var(--TableCell-borderColor)",
                     bgcolor: "background.surface",
                   },
+                  "& thead tr > *:first-child": {
+                    position: "sticky",
+                    left: 0,
+                    top: 0,
+                    zIndex: 3,
+                    boxShadow: "1px 0 var(--TableCell-borderColor)",
+                    bgcolor: "background.level1",
+                  },
                   "& tr > *:not(:first-child)": {
                     position: "relative",
                     zIndex: 0,
+                  },
+                  "& thead th": {
+                    backgroundColor: "background.level1",
                   },
                 }}
                 borderAxis="both"
@@ -234,14 +247,22 @@ const StockHistory = ({
                         <th style={{ width: 120 }}>Supplier</th>
                         <th style={{ width: 180 }}>Customer</th>
                         <th style={{ width: 100 }}>TX Date</th>
-                        <th style={{ width: 80 }}>TX #</th>
-                        <th style={{ width: 70 }}>Out</th>
-                        <th style={{ width: 70 }}>In</th>
-                        <th style={{ width: 100 }}>Price</th>
+                        <th style={{ width: 80, textAlign: "right" }}>TX #</th>
+                        <th style={{ width: 70, textAlign: "right" }}>Out</th>
+                        <th style={{ width: 70, textAlign: "right" }}>In</th>
+                        <th style={{ width: 100, textAlign: "right" }}>
+                          Price
+                        </th>
                         <th style={{ width: 80 }}>Tx Type</th>
-                        <th style={{ width: 120 }}>Gross Amount</th>
-                        <th style={{ width: 160 }}>Tx Discounts (%)</th>
-                        <th style={{ width: 120 }}>NET Cost</th>
+                        <th style={{ width: 120, textAlign: "right" }}>
+                          Gross Amount
+                        </th>
+                        <th style={{ width: 160, textAlign: "right" }}>
+                          Tx Discounts (%)
+                        </th>
+                        <th style={{ width: 120, textAlign: "right" }}>
+                          NET Cost
+                        </th>
                         <th style={{ width: 150 }}>Reference No.</th>
                       </tr>
                     </thead>

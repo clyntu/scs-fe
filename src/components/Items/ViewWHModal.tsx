@@ -135,13 +135,14 @@ const ViewWHModal = ({
                   "--TableCell-height": "40px",
                   // the number is the amount of the header rows.
                   "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-                  "--Table-firstColumnWidth": "250px",
-                  "--Table-lastColumnWidth": "144px",
+                  "--Table-firstColumnWidth": "300px",
+                  "--Table-lastColumnWidth": "80px",
                   // background needs to have transparency to show the scrolling shadows
-                  "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-                  "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+                  "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
                   overflow: "auto",
-                  borderRadius: 8,
+                  borderRadius: "sm",
+                  width: "fit-content",
+                  maxWidth: "100%",
                   background: (
                     theme,
                   ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -163,12 +164,28 @@ const ViewWHModal = ({
               >
                 <Table
                   className="h-5"
+                  size="sm"
+                  stickyHeader
+                  hoverRow
                   sx={{
-                    "& tr > *:first-of-type": {
+                    tableLayout: "fixed",
+                    "& tbody tr > *:first-of-type": {
                       position: "sticky",
+                      zIndex: 2,
                       left: 0,
                       boxShadow: "1px 0 var(--TableCell-borderColor)",
                       bgcolor: "background.surface",
+                    },
+                    "& thead tr > *:first-of-type": {
+                      position: "sticky",
+                      left: 0,
+                      top: 0,
+                      zIndex: 3,
+                      boxShadow: "1px 0 var(--TableCell-borderColor)",
+                      bgcolor: "background.level1",
+                    },
+                    "& thead th": {
+                      backgroundColor: "background.level1",
                     },
                   }}
                   borderAxis="both"
@@ -195,16 +212,29 @@ const ViewWHModal = ({
                             <th style={{ width: 120 }}>WH Code</th>
                           )}
                           <th
-                            style={{ width: type === "item" ? 200 : "var(--Table-firstColumnWidth)" }}
+                            style={{
+                              width:
+                                type === "item"
+                                  ? 300
+                                  : "var(--Table-firstColumnWidth)",
+                            }}
                           >
                             {type === "warehouse"
                               ? "Stock Name"
                               : "Warehouse Name"}
                           </th>
-                          <th style={{ width: 100 }}>On Stock</th>
-                          <th style={{ width: 100 }}>Available</th>
-                          <th style={{ width: 100 }}>Allocated</th>
-                          <th style={{ width: 100 }}>Sold</th>
+                          <th style={{ width: 100, textAlign: "right" }}>
+                            On Stock
+                          </th>
+                          <th style={{ width: 100, textAlign: "right" }}>
+                            Available
+                          </th>
+                          <th style={{ width: 100, textAlign: "right" }}>
+                            Allocated
+                          </th>
+                          <th style={{ width: 100, textAlign: "right" }}>
+                            Sold
+                          </th>
                           {isAdmin && (
                             <th style={{ width: 80, textAlign: "center" }}>
                               Actions
