@@ -613,6 +613,7 @@ const ItemForm = (): JSX.Element => {
             stickyHeader
             hoverRow
             sx={{
+              fontSize: "13px",
               "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
@@ -765,7 +766,7 @@ const ItemForm = (): JSX.Element => {
                       }}
                     >
                       <Button
-                        sx={{ fontSize: "xs" }}
+                        sx={{ fontSize: "13px" }}
                         size="sm"
                         variant="plain"
                         color="neutral"
@@ -777,7 +778,7 @@ const ItemForm = (): JSX.Element => {
                         Edit
                       </Button>
                       <Button
-                        sx={{ fontSize: "xs" }}
+                        sx={{ fontSize: "13px" }}
                         size="sm"
                         variant="soft"
                         color="danger"
