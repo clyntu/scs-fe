@@ -188,6 +188,7 @@ const ARFormTable = ({
                       <td>
                         <Input
                           sx={{
+                            fontSize: "xs",
                             width: "100%",
                             minWidth: 0,
                             input: { textAlign: "right", minWidth: 0 },
