@@ -134,17 +134,17 @@ const CDPFormTable = ({
             <th style={{ width: 100, textAlign: "right" }}>Alloc Qty.</th>
             <th style={{ width: 100, textAlign: "right" }}>DR Plan Qty.</th>
             <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Cust. Disc. 1 (%)
             </th>
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Cust. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Cust. Disc. 3 (%)</th> */}
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Tran. Disc. 1 (%)
             </th>
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Tran. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
