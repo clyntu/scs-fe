@@ -393,7 +393,7 @@ const StockAdjustmentForm = ({
   return (
     <Stack spacing={3}>
       <div>
-        <Typography level="h3" component="h1">
+        <Typography level="h2" component="h1">
           Stock Adjustment
         </Typography>
         <Typography level="body-sm" sx={{ mt: 0.5 }}>

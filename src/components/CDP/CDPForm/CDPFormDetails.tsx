@@ -10,6 +10,7 @@ import {
   Option,
   Box,
   Divider,
+  Typography,
 } from "@mui/joy";
 import type { CDPFormDetailsProps, UnplannedAlloc } from "../interface";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
@@ -78,12 +79,14 @@ const CDPFormDetails = ({
         setFormattedAllocs={setFormattedAllocs}
         isLoadingUnserved={isLoadingUnserved}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>CDP No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  CDP No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -174,7 +177,7 @@ const CDPFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>

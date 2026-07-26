@@ -74,12 +74,12 @@ const AllocFormTable = ({
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "200px",
             "--Table-lastColumnWidth": "86px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             marginTop: 3,
+            width: "fit-content",
+            maxWidth: "100%",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -102,17 +102,32 @@ const AllocFormTable = ({
         >
           <Table
             className="h-5"
+            size="sm"
+            stickyHeader
+            hoverRow
             sx={{
-              "& tr > *:first-child": {
+              tableLayout: "fixed",
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 zIndex: 2,
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
               },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "background.level1",
+              },
               "& tr > *:not(:first-child)": {
                 position: "relative",
                 zIndex: 0,
+              },
+              "& thead th": {
+                backgroundColor: "background.level1",
               },
             }}
             borderAxis="both"
@@ -269,6 +284,7 @@ const AllocFormTable = ({
                         )}
                         <Input
                           type="number"
+                          sx={{ width: "100%", minWidth: 0 }}
                           value={item.warehouse_1_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -408,6 +424,7 @@ const AllocFormTable = ({
                         )}
                         <Input
                           type="number"
+                          sx={{ width: "100%", minWidth: 0 }}
                           value={item.warehouse_2_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -547,6 +564,7 @@ const AllocFormTable = ({
                         )}
                         <Input
                           type="number"
+                          sx={{ width: "100%", minWidth: 0 }}
                           value={item.warehouse_3_qty}
                           onChange={(e) => {
                             setCPOItems((prevCPOItems) =>
@@ -578,7 +596,7 @@ const AllocFormTable = ({
                         />
                       </td>
                       <td
-                        aria-label="last"
+                        aria-label="actions"
                         style={{ width: "var(--Table-lastColumnWidth)" }}
                       />
                     </tr>

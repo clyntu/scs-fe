@@ -9,6 +9,7 @@ import {
   Option,
   Box,
   Divider,
+  Typography,
 } from "@mui/joy";
 import type { ARFormDetailsProps } from "../interface";
 import {
@@ -108,16 +109,16 @@ const ARFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="mb-2">
             {openEdit && (
               <div className="flex justify-between items-center w-full">
-                <h4>
+                <Typography level="title-lg">
                   Receipt No. {selectedRow?.id} -{" "}
                   {paymentStatus.charAt(0).toUpperCase() +
                     paymentStatus.slice(1)}
-                </h4>
+                </Typography>
               </div>
             )}
           </div>
@@ -246,7 +247,7 @@ const ARFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>

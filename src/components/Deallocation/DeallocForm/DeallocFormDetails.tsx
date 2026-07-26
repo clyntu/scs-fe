@@ -9,6 +9,7 @@ import {
   Option,
   Box,
   Autocomplete,
+  Typography,
 } from "@mui/joy";
 import type { DeallocFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
@@ -43,12 +44,14 @@ const DeallocFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>Dealloc No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  Dealloc No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -138,7 +141,7 @@ const DeallocFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1.7 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>

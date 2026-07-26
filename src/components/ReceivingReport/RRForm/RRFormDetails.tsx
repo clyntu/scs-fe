@@ -10,6 +10,7 @@ import {
   Option,
   Box,
   Divider,
+  Typography,
 } from "@mui/joy";
 import type { RRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
@@ -138,12 +139,14 @@ const RRFormDetails = ({
         unservedSDRs={unservedSDRs}
         setSelectedSDRs={setSelectedSDRs}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>RR No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  RR No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -271,7 +274,7 @@ const RRFormDetails = ({
           )}
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="grid grid-cols-2 place-items-center">
             <FormControl size="sm" sx={{ mb: 1 }}>

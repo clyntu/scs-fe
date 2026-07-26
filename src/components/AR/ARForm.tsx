@@ -1,6 +1,6 @@
 import ARFormDetails from "./ARForm/ARFormDetails";
 import ARFormTable from "./ARForm/ARFormTable";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState, useCallback } from "react";
@@ -440,7 +440,9 @@ const ARForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
         <div className="flex">
           {isEditDisabled && paymentStatus === "cleared" && isAdmin && (
             <Button

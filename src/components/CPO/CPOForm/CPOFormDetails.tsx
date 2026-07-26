@@ -10,6 +10,8 @@ import {
   Option,
   Box,
   Divider,
+  Typography,
+  FormHelperText,
 } from "@mui/joy";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
@@ -58,12 +60,14 @@ const CPOFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>CPO No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  CPO No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -133,9 +137,12 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("customer", 0, e.target.value)
                 }
-                placeholder="Enter discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
+              <FormHelperText sx={{ fontSize: "11px" }}>
+                e.g. 10%
+              </FormHelperText>
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
               <FormLabel>Trans Disc. 1 (%)</FormLabel>
@@ -144,9 +151,12 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("transaction", 0, e.target.value)
                 }
-                placeholder="Enter discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
+              <FormHelperText sx={{ fontSize: "11px" }}>
+                e.g. 10%
+              </FormHelperText>
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
               <FormLabel>Cust Disc. 2 (%)</FormLabel>
@@ -155,9 +165,12 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("customer", 1, e.target.value)
                 }
-                placeholder="Enter discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
+              <FormHelperText sx={{ fontSize: "11px" }}>
+                e.g. 10%
+              </FormHelperText>
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
               <FormLabel>Trans Disc. 2 (%)</FormLabel>
@@ -166,9 +179,12 @@ const CPOFormDetails = ({
                 onChange={(e) =>
                   handleDiscountChange("transaction", 1, e.target.value)
                 }
-                placeholder="Enter discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
+              <FormHelperText sx={{ fontSize: "11px" }}>
+                e.g. 10%
+              </FormHelperText>
             </FormControl>
           </Stack>
           {/* <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
@@ -197,7 +213,7 @@ const CPOFormDetails = ({
           </Stack> */}
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>

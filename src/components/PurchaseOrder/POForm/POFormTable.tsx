@@ -116,13 +116,13 @@ const POFormTable = ({
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
         "--Table-firstColumnWidth": "200px",
-        "--Table-lastColumnWidth": "86px",
-        // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--Table-lastColumnWidth": "80px",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -145,22 +145,45 @@ const POFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          tableLayout: "fixed",
+          "& tr > *:not(:first-child):not(:last-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& tbody tr > *:first-child": {
             position: "sticky",
             zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
-          "& tr > *:not(:first-child):not(:last-child)": {
-            position: "relative",
-            zIndex: 0,
+          "& tbody tr > *:last-child": {
+            position: "sticky",
+            zIndex: 2,
+            right: 0,
+            bgcolor: "background.surface",
           },
-          "& tr > *:last-child": {
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            left: 0,
+            top: 0,
+            zIndex: 3,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& thead tr > *:last-child": {
             position: "sticky",
             right: 0,
-            bgcolor: "var(--TableCell-headBackground)",
+            top: 0,
+            zIndex: 3,
+            bgcolor: "background.level1",
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -174,15 +197,15 @@ const POFormTable = ({
             >
               Stock Code
             </th>
-            <th style={{ width: 200 }}>Name</th>
+            <th style={{ width: 315 }}>Name</th>
             {!isEditDisabled && (
-              <th style={{ width: 200 }}>Current Purchase Price</th>
+              <th style={{ width: 150 }}>Purchase Price</th>
             )}
-            <th style={{ width: 150 }}>Volume</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Gross</th>
+            <th style={{ width: 70 }}>Volume</th>
+            <th style={{ width: 90, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross</th>
             <th
-              aria-label="last"
+              aria-label="actions"
               style={{ width: "var(--Table-lastColumnWidth)" }}
             />
           </tr>
@@ -218,6 +241,7 @@ const POFormTable = ({
                   value={selectedItem}
                   disabled={isEditDisabled}
                   size="sm"
+                  sx={{ fontSize: "xs" }}
                   slotProps={{
                     listbox: {
                       sx: {
@@ -241,6 +265,7 @@ const POFormTable = ({
                   value={selectedItem}
                   disabled={isEditDisabled}
                   size="sm"
+                  sx={{ fontSize: "xs" }}
                   slotProps={{
                     listbox: {
                       sx: {
@@ -256,6 +281,13 @@ const POFormTable = ({
                 {selectedItem?.id !== null && (
                   <Input
                     type="number"
+                    size="sm"
+                    sx={{
+                      fontSize: "xs",
+                      width: "100%",
+                      minWidth: 0,
+                      input: { minWidth: 0 },
+                    }}
                     onChange={(e) => {
                       const raw = e.target.value;
                       if (raw === "" || /^\d+$/.test(raw)) {
@@ -277,7 +309,13 @@ const POFormTable = ({
               <td>
                 {selectedItem?.id !== null && (
                   <Input
-                    sx={{ input: { textAlign: "right" } }}
+                    size="sm"
+                    sx={{
+                      fontSize: "xs",
+                      width: "100%",
+                      minWidth: 0,
+                      input: { textAlign: "right", minWidth: 0 },
+                    }}
                     value={formatWithCommas(selectedItem.price)}
                     onChange={(e) => {
                       const raw = stripCommas(e.target.value);

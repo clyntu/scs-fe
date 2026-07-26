@@ -30,11 +30,12 @@ const STFormTable = ({
             "--Table-firstColumnWidth": "260px",
             "--Table-lastColumnWidth": "86px",
             // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             marginTop: 3,
+            width: "fit-content",
+            maxWidth: "100%",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -57,17 +58,32 @@ const STFormTable = ({
         >
           <Table
             className="h-5"
+            size="sm"
+            stickyHeader
+            hoverRow
             sx={{
-              "& tr > *:first-child": {
+              tableLayout: "fixed",
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 zIndex: 2,
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
               },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "background.level1",
+              },
               "& tr > *:not(:first-child)": {
                 position: "relative",
                 zIndex: 0,
+              },
+              "& thead th": {
+                backgroundColor: "background.level1",
               },
             }}
             borderAxis="both"
@@ -82,8 +98,12 @@ const STFormTable = ({
                   Product Name
                 </th>
                 <th style={{ width: 200 }}>Stock Code</th>
-                {!isEditDisabled && <th style={{ width: 150 }}>Available</th>}
-                <th style={{ width: 150 }}>Total Quantity</th>
+                {!isEditDisabled && (
+                  <th style={{ width: 150, textAlign: "right" }}>Available</th>
+                )}
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Total Quantity
+                </th>
                 <th style={{ width: 200 }}>To Whse 1</th>
                 <th style={{ width: 150 }}>Whse 1 Qty.</th>
                 <th style={{ width: 200 }}>To Whse 2</th>
@@ -101,9 +121,11 @@ const STFormTable = ({
                     </td>
                     <td>{withTooltip(item.stock_code, "120px")}</td>
                     {!isEditDisabled && (
-                      <td>{item.on_stock - item.allocated}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {item.on_stock - item.allocated}
+                      </td>
                     )}
-                    <td>
+                    <td style={{ textAlign: "right" }}>
                       {Number(item.warehouse_1_qty ?? 0) +
                         Number(item.warehouse_2_qty ?? 0) +
                         Number(item.warehouse_3_qty ?? 0)}
@@ -128,11 +150,13 @@ const STFormTable = ({
                         className="w-[100%]"
                         placeholder="Select Warehouse"
                         disabled={isEditDisabled}
+                        sx={{ fontSize: "xs" }}
                       />
                     </td>
                     <td>
                       <Input
                         type="number"
+                        sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
                         value={item.warehouse_1_qty}
                         onChange={(e) => {
                           const updatedWarehouseItems = warehouseItems.map(
@@ -175,11 +199,13 @@ const STFormTable = ({
                         className="w-[100%]"
                         placeholder="Select Warehouse"
                         disabled={isEditDisabled}
+                        sx={{ fontSize: "xs" }}
                       />
                     </td>
                     <td>
                       <Input
                         type="number"
+                        sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
                         value={item.warehouse_2_qty}
                         onChange={(e) => {
                           const updatedWarehouseItems = warehouseItems.map(
@@ -222,11 +248,13 @@ const STFormTable = ({
                         className="w-[100%]"
                         placeholder="Select Warehouse"
                         disabled={isEditDisabled}
+                        sx={{ fontSize: "xs" }}
                       />
                     </td>
                     <td>
                       <Input
                         type="number"
+                        sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
                         value={item.warehouse_3_qty}
                         onChange={(e) => {
                           const updatedWarehouseItems = warehouseItems.map(

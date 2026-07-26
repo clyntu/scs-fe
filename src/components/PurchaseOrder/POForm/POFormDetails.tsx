@@ -1,6 +1,7 @@
 import {
   FormControl,
   FormLabel,
+  FormHelperText,
   Input,
   Textarea,
   Card,
@@ -10,6 +11,7 @@ import {
   Box,
   Divider,
   Button,
+  Typography,
 } from "@mui/joy";
 import { useEffect, useState } from "react";
 
@@ -98,12 +100,14 @@ const POFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>PO No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  PO No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -218,9 +222,12 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 0, e.target.value)
                   }
-                  placeholder="10% or 50 (fixed)"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add "%" if percent disc.
+                </FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Trans Disc. 1</FormLabel>
@@ -229,9 +236,12 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 0, e.target.value)
                   }
-                  placeholder="10% or 50 (fixed)"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add "%" if percent disc.
+                </FormHelperText>
               </FormControl>
             </Stack>
             <Stack direction="row" spacing={2}>
@@ -242,9 +252,12 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 1, e.target.value)
                   }
-                  placeholder="10% or 50 (fixed)"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add "%" if percent disc.
+                </FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Trans Disc. 2</FormLabel>
@@ -253,18 +266,21 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 1, e.target.value)
                   }
-                  placeholder="10% or 50 (fixed)"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add "%" if percent disc.
+                </FormHelperText>
               </FormControl>
             </Stack>
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-between mb-2">
-            <h4>Order Summary</h4>
+            <Typography level="title-lg">Order Summary</Typography>
             <Button
               variant="outlined"
               size="sm"

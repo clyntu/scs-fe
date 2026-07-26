@@ -64,10 +64,10 @@ const RRFormExpenses = ({
           "--TableCell-height": "40px",
           "--TableHeader-height": "calc(1 * var(--TableCell-height))",
           "--Table-firstColumnWidth": "150px",
-          "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-          "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+          "--Table-lastColumnWidth": "80px",
+          "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
           overflow: "auto",
-          borderRadius: 8,
+          borderRadius: "sm",
           marginTop: 3,
           background: (
             theme,
@@ -87,22 +87,45 @@ const RRFormExpenses = ({
       >
         <Table
           className="h-5"
+          size="sm"
+          stickyHeader
+          hoverRow
           sx={{
-            "& tr > *:first-child": {
+            tableLayout: "fixed",
+            "& tr > *:not(:first-child):not(:last-child)": {
+              position: "relative",
+              zIndex: 0,
+            },
+            "& tbody tr > *:first-child": {
               position: "sticky",
               zIndex: 2,
               left: 0,
               boxShadow: "1px 0 var(--TableCell-borderColor)",
               bgcolor: "background.surface",
             },
-            "& tr > *:not(:first-child):not(:last-child)": {
-              position: "relative",
-              zIndex: 0,
+            "& tbody tr > *:last-child": {
+              position: "sticky",
+              zIndex: 2,
+              right: 0,
+              bgcolor: "background.surface",
             },
-            "& tr > *:last-child": {
+            "& thead tr > *:first-child": {
+              position: "sticky",
+              left: 0,
+              top: 0,
+              zIndex: 3,
+              boxShadow: "1px 0 var(--TableCell-borderColor)",
+              bgcolor: "background.level1",
+            },
+            "& thead tr > *:last-child": {
               position: "sticky",
               right: 0,
-              bgcolor: "var(--TableCell-headBackground)",
+              top: 0,
+              zIndex: 3,
+              bgcolor: "background.level1",
+            },
+            "& thead th": {
+              backgroundColor: "background.level1",
             },
           }}
           borderAxis="both"
@@ -112,9 +135,12 @@ const RRFormExpenses = ({
               <th style={{ width: "var(--Table-firstColumnWidth)" }}>
                 Expense
               </th>
-              <th style={{ width: 100 }}>Amount</th>
+              <th style={{ width: 100, textAlign: "right" }}>Amount</th>
               <th style={{ width: 100 }}>Comments</th>
-              <th style={{ width: 65 }}></th>
+              <th
+                aria-label="actions"
+                style={{ width: "var(--Table-lastColumnWidth)" }}
+              />
             </tr>
           </thead>
           <tbody>
@@ -133,6 +159,7 @@ const RRFormExpenses = ({
                       disabled={isEditDisabled}
                       size="sm"
                       required
+                      sx={{ fontSize: "xs" }}
                     />
                   </td>
                   <td>
@@ -143,9 +170,10 @@ const RRFormExpenses = ({
                         })
                       }
                       sx={{
-                        input: {
-                          textAlign: "right",
-                        },
+                        fontSize: "xs",
+                        width: "100%",
+                        minWidth: 0,
+                        input: { textAlign: "right", minWidth: 0 },
                       }}
                       value={expense.amount ?? ""}
                       placeholder="0"

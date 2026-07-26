@@ -10,6 +10,7 @@ import {
   Box,
   Divider,
   Button,
+  Typography,
 } from "@mui/joy";
 import type { CRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
@@ -82,12 +83,14 @@ const CRFormDetails = ({
         setFormattedDRs={setFormattedDRs}
         isFetchingCDRs={isFetchingCDRs}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>Return No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  Return No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -178,7 +181,7 @@ const CRFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>

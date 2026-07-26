@@ -1,7 +1,7 @@
 import RRFormDetails from "./RRForm/RRFormDetails";
 import RRFormTable from "./RRForm/RRFormTable";
 import RRFormExpenses from "./RRForm/RRFormExpenses";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
@@ -273,7 +273,9 @@ const ReceivingReportForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
         {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"

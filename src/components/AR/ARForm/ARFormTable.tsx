@@ -40,12 +40,12 @@ const ARFormTable = ({
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "150px",
             "--Table-lastColumnWidth": "86px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             marginTop: 3,
+            width: "fit-content",
+            maxWidth: "100%",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -68,17 +68,32 @@ const ARFormTable = ({
         >
           <Table
             className="h-5"
+            size="sm"
+            stickyHeader
+            hoverRow
             sx={{
-              "& tr > *:first-child": {
+              tableLayout: "fixed",
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 zIndex: 2,
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
               },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                zIndex: 3,
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "background.level1",
+              },
               "& tr > *:not(:first-child)": {
                 position: "relative",
                 zIndex: 0,
+              },
+              "& thead th": {
+                backgroundColor: "background.level1",
               },
             }}
             borderAxis="both"
@@ -95,10 +110,12 @@ const ARFormTable = ({
                 <th style={{ width: 130 }}>Tran No.</th>
                 <th style={{ width: 50 }}>Pay?</th>
                 <th style={{ width: 150 }}>Tran Date</th>
-                <th style={{ width: 150 }}>Original Amt</th>
-                <th style={{ width: 150 }}>Tran Amt</th>
-                <th style={{ width: 150 }}>Payment</th>
-                <th style={{ width: 150 }}>Balance</th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Original Amt
+                </th>
+                <th style={{ width: 150, textAlign: "right" }}>Tran Amt</th>
+                <th style={{ width: 150, textAlign: "right" }}>Payment</th>
+                <th style={{ width: 150, textAlign: "right" }}>Balance</th>
               </tr>
             </thead>
             <tbody>
@@ -170,7 +187,11 @@ const ARFormTable = ({
                       </td>
                       <td>
                         <Input
-                          sx={{ input: { textAlign: "right" } }}
+                          sx={{
+                            width: "100%",
+                            minWidth: 0,
+                            input: { textAlign: "right", minWidth: 0 },
+                          }}
                           name="payment"
                           size="sm"
                           placeholder="0"
@@ -194,7 +215,7 @@ const ARFormTable = ({
                           disabled={isEditDisabled}
                         />
                       </td>
-                      <td>
+                      <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(
                           Number(trans.transaction_amount) -
                             Number(trans.payment),

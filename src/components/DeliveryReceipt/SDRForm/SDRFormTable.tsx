@@ -167,11 +167,12 @@ const SDRFormTable = ({
         "--Table-firstColumnWidth": "150px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -194,17 +195,32 @@ const SDRFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
             zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
           "& tr > *:not(:first-child)": {
             position: "relative",
             zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -220,23 +236,31 @@ const SDRFormTable = ({
             </th>
             <th style={{ width: 200 }}>Stock Code</th>
             <th style={{ width: 200 }}>Name</th>
-            <th style={{ width: 150 }}>Serving Now</th>
-            <th style={{ width: 200 }}>Unserved Qty.</th>
+            <th style={{ width: 150, textAlign: "right" }}>Serving Now</th>
+            <th style={{ width: 200, textAlign: "right" }}>Unserved Qty.</th>
             {status === "posted" ? null : (
-              <th style={{ width: 200 }}>Served Qty.</th>
+              <th style={{ width: 200, textAlign: "right" }}>Served Qty.</th>
             )}
-            <th style={{ width: 150 }}>PO Qty.</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Gross Amount</th>
-            <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
+            <th style={{ width: 150, textAlign: "right" }}>PO Qty.</th>
+            <th style={{ width: 150, textAlign: "right" }}>Price</th>
+            <th style={{ width: 150, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Supp. Disc. 1 (%)
+            </th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Supp. Disc. 2 (%)
+            </th>
             {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
-            <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Tran. Disc. 1 (%)
+            </th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Tran. Disc. 2 (%)
+            </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
-            <th style={{ width: 150 }}>NET Amount</th>
+            <th style={{ width: 150, textAlign: "right" }}>NET Amount</th>
             <th style={{ width: 150 }}>Currency</th>
-            <th style={{ width: 150 }}>Peso Rate</th>
+            <th style={{ width: 150, textAlign: "right" }}>Peso Rate</th>
           </tr>
         </thead>
         <tbody>
@@ -279,6 +303,12 @@ const SDRFormTable = ({
                         value={servedAmt[key]}
                         disabled={isEditDisabled}
                         required
+                        sx={{
+                          fontSize: "xs",
+                          width: "100%",
+                          minWidth: 0,
+                          input: { textAlign: "right", minWidth: 0 },
+                        }}
                       />
                     </td>
                   )}

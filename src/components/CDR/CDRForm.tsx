@@ -1,6 +1,6 @@
 import CDRFormDetails from "./CDRForm/CDRFormDetails";
 import CDRFormTable from "./CDRForm/CDRFormTable";
-import { Alert, Button, Divider } from "@mui/joy";
+import { Alert, Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
@@ -382,7 +382,9 @@ const CDRForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
         {isEditDisabled && !isFetching && (
           <Button
             onClick={handlePDFCreate}

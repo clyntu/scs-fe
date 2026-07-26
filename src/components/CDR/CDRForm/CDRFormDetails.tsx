@@ -9,6 +9,7 @@ import {
   Option,
   Box,
   Divider,
+  Typography,
 } from "@mui/joy";
 import type { CDRFormDetailsProps, AllocItemsFE } from "../interface";
 import { useEffect, useState } from "react";
@@ -174,12 +175,14 @@ const CDRFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>CDR No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  CDR No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -336,7 +339,7 @@ const CDRFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>

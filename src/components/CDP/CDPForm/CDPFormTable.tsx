@@ -61,11 +61,12 @@ const CDPFormTable = ({
         "--Table-firstColumnWidth": "150px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -88,17 +89,32 @@ const CDPFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
             zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
           "& tr > *:not(:first-child)": {
             position: "relative",
             zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -114,17 +130,25 @@ const CDPFormTable = ({
             </th>
             <th style={{ width: 200 }}>Stock Code</th>
             <th style={{ width: 300 }}>Name</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Alloc Qty.</th>
-            <th style={{ width: 150 }}>DR Plan Qty.</th>
-            <th style={{ width: 150 }}>Gross Amount</th>
-            <th style={{ width: 150 }}>Cust. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Cust. Disc. 2 (%)</th>
+            <th style={{ width: 150, textAlign: "right" }}>Price</th>
+            <th style={{ width: 150, textAlign: "right" }}>Alloc Qty.</th>
+            <th style={{ width: 150, textAlign: "right" }}>DR Plan Qty.</th>
+            <th style={{ width: 150, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Cust. Disc. 1 (%)
+            </th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Cust. Disc. 2 (%)
+            </th>
             {/* <th style={{ width: 150 }}>Cust. Disc. 3 (%)</th> */}
-            <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Tran. Disc. 1 (%)
+            </th>
+            <th style={{ width: 150, textAlign: "right" }}>
+              Tran. Disc. 2 (%)
+            </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
-            <th style={{ width: 150 }}>NET Amount</th>
+            <th style={{ width: 150, textAlign: "right" }}>NET Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -143,7 +167,12 @@ const CDPFormTable = ({
                   <Input
                     type="number"
                     value={item.dp_qty}
-                    sx={{ input: { textAlign: "right" } }}
+                    sx={{
+                      fontSize: "xs",
+                      width: "100%",
+                      minWidth: 0,
+                      input: { textAlign: "right", minWidth: 0 },
+                    }}
                     onChange={(e) => {
                       const raw = e.target.value;
                       if (raw !== "" && !/^\d+$/.test(raw)) return;

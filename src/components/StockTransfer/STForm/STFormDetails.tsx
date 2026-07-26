@@ -8,6 +8,7 @@ import {
   Select,
   Option,
   Box,
+  Typography,
 } from "@mui/joy";
 import type { STFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
@@ -60,12 +61,14 @@ const STFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>STR No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  STR No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -175,7 +178,7 @@ const STFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
