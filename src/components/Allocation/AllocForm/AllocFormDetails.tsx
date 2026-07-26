@@ -103,18 +103,6 @@ const AllocFormDetails = ({
               />
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Remarks</FormLabel>
-              <Textarea
-                minRows={1}
-                placeholder="Remarks"
-                onChange={(e) => setRemarks(e.target.value)}
-                value={remarks}
-                disabled={isEditDisabled}
-              />
-            </FormControl>
-          </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>CPO No. Filter</FormLabel>
               <div className="flex">
                 <Autocomplete
@@ -140,6 +128,18 @@ const AllocFormDetails = ({
                   required
                 />
               </div>
+            </FormControl>
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
+            <FormControl size="sm" sx={{ mb: 1, width: "96%" }}>
+              <FormLabel>Remarks</FormLabel>
+              <Textarea
+                minRows={1}
+                placeholder="Remarks"
+                onChange={(e) => setRemarks(e.target.value)}
+                value={remarks}
+                disabled={isEditDisabled}
+              />
             </FormControl>
           </Stack>
         </div>
