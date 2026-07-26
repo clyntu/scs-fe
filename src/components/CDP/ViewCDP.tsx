@@ -285,7 +285,7 @@ const ViewCDP = ({
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
-              sx={{ width: 250 }}
+              sx={{ width: 300 }}
               placeholder="Ref No., Customer, or Remarks"
               startDecorator={<SearchRoundedIcon fontSize="small" />}
               value={searchTerm}

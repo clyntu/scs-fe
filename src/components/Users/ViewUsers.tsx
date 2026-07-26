@@ -215,7 +215,7 @@ const ViewUsers = (): JSX.Element => {
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
-              sx={{ width: 250 }}
+              sx={{ width: 300 }}
               placeholder="Name / Username / Email"
               startDecorator={<SearchRoundedIcon fontSize="small" />}
               value={searchTerm}

@@ -286,7 +286,7 @@ const ViewReceivingReport = ({
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
-              sx={{ width: 250 }}
+              sx={{ width: 300 }}
               placeholder="Ref No. or Supplier"
               startDecorator={<SearchRoundedIcon fontSize="small" />}
               value={searchTerm}

@@ -32,22 +32,38 @@ const DateRangeFilter = ({
 }: DateRangeFilterProps): JSX.Element => {
   return (
     <>
-      <FormControl sx={{ ml: 2 }}>
+      <FormControl>
         <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Date From</FormLabel>
         <Input
           type="date"
           size="sm"
-          sx={{ width: 160 }}
+          sx={{
+            width: 165,
+            "&::-webkit-calendar-picker-indicator": {
+              cursor: "pointer",
+              opacity: 0.6,
+              filter: (theme) =>
+                theme.palette.mode === "dark" ? "invert(1)" : "none",
+            },
+          }}
           value={dateFrom}
           onChange={(e) => onDateFromChange(e.target.value)}
         />
       </FormControl>
-      <FormControl sx={{ ml: 2 }}>
+      <FormControl>
         <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Date To</FormLabel>
         <Input
           type="date"
           size="sm"
-          sx={{ width: 160 }}
+          sx={{
+            width: 165,
+            "&::-webkit-calendar-picker-indicator": {
+              cursor: "pointer",
+              opacity: 0.6,
+              filter: (theme) =>
+                theme.palette.mode === "dark" ? "invert(1)" : "none",
+            },
+          }}
           value={dateTo}
           onChange={(e) => onDateToChange(e.target.value)}
         />
