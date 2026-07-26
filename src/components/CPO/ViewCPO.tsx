@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/joy";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteCPOModal from "./DeleteCPOModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
@@ -269,6 +270,7 @@ const ViewCPO = ({
               size="sm"
               sx={{ width: 250 }}
               placeholder="Ref No., Customer, or Remarks"
+              startDecorator={<SearchRoundedIcon fontSize="small" />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -349,19 +351,35 @@ const ViewCPO = ({
         >
           <Table
             className="h-5"
+            stickyHeader
             sx={{
-              "& tr > *:first-child": {
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
                 zIndex: 10,
               },
-              "& tr > *:last-child": {
+              "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
                 zIndex: 10,
+              },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 11,
+              },
+              "& thead tr > *:last-child": {
+                position: "sticky",
+                right: 0,
+                top: 0,
+                bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 11,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect

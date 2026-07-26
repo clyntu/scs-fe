@@ -3,6 +3,7 @@ import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import {
   Input,
   FormControl,
@@ -383,6 +384,7 @@ const CustomerForm = (): JSX.Element => {
             <Input
               size="sm"
               placeholder="Name"
+              startDecorator={<SearchRoundedIcon fontSize="small" />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -429,17 +431,35 @@ const CustomerForm = (): JSX.Element => {
         >
           <Table
             className="h-5"
+            stickyHeader
             sx={{
-              "& tr > *:first-child": {
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
-              "& tr > *:last-child": {
+              "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 10,
+              },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 11,
+              },
+              "& thead tr > *:last-child": {
+                position: "sticky",
+                right: 0,
+                top: 0,
+                bgcolor: "var(--TableCell-headBackground)",
+                zIndex: 11,
               },
               "& tbody tr:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect

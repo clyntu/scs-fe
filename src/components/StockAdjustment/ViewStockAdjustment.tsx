@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/joy";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import type {
   PaginatedStockAdjustments,
@@ -237,17 +238,20 @@ const ViewStockAdjustment = ({
           }}
         >
           <FormControl sx={{ flexGrow: 1, minWidth: 200 }}>
-            <FormLabel>Search</FormLabel>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
               size="sm"
               placeholder="Search by stock code, stock name, or warehouse..."
+              startDecorator={<SearchRoundedIcon fontSize="small" />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </FormControl>
 
           <FormControl sx={{ minWidth: 200 }}>
-            <FormLabel>Adjustment Type</FormLabel>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>
+              Adjustment Type
+            </FormLabel>
             <Select
               size="sm"
               value={adjustmentType}
