@@ -59,7 +59,7 @@ const CRFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "150px",
+        "--Table-firstColumnWidth": "50px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
         "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
@@ -129,24 +129,24 @@ const CRFormTable = ({
             >
               CDR No.
             </th>
-            <th style={{ width: 150 }}>Alloc No.</th>
+            <th style={{ width: 50 }}>Alloc No.</th>
             <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Name</th>
             <th style={{ width: 200 }}>Whse</th>
             <th style={{ width: 100, textAlign: "right" }}>Return Qty.</th>
             <th style={{ width: 100, textAlign: "right" }}>Price</th>
             <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Supp. Disc. 1 (%)
             </th>
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Supp. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Tran. Disc. 1 (%)
             </th>
-            <th style={{ width: 100, textAlign: "right" }}>
+            <th style={{ width: 130, textAlign: "right" }}>
               Tran. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}

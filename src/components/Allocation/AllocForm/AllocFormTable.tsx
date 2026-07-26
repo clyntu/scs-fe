@@ -72,7 +72,7 @@ const AllocFormTable = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "200px",
+            "--Table-firstColumnWidth": "50px",
             "--Table-lastColumnWidth": "86px",
             "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
@@ -145,11 +145,11 @@ const AllocFormTable = ({
                 <th style={{ width: 100 }}>Order Qty.</th>
                 <th style={{ width: 100 }}>Alloc Qty.</th>
                 <th style={{ width: 200 }}>Warehouse 1</th>
-                <th style={{ width: 100 }}>Whse 1 Qty.</th>
+                <th style={{ width: 130 }}>Whse 1 Qty.</th>
                 <th style={{ width: 200 }}>Warehouse 2</th>
-                <th style={{ width: 100 }}>Whse 2 Qty.</th>
+                <th style={{ width: 130 }}>Whse 2 Qty.</th>
                 <th style={{ width: 200 }}>Warehouse 3</th>
-                <th style={{ width: 100 }}>Whse 3 Qty.</th>
+                <th style={{ width: 130 }}>Whse 3 Qty.</th>
               </tr>
             </thead>
             <tbody>
@@ -265,15 +265,6 @@ const AllocFormTable = ({
                         />
                       </td>
                       <td style={{ width: 100 }}>
-                        {item.warehouse_1 !== null && !isEditDisabled && (
-                          <div className="text-xs text-gray-500 mb-1">
-                            Available:{" "}
-                            {getAvailableQuantity(
-                              item.item_id,
-                              item.warehouse_1.id,
-                            )}
-                          </div>
-                        )}
                         <Input
                           type="number"
                           sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
@@ -303,6 +294,18 @@ const AllocFormTable = ({
                                   : undefined,
                             },
                           }}
+                          endDecorator={
+                            item.warehouse_1 !== null &&
+                            !isEditDisabled && (
+                              <span className="text-[10px] leading-none text-gray-400 whitespace-nowrap">
+                                /
+                                {getAvailableQuantity(
+                                  item.item_id,
+                                  item.warehouse_1.id,
+                                )}
+                              </span>
+                            )
+                          }
                           placeholder="0"
                           disabled={isEditDisabled}
                         />
@@ -397,15 +400,6 @@ const AllocFormTable = ({
                         />
                       </td>
                       <td style={{ width: 100 }}>
-                        {item.warehouse_2 !== null && !isEditDisabled && (
-                          <div className="text-xs text-gray-500 mb-1">
-                            Available:{" "}
-                            {getAvailableQuantity(
-                              item.item_id,
-                              item.warehouse_2.id,
-                            )}
-                          </div>
-                        )}
                         <Input
                           type="number"
                           sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
@@ -435,6 +429,18 @@ const AllocFormTable = ({
                                   : undefined,
                             },
                           }}
+                          endDecorator={
+                            item.warehouse_2 !== null &&
+                            !isEditDisabled && (
+                              <span className="text-[10px] leading-none text-gray-400 whitespace-nowrap">
+                                /
+                                {getAvailableQuantity(
+                                  item.item_id,
+                                  item.warehouse_2.id,
+                                )}
+                              </span>
+                            )
+                          }
                           placeholder="0"
                           disabled={isEditDisabled}
                         />
@@ -529,15 +535,6 @@ const AllocFormTable = ({
                         />
                       </td>
                       <td style={{ width: 100 }}>
-                        {item.warehouse_3 !== null && !isEditDisabled && (
-                          <div className="text-xs text-gray-500 mb-1">
-                            Available:{" "}
-                            {getAvailableQuantity(
-                              item.item_id,
-                              item.warehouse_3.id,
-                            )}
-                          </div>
-                        )}
                         <Input
                           type="number"
                           sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
@@ -567,6 +564,18 @@ const AllocFormTable = ({
                                   : undefined,
                             },
                           }}
+                          endDecorator={
+                            item.warehouse_3 !== null &&
+                            !isEditDisabled && (
+                              <span className="text-[10px] leading-none text-gray-400 whitespace-nowrap">
+                                /
+                                {getAvailableQuantity(
+                                  item.item_id,
+                                  item.warehouse_3.id,
+                                )}
+                              </span>
+                            )
+                          }
                           placeholder="0"
                           disabled={isEditDisabled}
                         />
