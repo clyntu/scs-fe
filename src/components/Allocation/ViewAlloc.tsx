@@ -418,7 +418,7 @@ const ViewAlloc = ({
                       Alloc No.
                     </th>
                     <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 350 }}>Customer</th>
+                    <th style={{ width: 250 }}>Customer</th>
                     <th style={{ width: 110 }}>Status</th>
                     <th style={{ width: 200 }}>Remarks</th>
                     <th style={{ width: 150 }}>Created By</th>
@@ -457,7 +457,7 @@ const ViewAlloc = ({
                     >
                       <td>{alloc?.id}</td>
                       <td>{alloc?.transaction_date}</td>
-                      <td>{withTooltip(alloc?.customer.name, "330px")}</td>
+                      <td>{withTooltip(alloc?.customer.name, "280px")}</td>
                       <td>
                         <StatusChip status={alloc.status} />
                       </td>
