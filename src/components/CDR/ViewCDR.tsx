@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteCDRModal from "./DeleteCDRModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
@@ -253,14 +254,22 @@ const ViewCDR = ({
       <Box sx={{ width: "100%" }}>
         <Box
           sx={{
-            mb: 4,
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
-          className="flex justify-between"
         >
-          <h2>Customer Delivery Receipt</h2>
+          <Typography level="h2" component="h1">
+            Customer Delivery Receipt
+          </Typography>
           <Button
-            className="mt-2 bg-button-primary"
+            className="bg-button-primary"
             color="primary"
+            startDecorator={<AddRoundedIcon />}
             onClick={() => {
               setOpenCreate(true);
             }}
@@ -268,7 +277,18 @@ const ViewCDR = ({
             Add Delivery Receipt
           </Button>
         </Box>
-        <Box className="flex items-center mb-6">
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
           <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
@@ -280,7 +300,7 @@ const ViewCDR = ({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </FormControl>
-          <FormControl sx={{ ml: 2 }}>
+          <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
             <Select
               sx={{ width: 130 }}
@@ -324,11 +344,9 @@ const ViewCDR = ({
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -351,12 +369,14 @@ const ViewCDR = ({
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "450px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
             stickyHeader
+            hoverRow
             sx={{
               "& tbody tr > *:first-child": {
                 position: "sticky",
@@ -368,7 +388,7 @@ const ViewCDR = ({
               "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
                 zIndex: 10,
               },
               "& thead tr > *:first-child": {
@@ -376,19 +396,21 @@ const ViewCDR = ({
                 left: 0,
                 top: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
               "& thead tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 top: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
+              "& thead th": {
+                backgroundColor: "background.level1",
+              },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
@@ -415,9 +437,15 @@ const ViewCDR = ({
                     <th style={{ width: 250 }}>Customer</th>
                     <th style={{ width: 220 }}>Ref No.</th>
                     <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 150 }}>Net Amount</th>
-                    <th style={{ width: 150 }}>Gross Amount</th>
-                    <th style={{ width: 100 }}>Items Total</th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Net Amount
+                    </th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Gross Amount
+                    </th>
+                    <th style={{ width: 100, textAlign: "right" }}>
+                      Items Total
+                    </th>
                     <th style={{ width: 100 }}>CDP No.</th>
                     <th style={{ width: 200 }}>Remarks</th>
                     <th style={{ width: 150 }}>Created By</th>
@@ -425,12 +453,27 @@ const ViewCDR = ({
                     <th style={{ width: 120 }}>Date Created</th>
                     <th style={{ width: 120 }}>Date Modified</th>
                     <th
-                      aria-label="last"
+                      aria-label="actions"
                       style={{ width: "var(--Table-lastColumnWidth)" }}
                     />
                   </tr>
                 </thead>
                 <tbody>
+                  {CDRs.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={15}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No delivery receipts found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
                   {CDRs.items.map((CDR) => (
                     <tr
                       key={CDR.id}
@@ -459,12 +502,17 @@ const ViewCDR = ({
                       <td>{withTooltip(CDR?.modifier?.username, "130px")}</td>
                       <td>{formatToDate(CDR.date_created)}</td>
                       <td>{formatToDate(CDR.date_modified)}</td>
-                      <td style={{ textAlign: "center" }}>
+                      <td>
                         <Box
-                          sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
                         >
                           <Button
-                            sx={{ minWidth: 60 }}
+                            sx={{ minWidth: 70, fontSize: "xs" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -478,6 +526,7 @@ const ViewCDR = ({
                           {(CDR.status === "posted" ||
                             CDR.status === "archived") && (
                             <Button
+                              sx={{ fontSize: "xs" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -493,6 +542,7 @@ const ViewCDR = ({
 
                           {CDR.status === "unposted" && (
                             <Button
+                              sx={{ fontSize: "xs" }}
                               size="sm"
                               variant="soft"
                               color="danger"

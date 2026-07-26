@@ -5,6 +5,7 @@ import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import {
   Input,
   Autocomplete,
@@ -398,12 +399,19 @@ const ItemForm = (): JSX.Element => {
     <>
       <Box sx={{ width: "100%" }}>
         <Box
-          className="flex justify-between"
           sx={{
-            mb: 4,
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
         >
-          <h2>Stocks</h2>
+          <Typography level="h2" component="h1">
+            Stocks
+          </Typography>
 
           <div className="flex items-center gap-3">
             {/* Print Reports Dropdown */}
@@ -452,9 +460,10 @@ const ItemForm = (): JSX.Element => {
 
             {/* Add Stock Button */}
             <Button
-              sx={{ width: "120px", height: "36px" }}
+              sx={{ height: "36px" }}
               className="bg-button-primary"
               color="primary"
+              startDecorator={<AddRoundedIcon />}
               onClick={() => {
                 setOpenAdd(true);
               }}
@@ -464,7 +473,18 @@ const ItemForm = (): JSX.Element => {
           </div>
         </Box>
 
-        <Box className="flex items-center mb-6">
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
           <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
@@ -475,7 +495,7 @@ const ItemForm = (): JSX.Element => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </FormControl>
-          <FormControl sx={{ ml: 2, width: 130 }}>
+          <FormControl sx={{ width: 130 }}>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Category</FormLabel>
             <Autocomplete
               placeholder="All"
@@ -491,7 +511,7 @@ const ItemForm = (): JSX.Element => {
               size="sm"
             />
           </FormControl>
-          <FormControl sx={{ ml: 2, width: 130 }}>
+          <FormControl sx={{ width: 130 }}>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Brand</FormLabel>
             <Autocomplete
               placeholder="All"
@@ -507,7 +527,7 @@ const ItemForm = (): JSX.Element => {
               size="sm"
             />
           </FormControl>
-          <FormControl className="ml-4 w-[130px]">
+          <FormControl sx={{ width: 130 }}>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
             <Autocomplete
               placeholder="All"
@@ -558,12 +578,10 @@ const ItemForm = (): JSX.Element => {
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "150px",
-            "--Table-lastColumnWidth": "150px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--Table-lastColumnWidth": "140px",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -586,12 +604,14 @@ const ItemForm = (): JSX.Element => {
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "450px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
             stickyHeader
+            hoverRow
             sx={{
               "& tbody tr > *:first-child": {
                 position: "sticky",
@@ -603,7 +623,7 @@ const ItemForm = (): JSX.Element => {
               "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
                 zIndex: 10,
               },
               "& thead tr > *:first-child": {
@@ -611,19 +631,21 @@ const ItemForm = (): JSX.Element => {
                 left: 0,
                 top: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
               "& thead tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 top: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
+              "& thead th": {
+                backgroundColor: "background.level1",
+              },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
@@ -647,26 +669,44 @@ const ItemForm = (): JSX.Element => {
                       Stock Code
                     </th>
                 <th style={{ width: 300 }}>Description</th>
-                <th style={{ width: 100 }}>On Stock</th>
-                <th style={{ width: 100 }}>Available</th>
-                <th style={{ width: 100 }}>Allocated</th>
+                <th style={{ width: 100, textAlign: "right" }}>On Stock</th>
+                <th style={{ width: 100, textAlign: "right" }}>Available</th>
+                <th style={{ width: 100, textAlign: "right" }}>Allocated</th>
 
-                <th style={{ width: 100 }}>Purchased</th>
-                <th style={{ width: 100 }}>Sold</th>
-                <th style={{ width: 150 }}>SRP (₱)</th>
-                <th style={{ width: 150 }}>Last Sale Price (₱)</th>
-                <th style={{ width: 150 }}>Acqui. Cost (₱)</th>
-                <th style={{ width: 150 }}>Net B/F Tax (₱)</th>
+                <th style={{ width: 100, textAlign: "right" }}>Purchased</th>
+                <th style={{ width: 100, textAlign: "right" }}>Sold</th>
+                <th style={{ width: 150, textAlign: "right" }}>SRP (₱)</th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Last Sale Price (₱)
+                </th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Acqui. Cost (₱)
+                </th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Net B/F Tax (₱)
+                </th>
                 <th style={{ width: 100 }}>Category</th>
                 <th style={{ width: 100 }}>Brand</th>
                 <th style={{ width: 110 }}>Status</th>
                 <th
-                  aria-label="last"
+                  aria-label="actions"
                   style={{ width: "var(--Table-lastColumnWidth)" }}
                 />
               </tr>
             </thead>
             <tbody>
+              {items.items.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={15}
+                    style={{ textAlign: "center", padding: "24px" }}
+                  >
+                    <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                      No stocks found.
+                    </Typography>
+                  </td>
+                </tr>
+              )}
               {items.items.map((item) => (
                 <tr
                   key={item.id}
@@ -715,11 +755,17 @@ const ItemForm = (): JSX.Element => {
                     </TooltipTableCell>
                   </td>
                   <td>{item.status}</td>
-                  <td style={{ textAlign: "center" }}>
+                  <td>
                     <Box
-                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                      sx={{
+                        display: "flex",
+                        gap: 0.5,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
                       <Button
+                        sx={{ fontSize: "xs" }}
                         size="sm"
                         variant="plain"
                         color="neutral"
@@ -731,6 +777,7 @@ const ItemForm = (): JSX.Element => {
                         Edit
                       </Button>
                       <Button
+                        sx={{ fontSize: "xs" }}
                         size="sm"
                         variant="soft"
                         color="danger"

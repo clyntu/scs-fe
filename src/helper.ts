@@ -20,7 +20,7 @@ export const convertToQueryParams = (queryParams: any): string => {
 };
 
 export function formatToDate(dateStr: string | undefined): string {
-  if (dateStr === undefined || dateStr === null) return "-";
+  if (dateStr === undefined || dateStr === null) return "";
   const date = new Date(dateStr);
 
   // Extract year, month, day

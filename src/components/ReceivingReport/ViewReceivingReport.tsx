@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import DeleteReceivingReportModal from "./DeleteRRModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
@@ -246,14 +247,22 @@ const ViewReceivingReport = ({
       <Box sx={{ width: "100%" }}>
         <Box
           sx={{
-            mb: 4,
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
-          className="flex justify-between"
         >
-          <h2>Receiving Report</h2>
+          <Typography level="h2" component="h1">
+            Receiving Report
+          </Typography>
           <Button
-            className="mt-2 bg-button-primary"
+            className="bg-button-primary"
             color="primary"
+            startDecorator={<AddRoundedIcon />}
             onClick={() => {
               setOpenCreate(true);
             }}
@@ -261,7 +270,18 @@ const ViewReceivingReport = ({
             Add Receiving Report
           </Button>
         </Box>
-        <Box className="flex items-center mb-6">
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
           <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
@@ -273,7 +293,7 @@ const ViewReceivingReport = ({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </FormControl>
-          <FormControl sx={{ ml: 2 }}>
+          <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
             <Select
               sx={{ width: 130 }}
@@ -317,11 +337,9 @@ const ViewReceivingReport = ({
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -344,12 +362,14 @@ const ViewReceivingReport = ({
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "450px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
             stickyHeader
+            hoverRow
             sx={{
               "& tbody tr > *:first-child": {
                 position: "sticky",
@@ -361,7 +381,7 @@ const ViewReceivingReport = ({
               "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
                 zIndex: 10,
               },
               "& thead tr > *:first-child": {
@@ -369,19 +389,21 @@ const ViewReceivingReport = ({
                 left: 0,
                 top: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
               "& thead tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 top: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
+              "& thead th": {
+                backgroundColor: "background.level1",
+              },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
@@ -408,23 +430,44 @@ const ViewReceivingReport = ({
                     <th style={{ width: 320 }}>Supplier</th>
                     <th style={{ width: 180 }}>Ref No.</th>
                     <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 130 }}>Net Amount</th>
-                    <th style={{ width: 130 }}>FOB Total</th>
-                    <th style={{ width: 130 }}>Landed Total (₱)</th>
+                    <th style={{ width: 130, textAlign: "right" }}>
+                      Net Amount
+                    </th>
+                    <th style={{ width: 130, textAlign: "right" }}>
+                      FOB Total
+                    </th>
+                    <th style={{ width: 130, textAlign: "right" }}>
+                      Landed Total (₱)
+                    </th>
                     <th style={{ width: 100 }}>Currency</th>
-                    <th style={{ width: 70 }}>Rate</th>
+                    <th style={{ width: 70, textAlign: "right" }}>Rate</th>
                     <th style={{ width: 200 }}>Remarks</th>
                     <th style={{ width: 150 }}>Created By</th>
                     <th style={{ width: 150 }}>Modified By</th>
                     <th style={{ width: 120 }}>Date Created</th>
                     <th style={{ width: 120 }}>Date Modified</th>
                     <th
-                      aria-label="last"
+                      aria-label="actions"
                       style={{ width: "var(--Table-lastColumnWidth)" }}
                     />
                   </tr>
                 </thead>
                 <tbody>
+                  {receivingReports.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={16}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No receiving reports found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
                   {receivingReports.items.map((receivingReport) => (
                     <tr
                       key={receivingReport.id}
@@ -465,9 +508,16 @@ const ViewReceivingReport = ({
                       <td>{formatToDate(receivingReport.date_created)}</td>
                       <td>{formatToDate(receivingReport.date_modified)}</td>
                       <td>
-                        <Box sx={{ display: "flex", gap: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
                           <Button
-                            sx={{ minWidth: 60 }}
+                            sx={{ minWidth: 70, fontSize: "xs" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -483,6 +533,7 @@ const ViewReceivingReport = ({
                           {(receivingReport.status === "posted" ||
                             receivingReport.status === "archived") && (
                             <Button
+                              sx={{ fontSize: "xs" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -498,6 +549,7 @@ const ViewReceivingReport = ({
 
                           {receivingReport.status === "unposted" && (
                             <Button
+                              sx={{ fontSize: "xs" }}
                               size="sm"
                               variant="soft"
                               color="danger"

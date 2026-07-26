@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type {
@@ -237,14 +238,22 @@ const ViewAlloc = ({
       <Box sx={{ width: "100%" }}>
         <Box
           sx={{
-            mb: 4,
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
-          className="flex justify-between"
         >
-          <h2>Allocation</h2>
+          <Typography level="h2" component="h1">
+            Allocation
+          </Typography>
           <Button
-            className="mt-2 bg-button-primary"
+            className="bg-button-primary"
             color="primary"
+            startDecorator={<AddRoundedIcon />}
             onClick={() => {
               setOpenCreate(true);
             }}
@@ -252,7 +261,18 @@ const ViewAlloc = ({
             Add Allocation
           </Button>
         </Box>
-        <Box className="flex items-center mb-6">
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
           <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
             <Input
@@ -264,7 +284,7 @@ const ViewAlloc = ({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </FormControl>
-          <FormControl sx={{ ml: 2 }}>
+          <FormControl>
             <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
             <Select
               sx={{ width: 130 }}
@@ -308,11 +328,9 @@ const ViewAlloc = ({
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -335,12 +353,14 @@ const ViewAlloc = ({
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "450px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
             stickyHeader
+            hoverRow
             sx={{
               "& tbody tr > *:first-child": {
                 position: "sticky",
@@ -352,7 +372,7 @@ const ViewAlloc = ({
               "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
                 zIndex: 10,
               },
               "& thead tr > *:first-child": {
@@ -360,19 +380,21 @@ const ViewAlloc = ({
                 left: 0,
                 top: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
               "& thead tr > *:last-child": {
                 position: "sticky",
                 right: 0,
                 top: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.level1",
                 zIndex: 11,
               },
+              "& thead th": {
+                backgroundColor: "background.level1",
+              },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
@@ -404,12 +426,27 @@ const ViewAlloc = ({
                     <th style={{ width: 120 }}>Date Created</th>
                     <th style={{ width: 120 }}>Date Modified</th>
                     <th
-                      aria-label="last"
+                      aria-label="actions"
                       style={{ width: "var(--Table-lastColumnWidth)" }}
                     />
                   </tr>
                 </thead>
                 <tbody>
+                  {allocs.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No allocations found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
                   {allocs.items.map((alloc) => (
                     <tr
                       key={alloc.id}
@@ -429,12 +466,17 @@ const ViewAlloc = ({
                       <td>{withTooltip(alloc?.modifier?.username, "130px")}</td>
                       <td>{formatToDate(alloc.date_created)}</td>
                       <td>{formatToDate(alloc.date_modified)}</td>
-                      <td style={{ textAlign: "center" }}>
+                      <td>
                         <Box
-                          sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
                         >
                           <Button
-                            sx={{ width: "100px" }}
+                            sx={{ minWidth: 70, fontSize: "xs" }}
                             size="sm"
                             variant="plain"
                             color="neutral"
@@ -448,6 +490,7 @@ const ViewAlloc = ({
                           {(alloc.status === "posted" ||
                             alloc.status === "archived") && (
                             <Button
+                              sx={{ fontSize: "xs" }}
                               size="sm"
                               variant="soft"
                               color="warning"
@@ -462,6 +505,7 @@ const ViewAlloc = ({
                           )}
                           {alloc.status === "unposted" && (
                             <Button
+                              sx={{ fontSize: "xs" }}
                               size="sm"
                               variant="soft"
                               color="danger"

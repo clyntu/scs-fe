@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import type {
   PaginatedStockAdjustments,
@@ -212,14 +213,22 @@ const ViewStockAdjustment = ({
       <Box sx={{ width: "100%" }}>
         <Box
           sx={{
-            mb: 4,
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
           }}
-          className="flex justify-between"
         >
-          <h2>Stock Adjustment</h2>
+          <Typography level="h2" component="h1">
+            Stock Adjustment
+          </Typography>
           <Button
-            className="mt-2 bg-button-primary"
+            className="bg-button-primary"
             color="primary"
+            startDecorator={<AddRoundedIcon />}
             onClick={() => {
               setOpenCreate(true);
             }}
@@ -232,9 +241,13 @@ const ViewStockAdjustment = ({
         <Box
           sx={{
             display: "flex",
-            gap: 2,
-            mb: 2,
+            gap: 1.5,
+            mb: 3,
             flexWrap: "wrap",
+            alignItems: "flex-end",
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
           }}
         >
           <FormControl sx={{ flexGrow: 1, minWidth: 200 }}>
@@ -277,7 +290,7 @@ const ViewStockAdjustment = ({
           width: "100%",
           borderRadius: "sm",
           overflow: "auto",
-          maxHeight: "450px",
+          maxHeight: "calc(100dvh - 280px)",
         }}
         ref={scrollContainerRef}
       >
@@ -286,7 +299,6 @@ const ViewStockAdjustment = ({
           stickyHeader
           hoverRow
           sx={{
-            "--TableCell-headBackground": "#fff",
             "--Table-headerUnderlineThickness": "1px",
             "--TableRow-hoverBackground":
               "var(--joy-palette-background-level1)",
@@ -296,7 +308,7 @@ const ViewStockAdjustment = ({
               position: "sticky",
               top: 0,
               zIndex: 2,
-              backgroundColor: "#fff",
+              backgroundColor: "background.level1",
             },
           }}
         >
