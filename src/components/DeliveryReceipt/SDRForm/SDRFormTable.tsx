@@ -234,33 +234,33 @@ const SDRFormTable = ({
             >
               PO No.
             </th>
-            <th style={{ width: 200 }}>Stock Code</th>
-            <th style={{ width: 200 }}>Name</th>
-            <th style={{ width: 150, textAlign: "right" }}>Serving Now</th>
-            <th style={{ width: 200, textAlign: "right" }}>Unserved Qty.</th>
+            <th style={{ width: 150 }}>Stock Code</th>
+            <th style={{ width: 300 }}>Name</th>
+            <th style={{ width: 100, textAlign: "right" }}>Serving Now</th>
+            <th style={{ width: 100, textAlign: "right" }}>Unserved Qty.</th>
             {status === "posted" ? null : (
-              <th style={{ width: 200, textAlign: "right" }}>Served Qty.</th>
+              <th style={{ width: 100, textAlign: "right" }}>Served Qty.</th>
             )}
-            <th style={{ width: 150, textAlign: "right" }}>PO Qty.</th>
-            <th style={{ width: 150, textAlign: "right" }}>Price</th>
-            <th style={{ width: 150, textAlign: "right" }}>Gross Amount</th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>PO Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>
               Supp. Disc. 1 (%)
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Supp. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Tran. Disc. 1 (%)
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Tran. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
-            <th style={{ width: 150, textAlign: "right" }}>NET Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>NET Amount</th>
             <th style={{ width: 150 }}>Currency</th>
-            <th style={{ width: 150, textAlign: "right" }}>Peso Rate</th>
+            <th style={{ width: 100, textAlign: "right" }}>Peso Rate</th>
           </tr>
         </thead>
         <tbody>

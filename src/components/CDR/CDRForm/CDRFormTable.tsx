@@ -87,28 +87,28 @@ const CDRFormTable = ({
             >
               Alloc No.
             </th>
-            <th style={{ width: 200 }}>Stock Code</th>
+            <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Name</th>
-            <th style={{ width: 150, textAlign: "right" }}>Price</th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>
               DR Receipt Qty.
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>Gross Amount</th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>
               Cust. Disc. 1 (%)
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Cust. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Cust. Disc. 3 (%)</th> */}
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Tran. Disc. 1 (%)
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Tran. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
-            <th style={{ width: 150, textAlign: "right" }}>NET Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>NET Amount</th>
           </tr>
         </thead>
         <tbody>

@@ -27,7 +27,7 @@ const STFormTable = ({
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "260px",
+            "--Table-firstColumnWidth": "300px",
             "--Table-lastColumnWidth": "86px",
             // background needs to have transparency to show the scrolling shadows
             "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
@@ -97,19 +97,19 @@ const STFormTable = ({
                 >
                   Product Name
                 </th>
-                <th style={{ width: 200 }}>Stock Code</th>
+                <th style={{ width: 150 }}>Stock Code</th>
                 {!isEditDisabled && (
-                  <th style={{ width: 150, textAlign: "right" }}>Available</th>
+                  <th style={{ width: 100, textAlign: "right" }}>Available</th>
                 )}
-                <th style={{ width: 150, textAlign: "right" }}>
+                <th style={{ width: 100, textAlign: "right" }}>
                   Total Quantity
                 </th>
                 <th style={{ width: 200 }}>To Whse 1</th>
-                <th style={{ width: 150 }}>Whse 1 Qty.</th>
+                <th style={{ width: 100 }}>Whse 1 Qty.</th>
                 <th style={{ width: 200 }}>To Whse 2</th>
-                <th style={{ width: 150 }}>Whse 2 Qty.</th>
+                <th style={{ width: 100 }}>Whse 2 Qty.</th>
                 <th style={{ width: 200 }}>To Whse 3</th>
-                <th style={{ width: 150 }}>Whse 3 Qty.</th>
+                <th style={{ width: 100 }}>Whse 3 Qty.</th>
               </tr>
             </thead>
             <tbody>

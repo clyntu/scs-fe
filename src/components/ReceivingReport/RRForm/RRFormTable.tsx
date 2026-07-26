@@ -196,29 +196,29 @@ const RRFormTable = ({
               SDR No.
             </th>
             <th style={{ width: 100 }}>PO No.</th>
-            <th style={{ width: 200 }}>Stock Code</th>
-            <th style={{ width: 200 }}>Name</th>
-            <th style={{ width: 125, textAlign: "right" }}>Served Qty.</th>
-            <th style={{ width: 150, textAlign: "right" }}>Price</th>
-            <th style={{ width: 175, textAlign: "right" }}>NET Cost</th>
-            <th style={{ width: 150, textAlign: "right" }}>Gross Amount</th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 150 }}>Stock Code</th>
+            <th style={{ width: 300 }}>Name</th>
+            <th style={{ width: 100, textAlign: "right" }}>Served Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>NET Cost</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>
               Supp. Disc. 1 (%)
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Supp. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Tran. Disc. 1 (%)
             </th>
-            <th style={{ width: 150, textAlign: "right" }}>
+            <th style={{ width: 100, textAlign: "right" }}>
               Tran. Disc. 2 (%)
             </th>
             {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
-            <th style={{ width: 150, textAlign: "right" }}>Net Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>Net Amount</th>
             <th style={{ width: 150 }}>Currency</th>
-            <th style={{ width: 150, textAlign: "right" }}>Peso Rate</th>
+            <th style={{ width: 100, textAlign: "right" }}>Peso Rate</th>
           </tr>
         </thead>
         <tbody>

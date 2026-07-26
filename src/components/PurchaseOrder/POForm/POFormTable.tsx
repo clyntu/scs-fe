@@ -115,7 +115,7 @@ const POFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "200px",
+        "--Table-firstColumnWidth": "150px",
         "--Table-lastColumnWidth": "80px",
         "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
@@ -197,12 +197,10 @@ const POFormTable = ({
             >
               Stock Code
             </th>
-            <th style={{ width: 315 }}>Name</th>
-            {!isEditDisabled && (
-              <th style={{ width: 150 }}>Purchase Price</th>
-            )}
-            <th style={{ width: 70 }}>Volume</th>
-            <th style={{ width: 90, textAlign: "right" }}>Price</th>
+            <th style={{ width: 300 }}>Name</th>
+            {!isEditDisabled && <th style={{ width: 100 }}>Purchase Price</th>}
+            <th style={{ width: 100 }}>Volume</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
             <th style={{ width: 100, textAlign: "right" }}>Gross</th>
             <th
               aria-label="actions"

@@ -100,14 +100,14 @@ const DeallocFormTable = ({
               Alloc No.
             </th>
             <th style={{ width: 150 }}>CPO No.</th>
-            <th style={{ width: 300 }}>Stock Code</th>
+            <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Stock Description</th>
             <th style={{ width: 200 }}>Warehouse 1</th>
-            <th style={{ width: 150 }}>Whse 1 Qty.</th>
+            <th style={{ width: 100 }}>Whse 1 Qty.</th>
             <th style={{ width: 200 }}>Warehouse 2</th>
-            <th style={{ width: 150 }}>Whse 2 Qty.</th>
+            <th style={{ width: 100 }}>Whse 2 Qty.</th>
             <th style={{ width: 200 }}>Warehouse 3</th>
-            <th style={{ width: 150 }}>Whse 3 Qty.</th>
+            <th style={{ width: 100 }}>Whse 3 Qty.</th>
           </tr>
         </thead>
         <tbody>
@@ -150,7 +150,7 @@ const DeallocFormTable = ({
                   sx={{ fontSize: "xs" }}
                 />
               </td>
-              <td style={{ width: 150 }}>
+              <td style={{ width: 100 }}>
                 <Input
                   type="number"
                   sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
@@ -204,7 +204,7 @@ const DeallocFormTable = ({
                   sx={{ fontSize: "xs" }}
                 />
               </td>
-              <td style={{ width: 150 }}>
+              <td style={{ width: 100 }}>
                 <Input
                   type="number"
                   sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}
@@ -258,7 +258,7 @@ const DeallocFormTable = ({
                   sx={{ fontSize: "xs" }}
                 />
               </td>
-              <td style={{ width: 150 }}>
+              <td style={{ width: 100 }}>
                 <Input
                   type="number"
                   sx={{ fontSize: "xs", width: "100%", minWidth: 0 }}

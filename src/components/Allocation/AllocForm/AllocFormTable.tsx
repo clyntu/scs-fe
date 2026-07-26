@@ -142,14 +142,14 @@ const AllocFormTable = ({
                   CPO No.
                 </th>
                 <th style={{ width: 300 }}>Stock Description</th>
-                <th style={{ width: 150 }}>Order Qty.</th>
-                <th style={{ width: 200 }}>Alloc Qty.</th>
+                <th style={{ width: 100 }}>Order Qty.</th>
+                <th style={{ width: 100 }}>Alloc Qty.</th>
                 <th style={{ width: 200 }}>Warehouse 1</th>
-                <th style={{ width: 150 }}>Whse 1 Qty.</th>
+                <th style={{ width: 100 }}>Whse 1 Qty.</th>
                 <th style={{ width: 200 }}>Warehouse 2</th>
-                <th style={{ width: 150 }}>Whse 2 Qty.</th>
+                <th style={{ width: 100 }}>Whse 2 Qty.</th>
                 <th style={{ width: 200 }}>Warehouse 3</th>
-                <th style={{ width: 150 }}>Whse 3 Qty.</th>
+                <th style={{ width: 100 }}>Whse 3 Qty.</th>
               </tr>
             </thead>
             <tbody>
@@ -264,7 +264,7 @@ const AllocFormTable = ({
                           sx={{ fontSize: "xs" }}
                         />
                       </td>
-                      <td style={{ width: 150 }}>
+                      <td style={{ width: 100 }}>
                         {item.warehouse_1 !== null && !isEditDisabled && (
                           <div className="text-xs text-gray-500 mb-1">
                             Available:{" "}
@@ -396,7 +396,7 @@ const AllocFormTable = ({
                           sx={{ fontSize: "xs" }}
                         />
                       </td>
-                      <td style={{ width: 150 }}>
+                      <td style={{ width: 100 }}>
                         {item.warehouse_2 !== null && !isEditDisabled && (
                           <div className="text-xs text-gray-500 mb-1">
                             Available:{" "}
@@ -528,7 +528,7 @@ const AllocFormTable = ({
                           sx={{ fontSize: "xs" }}
                         />
                       </td>
-                      <td style={{ width: 150 }}>
+                      <td style={{ width: 100 }}>
                         {item.warehouse_3 !== null && !isEditDisabled && (
                           <div className="text-xs text-gray-500 mb-1">
                             Available:{" "}

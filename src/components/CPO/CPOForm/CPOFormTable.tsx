@@ -96,7 +96,7 @@ const CPOFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "200px",
+        "--Table-firstColumnWidth": "150px",
         "--Table-lastColumnWidth": "80px",
         // background needs to have transparency to show the scrolling shadows
         "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
@@ -179,9 +179,9 @@ const CPOFormTable = ({
             >
               Stock Code
             </th>
-            <th style={{ width: 315 }}>Name</th>
-            <th style={{ width: 70, textAlign: "right" }}>Order Qty</th>
-            <th style={{ width: 90, textAlign: "right" }}>Price</th>
+            <th style={{ width: 300 }}>Name</th>
+            <th style={{ width: 100, textAlign: "right" }}>Order Qty</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
             <th style={{ width: 100, textAlign: "right" }}>Gross</th>
             {/* <th style={{ width: 150 }}>On Stock</th> */}
             <th
