@@ -15,8 +15,11 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import ToggleUserStatusModal from "./ToggleUserStatusModal";
 import { toast } from "react-toastify";
-import type { PaginatedUsers, PaginationQueryParams } from "../../interface";
-import type { User } from "../../pages/Login";
+import type {
+  PaginatedUsers,
+  PaginationQueryParams,
+  User,
+} from "../../interface";
 import { convertToQueryParams, getErrorMessage } from "../../helper";
 
 const ViewUsers = (): JSX.Element => {

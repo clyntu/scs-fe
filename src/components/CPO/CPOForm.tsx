@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { CPOPayload, CPOItemValues } from "./interface";
-import type { User } from "../../pages/Login";
 import {
   areCustomerDiscountsValid as areDiscountsValid,
   calculateTotalWithDiscounts,
@@ -19,6 +18,7 @@ import type {
   Item,
   PaginatedCustomers,
   PaginatedItems,
+  User,
 } from "../../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 import { addFourPlaces, getErrorMessage } from "../../helper";

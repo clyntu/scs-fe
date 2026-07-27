@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import type { User } from "../../pages/Login";
 import type {
+  User,
   Supplier,
   PaginatedSuppliers,
   RRFormProps,

@@ -18,10 +18,9 @@ import {
 } from "@mui/joy";
 import CustomersModal from "../../components/Customers/CustomersModal";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
-import type { User } from "../Login";
 import { toast } from "react-toastify";
 
-import type { Customer, PaginatedCustomers } from "../../interface";
+import type { Customer, PaginatedCustomers, User } from "../../interface";
 
 import { convertToQueryParams, formatToCP, formatToDate } from "../../helper";
 import { generatePDF } from "../../components/AR/generatePDF";

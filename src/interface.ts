@@ -1,5 +1,14 @@
 import type { Expense } from "./components/ReceivingReport/interface";
-import type { User } from "./pages/login";
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  full_name: string;
+  role?: string;
+  is_admin?: boolean;
+  disabled?: boolean;
+}
 
 export interface Currency {
   id: number;
@@ -127,6 +136,8 @@ export interface Supplier {
   currency: string;
   supplier_balance?: number;
   notes: string;
+  created_by?: number;
+  modified_by?: number;
   creator?: {
     id: number;
     username: string;
@@ -158,6 +169,8 @@ export interface Customer {
   email?: string; // Optional
   customer_balance?: number;
   notes: string;
+  created_by?: number;
+  modified_by?: number;
   creator?: {
     id: number;
     username: string;
@@ -295,6 +308,7 @@ export interface PaginationQueryParams {
   status?: string;
   unassigned_to_rr?: boolean;
   payment_status?: string;
+  adjustment_type?: string;
   date_from?: string;
   date_to?: string;
 }

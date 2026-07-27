@@ -352,24 +352,25 @@ const ItemForm = (): JSX.Element => {
       // Items WITH net cost: must have cost > 0 AND stock > 0
       const withNetCost = allItems.filter(
         (item) =>
-          (item.net_cost_before_tax ?? 0) > 0 && (item.total_on_stock ?? 0) > 0,
+          Number(item.net_cost_before_tax ?? 0) > 0 &&
+          (item.total_on_stock ?? 0) > 0,
       );
       // Items WITHOUT net cost: either no cost OR no stock
       const withoutNetCost = allItems.filter(
         (item) =>
-          (item.net_cost_before_tax ?? 0) <= 0 ||
+          Number(item.net_cost_before_tax ?? 0) <= 0 ||
           (item.total_on_stock ?? 0) <= 0,
       );
 
       const withNetCostTotal = withNetCost.reduce((sum, item) => {
         const totalOnStock = item.total_on_stock ?? 0;
-        const netCost = item.net_cost_before_tax ?? 0;
+        const netCost = Number(item.net_cost_before_tax ?? 0);
         return sum + totalOnStock * netCost;
       }, 0);
 
       const withoutNetCostTotal = withoutNetCost.reduce((sum, item) => {
         const totalOnStock = item.total_on_stock ?? 0;
-        const netCost = item.net_cost_before_tax ?? 0;
+        const netCost = Number(item.net_cost_before_tax ?? 0);
         return sum + totalOnStock * netCost;
       }, 0);
 

@@ -6,7 +6,6 @@ import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import type { User } from "../../pages/Login";
 import CircularProgress from "@mui/joy/CircularProgress";
 import type {
   SDRFormProps,
@@ -14,6 +13,7 @@ import type {
   PaginatedSuppliers,
   PurchaseOrder,
   DeliveryReceipt,
+  User,
 } from "../../interface";
 import { getErrorMessage } from "../../helper";
 
