@@ -499,7 +499,9 @@ const SupplierForm = (): JSX.Element => {
                           {supplier?.modifier?.full_name}
                         </TooltipTableCell>
                       </td>
-                      <td>{formatToDate(supplier.date_modified)}</td>
+                      <td>
+                        {formatToDate(supplier.date_modified ?? undefined)}
+                      </td>
                       <td>
                         <Box
                           sx={{

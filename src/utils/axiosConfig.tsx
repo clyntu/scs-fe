@@ -86,7 +86,7 @@ async function refreshAuthToken(
 }
 
 // Configure the Axios instance
-export function setupAxiosInterceptors(axiosInstance: typeof axios): void {
+export function setupAxiosInterceptors(axiosInstance: AxiosInstance): void {
   // Request interceptor
   axiosInstance.interceptors.request.use(
     async (config) => {
@@ -106,10 +106,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios): void {
           session?.access_token !== undefined &&
           session.access_token !== ""
         ) {
-          config.headers = {
-            ...config.headers,
-            Authorization: `Bearer ${session.access_token}`,
-          };
+          config.headers.Authorization = `Bearer ${session.access_token}`;
         }
 
         // Set company ID header
@@ -147,7 +144,9 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios): void {
 
       const status = error.response?.status;
       const path = window.location.pathname;
-      const detail: unknown = error.response?.data?.detail;
+      const detail: unknown = (
+        error.response?.data as { detail?: unknown } | undefined
+      )?.detail;
 
       // Check for network issues
       if (!navigator.onLine) {

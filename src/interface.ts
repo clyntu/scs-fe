@@ -1,5 +1,5 @@
 import type { Expense } from "./components/ReceivingReport/interface";
-import type { User } from "./pages/login";
+import type { User } from "./pages/Login";
 
 export interface Currency {
   id: number;
@@ -297,6 +297,7 @@ export interface PaginationQueryParams {
   payment_status?: string;
   date_from?: string;
   date_to?: string;
+  adjustment_type?: string;
 }
 
 export interface Warehouse {

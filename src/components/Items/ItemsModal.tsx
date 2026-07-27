@@ -25,7 +25,7 @@ import type {
 import StockHistory from "./StockHistory";
 import { addTwoPlaces, addFourPlaces, getErrorMessage } from "../../helper";
 
-const formatWithCommas = (value: string | number): string => {
+const formatWithCommas = (value: string | number | undefined): string => {
   if (value === "" || value === undefined || value === null) return "";
   const str = String(value);
   const [whole, decimal] = str.split(".");

@@ -89,7 +89,7 @@ export const generateDeliveryReceiptPDF = (
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   doc.text(`Customer: ${selectedRow.customer.name}`, 40, 70);
-  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 85);
+  doc.text(`Address: ${selectedRow.customer?.address ?? ""}`, 40, 85);
   doc.text(
     `Date: ${new Date(selectedRow.transaction_date).toLocaleDateString(
       "en-US",
