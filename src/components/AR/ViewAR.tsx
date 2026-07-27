@@ -224,7 +224,7 @@ const ViewAR = ({
     // Fetch ARs after
     axiosInstance
       .post("/api/ar-receipts/process-check-clearing/")
-      .then((response) => getAllAR())
+      .then(() => getAllAR())
       .catch((error) => console.error("Error:", error));
   }, []);
 

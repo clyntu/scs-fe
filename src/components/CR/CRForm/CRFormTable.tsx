@@ -20,7 +20,6 @@ const stripCommas = (value: string): string => {
 };
 
 const CRFormTable = ({
-  selectedRow,
   warehouses,
   formattedDRs,
   setFormattedDRs,

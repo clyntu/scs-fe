@@ -28,7 +28,7 @@ const browserStorage = {
   },
 };
 
-export function getSupabase(company?: CompanyId): SupabaseClient {
+export function getSupabase(): SupabaseClient {
   if (supabaseInstance === null) {
     if (
       SUPABASE_URL === undefined ||

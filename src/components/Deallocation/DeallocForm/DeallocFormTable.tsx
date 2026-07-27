@@ -6,10 +6,8 @@ import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const DeallocFormTable = ({
   selectedRow,
-  selectedAlloc,
   allocItems,
   setAllocItems,
-  openCreate,
   warehouses,
 }: DeallocFormTableProps): JSX.Element => {
   const isEditDisabled =

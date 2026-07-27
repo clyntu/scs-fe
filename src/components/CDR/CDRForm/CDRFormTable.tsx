@@ -5,12 +5,7 @@ import type { CDRFormTableProps } from "../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import { withTooltip } from "../../shared/withTooltip";
 
-const CDRFormTable = ({
-  selectedRow,
-  formattedAllocs,
-  setFormattedAllocs,
-  isEditDisabled,
-}: CDRFormTableProps): JSX.Element => {
+const CDRFormTable = ({ formattedAllocs }: CDRFormTableProps): JSX.Element => {
   return (
     <Sheet
       sx={{

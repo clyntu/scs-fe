@@ -28,7 +28,6 @@ const CRFormDetails = ({
   openEdit,
   selectedRow,
   customers,
-  formattedDRs,
   setFormattedDRs,
   selectedCustomer,
   setSelectedCustomer,
@@ -43,8 +42,6 @@ const CRFormDetails = ({
   isEditDisabled,
   totalGross,
   totalItems,
-  discountReturn,
-  setDiscountReturn,
 }: CRFormDetailsProps): JSX.Element => {
   const [isFetchingCDRs, setIsFetchingCDRs] = useState(false);
   const [CDRs, setCDRs] = useState<CDR[]>([]);
