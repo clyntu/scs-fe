@@ -111,9 +111,7 @@ const ARFormTable = ({
                 <th style={{ width: 80 }}>Tran No.</th>
                 <th style={{ width: 50 }}>Pay?</th>
                 <th style={{ width: 150 }}>Tran Date</th>
-                <th style={{ width: 100, textAlign: "right" }}>
-                  Original Amt
-                </th>
+                <th style={{ width: 100, textAlign: "right" }}>Original Amt</th>
                 <th style={{ width: 100, textAlign: "right" }}>Tran Amt</th>
                 <th style={{ width: 100, textAlign: "right" }}>Payment</th>
                 <th style={{ width: 100, textAlign: "right" }}>Balance</th>

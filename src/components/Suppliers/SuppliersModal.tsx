@@ -17,7 +17,7 @@ import {
 import { toast } from "react-toastify";
 import type { SuppliersModalProps, Supplier, Currency } from "../../interface";
 import axiosInstance from "../../utils/axiosConfig";
-import { formatToSP } from "../../helper";
+import { formatToSP, getErrorMessage } from "../../helper";
 
 const SuppliersModal = ({
   open,
@@ -80,7 +80,7 @@ const SuppliersModal = ({
       setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -196,7 +196,7 @@ const SuppliersModal = ({
                       size="sm"
                       placeholder="Email"
                       name="email"
-                      value={supplier.email || ""}
+                      value={supplier.email ?? ""}
                       onChange={handleChange}
                     />
                   </FormControl>
@@ -225,7 +225,7 @@ const SuppliersModal = ({
                       type="number"
                       placeholder="0"
                       name="supplier_balance"
-                      value={supplier.supplier_balance || 0}
+                      value={supplier.supplier_balance ?? 0}
                       onChange={handleChange}
                       required
                     />

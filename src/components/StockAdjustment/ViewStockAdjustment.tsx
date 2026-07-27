@@ -22,13 +22,13 @@ import type {
   StockAdjustmentResponse,
 } from "../../interface";
 
-import {
-  convertToQueryParams,
-  formatToDate,
-} from "../../helper";
+import { convertToQueryParams, formatToDate } from "../../helper";
 import { withTooltip } from "../shared/withTooltip";
 import { AdjustmentTypeChip } from "../../utils/statusUtils";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewStockAdjustment = ({
   setOpenCreate,
@@ -60,7 +60,7 @@ const ViewStockAdjustment = ({
   // Initial load function - resets everything and loads first page
   const getAllAdjustments = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -86,7 +86,7 @@ const ViewStockAdjustment = ({
       date_to: dateTo,
     };
 
-    if (searchTerm) {
+    if (searchTerm !== "") {
       payload.search_term = searchTerm;
     }
 
@@ -130,7 +130,7 @@ const ViewStockAdjustment = ({
       date_to: dateTo,
     };
 
-    if (searchTerm) {
+    if (searchTerm !== "") {
       payload.search_term = searchTerm;
     }
 
@@ -161,15 +161,24 @@ const ViewStockAdjustment = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, adjustmentType, dateFrom, dateTo, limit]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    adjustmentType,
+    dateFrom,
+    dateTo,
+    limit,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -188,13 +197,13 @@ const ViewStockAdjustment = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -285,122 +294,122 @@ const ViewStockAdjustment = ({
 
         {/* Table */}
         <Sheet
-        variant="outlined"
-        sx={{
-          width: "100%",
-          borderRadius: "sm",
-          overflow: "auto",
-          maxHeight: "calc(100dvh - 280px)",
-        }}
-        ref={scrollContainerRef}
-      >
-        <Table
-          aria-label="stock adjustments table"
-          stickyHeader
-          hoverRow
+          variant="outlined"
           sx={{
-            "--Table-headerUnderlineThickness": "1px",
-            "--TableRow-hoverBackground":
-              "var(--joy-palette-background-level1)",
-            "--TableCell-paddingY": "4px",
-            "--TableCell-paddingX": "8px",
-            "& thead th": {
-              position: "sticky",
-              top: 0,
-              zIndex: 2,
-              backgroundColor: "background.level1",
-            },
+            width: "100%",
+            borderRadius: "sm",
+            overflow: "auto",
+            maxHeight: "calc(100dvh - 280px)",
           }}
+          ref={scrollContainerRef}
         >
-          <thead>
-            <tr>
-              <th style={{ width: 45, padding: "12px 6px" }}>ID</th>
-              <th style={{ width: 90, padding: "12px 6px" }}>Date</th>
-              <th style={{ width: 130, padding: "12px 6px" }}>Stock Code</th>
-              <th style={{ width: 180, padding: "12px 6px" }}>Stock Name</th>
-              <th style={{ width: 80, padding: "12px 6px" }}>Type</th>
-              <th
-                style={{ width: 50, padding: "12px 6px", textAlign: "right" }}
-              >
-                Qty
-              </th>
-              <th
-                style={{ width: 55, padding: "12px 6px", textAlign: "right" }}
-              >
-                Prev
-              </th>
-              <th
-                style={{ width: 55, padding: "12px 6px", textAlign: "right" }}
-              >
-                New
-              </th>
-              <th style={{ width: 130, padding: "12px 6px" }}>Warehouse</th>
-              <th style={{ width: 120, padding: "12px 6px" }}>Created By</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading && adjustments.items.length === 0 ? (
+          <Table
+            aria-label="stock adjustments table"
+            stickyHeader
+            hoverRow
+            sx={{
+              "--Table-headerUnderlineThickness": "1px",
+              "--TableRow-hoverBackground":
+                "var(--joy-palette-background-level1)",
+              "--TableCell-paddingY": "4px",
+              "--TableCell-paddingX": "8px",
+              "& thead th": {
+                position: "sticky",
+                top: 0,
+                zIndex: 2,
+                backgroundColor: "background.level1",
+              },
+            }}
+          >
+            <thead>
               <tr>
-                <td
-                  colSpan={11}
-                  style={{ textAlign: "center", padding: "20px" }}
+                <th style={{ width: 45, padding: "12px 6px" }}>ID</th>
+                <th style={{ width: 90, padding: "12px 6px" }}>Date</th>
+                <th style={{ width: 130, padding: "12px 6px" }}>Stock Code</th>
+                <th style={{ width: 180, padding: "12px 6px" }}>Stock Name</th>
+                <th style={{ width: 80, padding: "12px 6px" }}>Type</th>
+                <th
+                  style={{ width: 50, padding: "12px 6px", textAlign: "right" }}
                 >
-                  <CircularProgress size="sm" />
-                  <Typography level="body-sm" sx={{ ml: 2 }}>
-                    Loading stock adjustments...
-                  </Typography>
-                </td>
-              </tr>
-            ) : adjustments.items.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={11}
-                  style={{ textAlign: "center", padding: "20px" }}
+                  Qty
+                </th>
+                <th
+                  style={{ width: 55, padding: "12px 6px", textAlign: "right" }}
                 >
-                  <Typography level="body-sm">
-                    No stock adjustments found
-                  </Typography>
-                </td>
+                  Prev
+                </th>
+                <th
+                  style={{ width: 55, padding: "12px 6px", textAlign: "right" }}
+                >
+                  New
+                </th>
+                <th style={{ width: 130, padding: "12px 6px" }}>Warehouse</th>
+                <th style={{ width: 120, padding: "12px 6px" }}>Created By</th>
               </tr>
-            ) : (
-              adjustments.items.map((adjustment: StockAdjustmentResponse) => (
-                <tr key={adjustment.id}>
-                  <td>{adjustment.id}</td>
-                  <td>{formatToDate(adjustment.date_created)}</td>
-                  <td>{withTooltip(adjustment.stock_code, 120)}</td>
-                  <td>{withTooltip(adjustment.item_name, 200)}</td>
-
-                  <td>
-                    <AdjustmentTypeChip
-                      adjustmentType={adjustment.adjustment_type}
-                    />
+            </thead>
+            <tbody>
+              {isLoading && adjustments.items.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={11}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <CircularProgress size="sm" />
+                    <Typography level="body-sm" sx={{ ml: 2 }}>
+                      Loading stock adjustments...
+                    </Typography>
                   </td>
-                  <td style={{ textAlign: "right" }}>
-                    <span
-                      style={{
-                        color:
-                          adjustment.adjustment_type === "surplus"
-                            ? "green"
-                            : "red",
-                      }}
-                    >
-                      {adjustment.adjustment_type === "surplus" ? "+" : "-"}
-                      {adjustment.adjustment_amount.toLocaleString()}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {adjustment.previous_on_stock.toLocaleString()}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    {adjustment.new_on_stock.toLocaleString()}
-                  </td>
-                  <td>{withTooltip(adjustment.warehouse_name, 150)}</td>
-                  <td>{adjustment.created_by_name}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
+              ) : adjustments.items.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={11}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Typography level="body-sm">
+                      No stock adjustments found
+                    </Typography>
+                  </td>
+                </tr>
+              ) : (
+                adjustments.items.map((adjustment: StockAdjustmentResponse) => (
+                  <tr key={adjustment.id}>
+                    <td>{adjustment.id}</td>
+                    <td>{formatToDate(adjustment.date_created)}</td>
+                    <td>{withTooltip(adjustment.stock_code, 120)}</td>
+                    <td>{withTooltip(adjustment.item_name, 200)}</td>
+
+                    <td>
+                      <AdjustmentTypeChip
+                        adjustmentType={adjustment.adjustment_type}
+                      />
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      <span
+                        style={{
+                          color:
+                            adjustment.adjustment_type === "surplus"
+                              ? "green"
+                              : "red",
+                        }}
+                      >
+                        {adjustment.adjustment_type === "surplus" ? "+" : "-"}
+                        {adjustment.adjustment_amount.toLocaleString()}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {adjustment.previous_on_stock.toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {adjustment.new_on_stock.toLocaleString()}
+                    </td>
+                    <td>{withTooltip(adjustment.warehouse_name, 150)}</td>
+                    <td>{adjustment.created_by_name}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
         </Sheet>
 
         {/* Infinite scroll status */}

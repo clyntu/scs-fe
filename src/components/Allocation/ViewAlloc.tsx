@@ -22,12 +22,19 @@ import type {
   ViewAllocProps,
 } from "../../interface";
 
-import { convertToQueryParams, formatToDate } from "../../helper";
+import {
+  convertToQueryParams,
+  formatToDate,
+  getErrorMessage,
+} from "../../helper";
 import DeleteAllocModal from "./DeleteAllocModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewAlloc = ({
   setOpenCreate,
@@ -61,7 +68,7 @@ const ViewAlloc = ({
   // Initial load function - resets everything and loads first page
   const getAllAlloc = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -146,15 +153,24 @@ const ViewAlloc = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, limit, dateFrom, dateTo]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    limit,
+    dateFrom,
+    dateTo,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -173,13 +189,13 @@ const ViewAlloc = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -206,7 +222,7 @@ const ViewAlloc = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -222,12 +238,14 @@ const ViewAlloc = ({
         setAllocs((prevAlloc) => ({
           ...prevAlloc,
           items: prevAlloc.items.map((Alloc) =>
-            Alloc.id === selectedRow.id ? { ...Alloc, ...archivedAlloc } : Alloc,
+            Alloc.id === selectedRow.id
+              ? { ...Alloc, ...archivedAlloc }
+              : Alloc,
           ),
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -403,10 +421,22 @@ const ViewAlloc = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={10} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={10}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading allocations...</Typography>
+                      <Typography level="body-sm">
+                        Loading allocations...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -548,8 +578,8 @@ const ViewAlloc = ({
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {allocs.items.length} of {allocs.total} items • Scroll for
-                more
+                Showing {allocs.items.length} of {allocs.total} items • Scroll
+                for more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

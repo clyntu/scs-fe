@@ -28,10 +28,14 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
   formatToDate,
+  getErrorMessage,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewCDP = ({
   setOpenCreate,
@@ -65,7 +69,7 @@ const ViewCDP = ({
   // Initial load function - resets everything and loads first page
   const getAllCDP = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -154,15 +158,24 @@ const ViewCDP = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo, limit]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    dateFrom,
+    dateTo,
+    limit,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -181,13 +194,13 @@ const ViewCDP = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -214,7 +227,7 @@ const ViewCDP = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -235,7 +248,7 @@ const ViewCDP = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -411,10 +424,22 @@ const ViewCDP = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={14} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={14}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading delivery plans...</Typography>
+                      <Typography level="body-sm">
+                        Loading delivery plans...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -487,7 +512,9 @@ const ViewCDP = ({
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(Number(CDP.total_gross))}
                       </td>
-                      <td style={{ textAlign: "right" }}>{CDP.total_items?.toLocaleString()}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {CDP.total_items?.toLocaleString()}
+                      </td>
                       <td>{withTooltip(CDP.remarks, "180px")}</td>
                       <td>{withTooltip(CDP?.creator?.username, "130px")}</td>
                       <td>{withTooltip(CDP?.modifier?.username, "130px")}</td>
@@ -576,7 +603,8 @@ const ViewCDP = ({
             </>
           ) : hasMore ? (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-              Showing {CDPs.items.length} of {CDPs.total} items • Scroll for more
+              Showing {CDPs.items.length} of {CDPs.total} items • Scroll for
+              more
             </Typography>
           ) : (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

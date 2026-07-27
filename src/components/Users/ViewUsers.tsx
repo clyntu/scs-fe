@@ -1,11 +1,23 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Box, Button, Table, Sheet, Input, FormControl, FormLabel, CircularProgress, Typography, Chip } from "@mui/joy";
+import {
+  Box,
+  Button,
+  Table,
+  Sheet,
+  Input,
+  FormControl,
+  FormLabel,
+  CircularProgress,
+  Typography,
+  Chip,
+} from "@mui/joy";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import axiosInstance from "../../utils/axiosConfig";
 import ToggleUserStatusModal from "./ToggleUserStatusModal";
 import { toast } from "react-toastify";
-import type { PaginatedUsers, PaginationQueryParams, User } from "../../interface";
-import { convertToQueryParams } from "../../helper";
+import type { PaginatedUsers, PaginationQueryParams } from "../../interface";
+import type { User } from "../../pages/Login";
+import { convertToQueryParams, getErrorMessage } from "../../helper";
 
 const ViewUsers = (): JSX.Element => {
   const [users, setUsers] = useState<PaginatedUsers>({
@@ -32,7 +44,7 @@ const ViewUsers = (): JSX.Element => {
   // Initial load function - resets everything and loads first page
   const getAllUsers = (searchTerm: string): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -110,10 +122,10 @@ const ViewUsers = (): JSX.Element => {
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -132,13 +144,13 @@ const ViewUsers = (): JSX.Element => {
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -155,7 +167,7 @@ const ViewUsers = (): JSX.Element => {
   const handleToggleUserStatus = async (): Promise<void> => {
     if (selectedUser !== undefined) {
       const url = `/api/users/${selectedUser.id}/status`;
-      const newDisabledStatus = !selectedUser.disabled;
+      const newDisabledStatus = selectedUser.disabled !== true;
 
       try {
         const response = await axiosInstance.patch<User>(url, {
@@ -169,14 +181,11 @@ const ViewUsers = (): JSX.Element => {
         setUsers((prevUsers) => ({
           ...prevUsers,
           items: prevUsers.items.map((user) =>
-            user.id === selectedUser.id ? response.data : user
+            user.id === selectedUser.id ? response.data : user,
           ),
         }));
       } catch (error: any) {
-        toast.error(
-          `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
-        );
-        return;
+        toast.error(`Error message: ${getErrorMessage(error)}`);
       }
     }
   };
@@ -307,8 +316,18 @@ const ViewUsers = (): JSX.Element => {
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={6} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={6}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
                       <Typography level="body-sm">Loading users...</Typography>
                     </Box>
@@ -319,7 +338,9 @@ const ViewUsers = (): JSX.Element => {
               <>
                 <thead>
                   <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>ID</th>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      ID
+                    </th>
                     <th style={{ width: 250 }}>Name</th>
                     <th style={{ width: 200 }}>Username</th>
                     <th style={{ width: 250 }}>Email</th>
@@ -329,7 +350,7 @@ const ViewUsers = (): JSX.Element => {
                       aria-label="last"
                       style={{
                         width: "var(--Table-lastColumnWidth)",
-                        textAlign: "center"
+                        textAlign: "center",
                       }}
                     >
                       Actions
@@ -359,19 +380,20 @@ const ViewUsers = (): JSX.Element => {
                       <td>{user.username}</td>
                       <td>{user.email}</td>
                       <td>
-                        {user.is_admin
+                        {user.is_admin === true
                           ? "Admin"
-                          : user.role
-                            ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+                          : user.role !== undefined && user.role !== ""
+                            ? user.role.charAt(0).toUpperCase() +
+                              user.role.slice(1)
                             : "N/A"}
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <Chip
-                          color={user.disabled ? "danger" : "success"}
+                          color={user.disabled === true ? "danger" : "success"}
                           variant="soft"
                           size="sm"
                         >
-                          {user.disabled ? "Disabled" : "Active"}
+                          {user.disabled === true ? "Disabled" : "Active"}
                         </Chip>
                       </td>
                       <td>
@@ -379,15 +401,17 @@ const ViewUsers = (): JSX.Element => {
                           <Button
                             sx={{ fontSize: "13px" }}
                             variant="soft"
-                            color={user.disabled ? "success" : "warning"}
+                            color={
+                              user.disabled === true ? "success" : "warning"
+                            }
                             size="sm"
                             onClick={() => {
                               setSelectedUser(user);
-                              setIsDisabling(!user.disabled);
+                              setIsDisabling(user.disabled !== true);
                               setOpenToggleStatus(true);
                             }}
                           >
-                            {user.disabled ? "Enable" : "Disable"}
+                            {user.disabled === true ? "Enable" : "Disable"}
                           </Button>
                         </Box>
                       </td>
@@ -432,7 +456,7 @@ const ViewUsers = (): JSX.Element => {
 
       <ToggleUserStatusModal
         open={openToggleStatus}
-        title={`${isDisabling ? "Disable" : "Enable"} User: ${selectedUser?.full_name || ""}`}
+        title={`${isDisabling ? "Disable" : "Enable"} User: ${selectedUser?.full_name ?? ""}`}
         setOpen={setOpenToggleStatus}
         onToggleStatus={handleToggleUserStatus}
         isDisabling={isDisabling}

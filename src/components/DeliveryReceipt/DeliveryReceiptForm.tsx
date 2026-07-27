@@ -5,7 +5,6 @@ import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import type { User } from "../../pages/Login";
 import CircularProgress from "@mui/joy/CircularProgress";
@@ -16,6 +15,7 @@ import type {
   PurchaseOrder,
   DeliveryReceipt,
 } from "../../interface";
+import { getErrorMessage } from "../../helper";
 
 const DeliveryReceiptForm = ({
   setOpen,
@@ -78,7 +78,7 @@ const DeliveryReceiptForm = ({
     // Set fields for Edit
     const supplierID = selectedRow?.purchase_orders[0]?.supplier_id;
 
-    const fetchValues = (selectedRow: DeliveryReceipt) => {
+    const fetchValues = (selectedRow: DeliveryReceipt): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
@@ -168,7 +168,7 @@ const DeliveryReceiptForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -224,7 +224,7 @@ const DeliveryReceiptForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

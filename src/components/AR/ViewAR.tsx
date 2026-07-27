@@ -23,10 +23,18 @@ import type {
   PaginatedAR,
   PaginationQueryParams,
 } from "../../interface";
-import { convertToQueryParams, formatToDate, addCommaToNumberWithTwoPlaces } from "../../helper";
+import {
+  convertToQueryParams,
+  formatToDate,
+  addCommaToNumberWithTwoPlaces,
+  getErrorMessage,
+} from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewAR = ({
   setOpenCreate,
@@ -62,7 +70,7 @@ const ViewAR = ({
   // Initial load function - resets everything and loads first page
   const getAllAR = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -155,15 +163,24 @@ const ViewAR = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, paymentStatus, dateFrom, dateTo]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    paymentStatus,
+    dateFrom,
+    dateTo,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -182,13 +199,13 @@ const ViewAR = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -224,7 +241,7 @@ const ViewAR = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -245,7 +262,7 @@ const ViewAR = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -442,10 +459,22 @@ const ViewAR = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={14} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={14}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading receipts...</Typography>
+                      <Typography level="body-sm">
+                        Loading receipts...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -539,7 +568,9 @@ const ViewAR = ({
                               setSelectedRow(AR);
                             }}
                           >
-                            {AR.status !== "unposted" || !isAdmin ? "View" : "Edit"}
+                            {AR.status !== "unposted" || !isAdmin
+                              ? "View"
+                              : "Edit"}
                           </Button>
                           {isAdmin &&
                             (AR.status === "posted" ||

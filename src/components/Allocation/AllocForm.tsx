@@ -1,27 +1,24 @@
-import { Button, Divider, Typography } from "@mui/joy";
+import { Button, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { User } from "../../pages/Login";
 import {
   type PaginatedWarehouse,
-  type WarehouseItem,
-  type Item,
   type Customer,
   type PaginatedCustomers,
   type AllocFormProps,
-  PaginatedCPO,
-  AllocItem,
-  Alloc,
+  type PaginatedCPO,
+  type AllocItem,
+  type Alloc,
 } from "../../interface";
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, getErrorMessage } from "../../helper";
 import {
-  AllocFormPayload,
-  CPOItemFE,
-  StockAvailabilityResponse,
-  WarehouseStockInfo,
+  type CPOItemFE,
+  type StockAvailabilityResponse,
+  type WarehouseStockInfo,
 } from "./interface";
 import AllocFormDetails from "./AllocForm/AllocFormDetails";
 import AllocFormTable from "./AllocForm/AllocFormTable";
@@ -40,7 +37,7 @@ const AllocForm = ({
   const [status, setStatus] = useState("unposted");
   const [transactionDate, setTransactionDate] = useState(currentDate);
   const [remarks, setRemarks] = useState("");
-  const [userId, setUserId] = useState<number | null>(null);
+  const [, setUserId] = useState<number | null>(null);
   const [warehouses, setWarehouses] = useState<PaginatedWarehouse>({
     total: 0,
     items: [],
@@ -75,14 +72,14 @@ const AllocForm = ({
 
   // Add window focus listener to refresh stock data
   useEffect(() => {
-    const handleWindowFocus = () => {
+    const handleWindowFocus = (): void => {
       const now = Date.now();
       if (
         CPOItems.length > 0 &&
         now - lastStockFetchTime.current > STOCK_REFRESH_INTERVAL
       ) {
         const itemIds = CPOItems.map((item) => item.item_id);
-        fetchWarehouseStockAvailability(itemIds);
+        void fetchWarehouseStockAvailability(itemIds);
       }
     };
 
@@ -116,12 +113,13 @@ const AllocForm = ({
 
   useEffect(() => {
     // Fill in fields for Edit
-    const fetchValues = (selectedRow: Alloc) => {
+    const fetchValues = (selectedRow: Alloc): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setRemarks(selectedRow?.remarks ?? "");
       setSelectedCPO(
-        selectedRow?.cpo_number_filter
+        selectedRow?.cpo_number_filter !== undefined &&
+          selectedRow.cpo_number_filter !== ""
           ? Number(selectedRow.cpo_number_filter)
           : null,
       );
@@ -129,58 +127,52 @@ const AllocForm = ({
       // Fill up tables
       const formattedItems = selectedRow.allocation_items.map(
         (item: AllocItem) => {
-          // get real time volume and alloc_qty
-          const item_id = item.item_id;
+          // get real time volume and allocQty
+          const itemId = item.item_id;
           const CPOItem = item.customer_purchase_order.items.find((cpoItem) => {
-            return cpoItem.item_id === item_id;
+            return cpoItem.item_id === itemId;
           });
 
-          const volume = CPOItem?.volume || 0;
-          const alloc_qty =
+          const volume = CPOItem?.volume ?? 0;
+          const allocQty =
             volume !== 0 && CPOItem?.unserved_cpo !== undefined
               ? volume - CPOItem?.unserved_cpo
               : 0;
 
           // get warehouse
-          let warehouse_1 = null;
-          let warehouse_2 = null;
-          let warehouse_3 = null;
-          let warehouse_1_qty = undefined;
-          let warehouse_2_qty = undefined;
-          let warehouse_3_qty = undefined;
+          let warehouse1 = null;
+          let warehouse2 = null;
+          let warehouse3 = null;
+          let warehouse1Qty;
+          let warehouse2Qty;
+          let warehouse3Qty;
 
           if (item.warehouse_allocations.length >= 1) {
-            warehouse_1 =
+            warehouse1 =
               warehouses.items.find(
                 (warehouse) =>
                   warehouse.id === item.warehouse_allocations[0].warehouse_id,
-              ) || null;
+              ) ?? null;
 
-            warehouse_1_qty = String(
-              item.warehouse_allocations[0].allocated_qty,
-            );
+            warehouse1Qty = String(item.warehouse_allocations[0].allocated_qty);
           }
 
           if (item.warehouse_allocations.length >= 2) {
-            warehouse_2 =
+            warehouse2 =
               warehouses.items.find(
                 (warehouse) =>
                   warehouse.id === item.warehouse_allocations[1].warehouse_id,
-              ) || null;
-            warehouse_2_qty = String(
-              item.warehouse_allocations[1].allocated_qty,
-            );
+              ) ?? null;
+            warehouse2Qty = String(item.warehouse_allocations[1].allocated_qty);
           }
 
           if (item.warehouse_allocations.length === 3) {
-            warehouse_3 =
+            warehouse3 =
               warehouses.items.find(
                 (warehouse) =>
                   warehouse.id === item.warehouse_allocations[2].warehouse_id,
-              ) || null;
-            warehouse_3_qty = String(
-              item.warehouse_allocations[2].allocated_qty,
-            );
+              ) ?? null;
+            warehouse3Qty = String(item.warehouse_allocations[2].allocated_qty);
           }
 
           return {
@@ -188,14 +180,14 @@ const AllocForm = ({
             name: item.item.name,
             cpo_existing_allocated: item.cpo_existing_allocated,
             volume,
-            alloc_qty,
-            item_id,
-            warehouse_1,
-            warehouse_1_qty,
-            warehouse_2,
-            warehouse_2_qty,
-            warehouse_3,
-            warehouse_3_qty,
+            alloc_qty: allocQty,
+            item_id: itemId,
+            warehouse_1: warehouse1,
+            warehouse_1_qty: warehouse1Qty,
+            warehouse_2: warehouse2,
+            warehouse_2_qty: warehouse2Qty,
+            warehouse_3: warehouse3,
+            warehouse_3_qty: warehouse3Qty,
           };
         },
       );
@@ -205,12 +197,12 @@ const AllocForm = ({
       // Fetch warehouse stock availability for edit mode
       const itemIds = formattedItems.map((item) => item.item_id);
       if (itemIds.length > 0) {
-        fetchWarehouseStockAvailability(itemIds);
+        void fetchWarehouseStockAvailability(itemIds);
       }
     };
 
-    if (selectedRow) {
-      if (warehouses?.items?.length) {
+    if (selectedRow !== undefined) {
+      if (warehouses.items.length > 0) {
         axiosInstance
           .get<Customer>(`/api/customers/${selectedRow.customer.customer_id}`)
           .then((response) => {
@@ -231,7 +223,9 @@ const AllocForm = ({
   }, [selectedRow, warehouses]);
 
   // Add function to fetch warehouse stock availability
-  const fetchWarehouseStockAvailability = async (itemIds: number[]) => {
+  const fetchWarehouseStockAvailability = async (
+    itemIds: number[],
+  ): Promise<void> => {
     if (itemIds.length === 0) return;
 
     try {
@@ -248,13 +242,13 @@ const AllocForm = ({
   };
 
   const getCPOsByCustomer = (
-    customer_id: number | undefined,
+    customerId: number | undefined,
     noSet = false,
-  ) => {
+  ): void => {
     setIsLoadingItems(true);
-    if (customer_id) {
+    if (customerId !== undefined && customerId !== 0) {
       const params = {
-        customer_id,
+        customer_id: customerId,
         has_unserved: true,
       };
 
@@ -270,7 +264,7 @@ const AllocForm = ({
           setCPONumbers(cpoNumbers);
 
           // Auto-select the first CPO when customer changes (except when editing existing allocation)
-          if (cpoNumbers.length > 0 && !selectedRow) {
+          if (cpoNumbers.length > 0 && selectedRow === undefined) {
             setSelectedCPO(cpoNumbers[0]);
           }
 
@@ -314,7 +308,21 @@ const AllocForm = ({
     }
   };
 
-  const createPayload = () => {
+  const createPayload = (): {
+    status: string;
+    customer_id: number | undefined;
+    remarks: string;
+    transaction_date: string;
+    cpo_number_filter: string;
+    allocation_items: Array<{
+      customer_purchase_order_id: number;
+      item_id: number;
+      warehouse_allocations: Array<{
+        warehouse_id: number;
+        allocated_qty: string;
+      }>;
+    } | null>;
+  } => {
     const payload = {
       status,
       customer_id: selectedCustomer?.customer_id,
@@ -323,44 +331,56 @@ const AllocForm = ({
       cpo_number_filter: String(selectedCPO),
       allocation_items: CPOItems.map((cpoItem: CPOItemFE) => {
         // Construct warehouse_allocations array
-        const warehouse_allocations = [];
+        const warehouseAllocations = [];
 
         // Dynamically check and add warehouse allocations
-        if (cpoItem.warehouse_1 && cpoItem.warehouse_1_qty) {
-          warehouse_allocations.push({
+        if (
+          cpoItem.warehouse_1 !== null &&
+          cpoItem.warehouse_1_qty !== undefined &&
+          cpoItem.warehouse_1_qty !== ""
+        ) {
+          warehouseAllocations.push({
             warehouse_id: cpoItem.warehouse_1.id, // Assuming `warehouse_1` contains an `id`
             allocated_qty: cpoItem.warehouse_1_qty,
           });
         }
 
-        if (cpoItem.warehouse_2 && cpoItem.warehouse_2_qty) {
-          warehouse_allocations.push({
+        if (
+          cpoItem.warehouse_2 !== null &&
+          cpoItem.warehouse_2_qty !== undefined &&
+          cpoItem.warehouse_2_qty !== ""
+        ) {
+          warehouseAllocations.push({
             warehouse_id: cpoItem.warehouse_2.id, // Assuming `warehouse_2` contains an `id`
             allocated_qty: cpoItem.warehouse_2_qty,
           });
         }
 
-        if (cpoItem.warehouse_3 && cpoItem.warehouse_3_qty) {
-          warehouse_allocations.push({
+        if (
+          cpoItem.warehouse_3 !== null &&
+          cpoItem.warehouse_3_qty !== undefined &&
+          cpoItem.warehouse_3_qty !== ""
+        ) {
+          warehouseAllocations.push({
             warehouse_id: cpoItem.warehouse_3.id, // Assuming `warehouse_3` contains an `id`
             allocated_qty: cpoItem.warehouse_3_qty,
           });
         }
 
-        if (warehouse_allocations.length < 1) return null;
+        if (warehouseAllocations.length < 1) return null;
 
         return {
           customer_purchase_order_id: cpoItem.id,
           item_id: cpoItem.item_id,
-          warehouse_allocations,
+          warehouse_allocations: warehouseAllocations,
         };
-      }).filter((item) => !!item?.warehouse_allocations),
+      }).filter((item) => item?.warehouse_allocations !== undefined),
     };
 
     return payload;
   };
 
-  const handleCreateAlloc = async () => {
+  const handleCreateAlloc = async (): Promise<void> => {
     const payload = createPayload();
 
     try {
@@ -372,14 +392,12 @@ const AllocForm = ({
 
       // Handle the response, update state, etc.
     } catch (error: any) {
-      toast.error(
-        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
-      );
+      toast.error(`Error: ${getErrorMessage(error, "Save unsuccessful")}`);
       setIsSaving(false);
     }
   };
 
-  const handleEditAlloc = async () => {
+  const handleEditAlloc = async (): Promise<void> => {
     const payload = createPayload();
 
     try {
@@ -392,9 +410,7 @@ const AllocForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       console.log(error);
-      toast.error(
-        `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
-      );
+      toast.error(`Error: ${getErrorMessage(error, "Save unsuccessful")}`);
       setIsSaving(false);
     }
   };

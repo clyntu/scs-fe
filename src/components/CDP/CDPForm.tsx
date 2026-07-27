@@ -5,19 +5,17 @@ import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
-import { UnplannedAlloc, type AllocItemsFE } from "./interface";
+import { type AllocItemsFE } from "./interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 import type {
   CDPFormProps,
   PaginatedCustomers,
   Customer,
-  Alloc,
-  DeliveryPlanItem,
   CPO,
   CDP,
 } from "../../interface";
+import { getErrorMessage } from "../../helper";
 
 const CDPForm = ({
   setOpen,
@@ -76,7 +74,7 @@ const CDPForm = ({
   useEffect(() => {
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
-    const fetchValues = (selectedRow: CDP) => {
+    const fetchValues = (selectedRow: CDP): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
@@ -203,7 +201,21 @@ const CDPForm = ({
     setAmountDiscount(0);
   };
 
-  const createPayload = () => {
+  const createPayload = (): {
+    status: string;
+    transaction_date: string;
+    discount_amount: number;
+    reference_number: string;
+    remarks: string;
+    customer_id: number | undefined;
+    total_net: number;
+    total_gross: number;
+    total_items: number;
+    delivery_plan_items: Array<{
+      allocation_item_id: number;
+      planned_qty: string | undefined;
+    }>;
+  } => {
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -215,7 +227,10 @@ const CDPForm = ({
       total_gross: totalGross,
       total_items: totalItems,
       delivery_plan_items: formattedAllocs
-        .filter((allocItem) => allocItem.dp_qty && Number(allocItem.dp_qty) > 0)
+        .filter(
+          (allocItem) =>
+            allocItem.dp_qty !== undefined && Number(allocItem.dp_qty) > 0,
+        )
         .map((allocItem) => {
           return {
             allocation_item_id: allocItem.alloc_item_id,
@@ -243,7 +258,7 @@ const CDPForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -269,7 +284,7 @@ const CDPForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

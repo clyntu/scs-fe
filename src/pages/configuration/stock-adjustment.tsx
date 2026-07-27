@@ -24,7 +24,7 @@ const StockAdjustmentRouter = (): JSX.Element => {
         const response = await axiosInstance.get<User>("/api/users/me/");
         setCurrentUser(response.data);
 
-        if (!response.data.is_admin) {
+        if (response.data.is_admin !== true) {
           await router.push("/configuration/item");
         }
       } catch (err) {
@@ -35,7 +35,7 @@ const StockAdjustmentRouter = (): JSX.Element => {
       }
     };
 
-    checkAdminAccess();
+    void checkAdminAccess();
   }, [router]);
 
   // Loading state
@@ -71,17 +71,10 @@ const StockAdjustmentRouter = (): JSX.Element => {
   return (
     <div className="p-6">
       {openCreate && (
-        <StockAdjustmentForm
-          setOpen={setOpenCreate}
-          openCreate={openCreate}
-        />
+        <StockAdjustmentForm setOpen={setOpenCreate} openCreate={openCreate} />
       )}
 
-      {!openCreate && (
-        <ViewStockAdjustment
-          setOpenCreate={setOpenCreate}
-        />
-      )}
+      {!openCreate && <ViewStockAdjustment setOpenCreate={setOpenCreate} />}
     </div>
   );
 };

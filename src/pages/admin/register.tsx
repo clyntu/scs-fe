@@ -56,7 +56,7 @@ export default function Register(): JSX.Element {
         const response = await axiosInstance.get<User>("/api/users/me/");
         const user = response.data;
 
-        if (!user.is_admin) {
+        if (user.is_admin !== true) {
           // Non-admin users are redirected to forbidden page
           await router.push("/forbidden");
         } else {
@@ -114,13 +114,17 @@ export default function Register(): JSX.Element {
       // Get the new user's access token (while session is still active)
       const newUserToken = signUpData?.session?.access_token;
 
-      if (!newUserToken) {
+      if (newUserToken === undefined || newUserToken === "") {
         throw new Error("Failed to get access token for new user");
       }
 
       // Persist user in your own DB BEFORE signing out
       // Use plain axios to bypass interceptor that would replace the token
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL !== undefined &&
+        process.env.NEXT_PUBLIC_API_URL !== ""
+          ? process.env.NEXT_PUBLIC_API_URL
+          : "http://localhost:8000";
       await axios.post(
         `${apiUrl}api/users/sync`,
         { username, full_name: fullName, is_admin: isAdmin },
@@ -138,7 +142,7 @@ export default function Register(): JSX.Element {
       await supabase.auth.signOut();
 
       // Restore admin session if available
-      if (adminSession) {
+      if (adminSession !== null) {
         await supabase.auth.setSession(adminSession);
       }
 

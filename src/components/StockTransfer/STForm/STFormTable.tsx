@@ -1,4 +1,4 @@
-import { Sheet, Autocomplete, Input } from "@mui/joy";
+import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 import { type WarehouseItemsFE, type STFormTableProps } from "../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
@@ -117,9 +117,7 @@ const STFormTable = ({
               {warehouseItems.map((item: WarehouseItemsFE, index: number) => {
                 return (
                   <tr key={item.id}>
-                    <td>
-                      {withTooltip(item.name, "180px")}
-                    </td>
+                    <td>{withTooltip(item.name, "180px")}</td>
                     <td>{withTooltip(item.stock_code, "120px")}</td>
                     {!isEditDisabled && (
                       <td style={{ textAlign: "right" }}>

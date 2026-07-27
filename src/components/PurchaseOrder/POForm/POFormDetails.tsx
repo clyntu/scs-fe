@@ -25,8 +25,6 @@ import {
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
 
-const INITIAL_SELECTED_ITEMS = [{ id: null }];
-
 const POFormDetails = ({
   openEdit,
   selectedRow,
@@ -139,7 +137,7 @@ const POFormDetails = ({
                   if (value !== null) {
                     setStatus(value);
                     // Automatically show totals when status is changed to posted
-                    if (value === "posted" && setShowTotals) {
+                    if (value === "posted" && setShowTotals !== undefined) {
                       setShowTotals(true);
                     }
                   }
@@ -226,7 +224,7 @@ const POFormDetails = ({
                   disabled={isEditDisabled}
                 />
                 <FormHelperText sx={{ fontSize: "11px" }}>
-                  Add "%" if percent disc.
+                  Add &quot;%&quot; if percent disc.
                 </FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
@@ -240,7 +238,7 @@ const POFormDetails = ({
                   disabled={isEditDisabled}
                 />
                 <FormHelperText sx={{ fontSize: "11px" }}>
-                  Add "%" if percent disc.
+                  Add &quot;%&quot; if percent disc.
                 </FormHelperText>
               </FormControl>
             </Stack>
@@ -256,7 +254,7 @@ const POFormDetails = ({
                   disabled={isEditDisabled}
                 />
                 <FormHelperText sx={{ fontSize: "11px" }}>
-                  Add "%" if percent disc.
+                  Add &quot;%&quot; if percent disc.
                 </FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
@@ -270,7 +268,7 @@ const POFormDetails = ({
                   disabled={isEditDisabled}
                 />
                 <FormHelperText sx={{ fontSize: "11px" }}>
-                  Add "%" if percent disc.
+                  Add &quot;%&quot; if percent disc.
                 </FormHelperText>
               </FormControl>
             </Stack>
@@ -284,9 +282,11 @@ const POFormDetails = ({
             <Button
               variant="outlined"
               size="sm"
-              onClick={() => setShowTotals && setShowTotals((prev) => !prev)}
+              onClick={() =>
+                setShowTotals !== undefined && setShowTotals((prev) => !prev)
+              }
             >
-              {showTotals ? "Hide Totals" : "Show Totals"}
+              {showTotals === true ? "Hide Totals" : "Show Totals"}
             </Button>
           </div>
           {showTotals === true && (

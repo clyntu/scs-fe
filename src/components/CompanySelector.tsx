@@ -1,6 +1,6 @@
 // components/CompanySelector.tsx
 import React from "react";
-import { Select, Option, FormLabel } from "@mui/joy";
+import { Select, Option } from "@mui/joy";
 import { useCompanyContext } from "../hooks/useCompanyContext";
 
 export const CompanySelector: React.FC = () => {

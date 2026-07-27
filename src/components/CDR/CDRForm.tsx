@@ -7,19 +7,17 @@ import { useEffect, useState } from "react";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
-import { UnplannedAlloc, type AllocItemsFE, GetOneCDR } from "./interface";
+import { type AllocItemsFE, type GetOneCDR } from "./interface";
 import type {
   CDRFormProps,
   PaginatedCustomers,
   Customer,
-  Alloc,
   CDP,
   CDR,
-  PaginatedCDP,
-  AllocItem,
 } from "../../interface";
 import { generateDeliveryReceiptPDF } from "./generatePDF";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { getErrorMessage } from "../../helper";
 
 interface DiscountedPurchaseOrder {
   customer_discount_1: string;
@@ -189,7 +187,7 @@ const CDRForm = ({
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
 
-    const fetchValues = (selectedRow: CDR) => {
+    const fetchValues = (selectedRow: CDR): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
@@ -209,7 +207,7 @@ const CDRForm = ({
       setIsFetching(true);
       setExpectedPlanItemIds([]);
       fetchValues(selectedRow);
-      const promises: Promise<any>[] = [];
+      const promises: Array<Promise<any>> = [];
 
       const dpPromise = axiosInstance
         .get<CDP>(`/api/delivery-plans/${selectedRow.delivery_plan_id}`)
@@ -253,7 +251,7 @@ const CDRForm = ({
 
       promises.push(selectedCustPromise);
 
-      Promise.all(promises).finally(() => {
+      void Promise.all(promises).finally(() => {
         setIsFetching(false);
       });
     } else {
@@ -272,7 +270,21 @@ const CDRForm = ({
     setAmountDiscount(0);
   };
 
-  const createPayload = () => {
+  const createPayload = (): {
+    status: string;
+    transaction_date: string;
+    discount_amount: number;
+    reference_number: string;
+    remarks: string;
+    delivery_plan_id: number | undefined;
+    total_net: number;
+    total_gross: number;
+    total_items: number;
+    receipt_items: Array<{
+      delivery_plan_item_id: number;
+      delivered_qty: string | undefined;
+    }>;
+  } => {
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -303,8 +315,8 @@ const CDRForm = ({
 
     const planItemIds = new Set(
       selectedRow !== undefined &&
-        selectedDP.id === selectedRow.delivery_plan_id &&
-        expectedPlanItemIds.length > 0
+      selectedDP.id === selectedRow.delivery_plan_id &&
+      expectedPlanItemIds.length > 0
         ? expectedPlanItemIds
         : selectedDP.delivery_plan_items.map((item) => item.id),
     );
@@ -338,7 +350,7 @@ const CDRForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -361,7 +373,7 @@ const CDRForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

@@ -13,7 +13,6 @@ import {
 } from "@mui/joy";
 import type { DeallocFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
-import { ReceivingReport } from "../../../interface";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const DeallocFormDetails = ({
@@ -68,7 +67,7 @@ const DeallocFormDetails = ({
                     setSelectedCustomer(newValue);
                     setSelectedAlloc(null);
                     setAllocItems([]);
-                    if (newValue) {
+                    if (newValue !== null) {
                       getAllocsByCustomer(newValue.customer_id);
                     }
                   }}
@@ -90,7 +89,7 @@ const DeallocFormDetails = ({
                     setSelectedAlloc(newValue);
 
                     // Show alloc items
-                    if (newValue) {
+                    if (newValue !== null) {
                       getAllocItemsByAlloc(newValue);
                     } else {
                       setAllocItems([]);
@@ -99,7 +98,7 @@ const DeallocFormDetails = ({
                   size="sm"
                   className="w-[100%]"
                   placeholder="Select Alloc No."
-                  disabled={isEditDisabled || !selectedCustomer}
+                  disabled={isEditDisabled || selectedCustomer === null}
                   required
                 />
               </div>

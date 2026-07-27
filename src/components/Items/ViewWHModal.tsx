@@ -50,7 +50,7 @@ const ViewWHModal = ({
     // Reload warehouse items after successful adjustment
     loadWarehouseItems();
     // Notify parent to refetch stock history
-    if (onStockAdjustmentSuccess) {
+    if (onStockAdjustmentSuccess !== undefined) {
       onStockAdjustmentSuccess();
     }
   };
@@ -195,7 +195,15 @@ const ViewWHModal = ({
                     <tbody>
                       <tr>
                         <td
-                          colSpan={type === "item" ? (isAdmin ? 7 : 6) : (isAdmin ? 6 : 5)}
+                          colSpan={
+                            type === "item"
+                              ? isAdmin
+                                ? 7
+                                : 6
+                              : isAdmin
+                                ? 6
+                                : 5
+                          }
                           style={{ textAlign: "center" }}
                         >
                           <h5>Loading...</h5>
@@ -269,12 +277,20 @@ const ViewWHModal = ({
                                     )}
                               </td>
                               <td style={{ textAlign: "right" }}>
-                                {(warehouseItem.total_on_stock +
-                                  warehouseItem.total_allocated).toLocaleString()}
+                                {(
+                                  warehouseItem.total_on_stock +
+                                  warehouseItem.total_allocated
+                                ).toLocaleString()}
                               </td>
-                              <td style={{ textAlign: "right" }}>{warehouseItem.total_on_stock.toLocaleString()}</td>
-                              <td style={{ textAlign: "right" }}>{warehouseItem.total_allocated.toLocaleString()}</td>
-                              <td style={{ textAlign: "right" }}>{warehouseItem.total_sold.toLocaleString()}</td>
+                              <td style={{ textAlign: "right" }}>
+                                {warehouseItem.total_on_stock.toLocaleString()}
+                              </td>
+                              <td style={{ textAlign: "right" }}>
+                                {warehouseItem.total_allocated.toLocaleString()}
+                              </td>
+                              <td style={{ textAlign: "right" }}>
+                                {warehouseItem.total_sold.toLocaleString()}
+                              </td>
                               {isAdmin && (
                                 <td style={{ textAlign: "center" }}>
                                   <Tooltip title="Adjust Stock">
@@ -299,7 +315,15 @@ const ViewWHModal = ({
                     <tbody>
                       <tr>
                         <td
-                          colSpan={type === "item" ? (isAdmin ? 7 : 6) : (isAdmin ? 6 : 5)}
+                          colSpan={
+                            type === "item"
+                              ? isAdmin
+                                ? 7
+                                : 6
+                              : isAdmin
+                                ? 6
+                                : 5
+                          }
                           style={{ textAlign: "center" }}
                         >
                           No Stock Location Available
@@ -315,7 +339,7 @@ const ViewWHModal = ({
       </Modal>
 
       {/* Stock Adjustment Modal - Render outside parent modal */}
-      {selectedItem && (
+      {selectedItem !== null && (
         <StockAdjustmentModal
           open={adjustmentModalOpen}
           setOpen={setAdjustmentModalOpen}

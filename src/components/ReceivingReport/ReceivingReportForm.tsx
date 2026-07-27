@@ -17,9 +17,8 @@ import type {
   ReceivingReport,
 } from "../../interface";
 import type { ExpenseFormRow } from "./interface";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
-import { addCommaToNumberWithTwoPlaces, removeCommas } from "../../helper";
+import { removeCommas, getErrorMessage } from "../../helper";
 
 const createEmptyExpense = (): ExpenseFormRow => ({
   clientKey: uuid(),
@@ -100,7 +99,7 @@ const ReceivingReportForm = ({
     const supplierID = selectedRow?.supplier_id;
 
     if (selectedRow !== null && selectedRow !== undefined) {
-      const fetchValues = (selectedRow: ReceivingReport) => {
+      const fetchValues = (selectedRow: ReceivingReport): void => {
         setStatus(selectedRow?.status ?? "unposted");
         setTransactionDate(selectedRow?.transaction_date ?? currentDate);
         setReferenceNumber(selectedRow?.reference_number ?? "");
@@ -162,7 +161,7 @@ const ReceivingReportForm = ({
   };
 
   const handleCreateReceivingReport = async (): Promise<void> => {
-    if (!referenceNumber) {
+    if (referenceNumber === "") {
       toast.error("Please choose an SDR.");
       return;
     }
@@ -203,14 +202,14 @@ const ReceivingReportForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
   };
 
   const handleEditReceivingReport = async (): Promise<void> => {
-    if (!referenceNumber) {
+    if (referenceNumber === "") {
       toast.error("Please choose an SDR.");
       return;
     }
@@ -258,7 +257,7 @@ const ReceivingReportForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

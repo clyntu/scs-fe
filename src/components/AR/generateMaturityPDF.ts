@@ -20,7 +20,7 @@ interface MaturityCustomer {
   transactions: MaturityTransaction[];
 }
 
-interface MaturityReport {
+export interface MaturityReport {
   report_date: string;
   customers: MaturityCustomer[];
   total_gross: string;
@@ -39,7 +39,7 @@ const formatDate = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12;
+  hours = hours === 0 ? 12 : hours;
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
@@ -143,12 +143,14 @@ export const generateMaturityPDF = (
       rawRows.push({
         customerName: customer.customer_name,
         transactionNumber: tx.transaction_number.replace(/^DR /, "CDR "),
-        referenceNumber: tx.reference_number || "",
+        referenceNumber: tx.reference_number,
         transactionDate: tx.transaction_date,
         dueDate: tx.due_date,
         grossAmount: tx.gross_amount,
-        transactionDiscount: tx.transaction_discount || "0.00",
-        customerDiscount: tx.customer_discount || "0.00",
+        transactionDiscount:
+          tx.transaction_discount !== "" ? tx.transaction_discount : "0.00",
+        customerDiscount:
+          tx.customer_discount !== "" ? tx.customer_discount : "0.00",
         netAmount: tx.net_amount,
         netBalance: tx.net_balance,
       });
@@ -228,7 +230,10 @@ export const generateMaturityPDF = (
   });
 
   // Add totals after the table
-  const finalY = (doc as any).lastAutoTable?.finalY || 80;
+  const lastAutoTableFinalY = (doc as { lastAutoTable?: { finalY?: number } })
+    .lastAutoTable?.finalY;
+  const finalY =
+    typeof lastAutoTableFinalY === "number" ? lastAutoTableFinalY : 80;
   const pageHeight = doc.internal.pageSize.getHeight();
   const footerY = pageHeight - 50;
   const totalsStartY = finalY + 25;
@@ -298,9 +303,6 @@ export const generateMaturityPDF = (
   }
 
   // Open PDF in new tab
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

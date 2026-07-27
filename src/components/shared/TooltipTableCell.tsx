@@ -26,7 +26,7 @@ const TooltipTableCell: React.FC<TooltipTableCellProps> = ({
         requestAnimationFrame(() => {
           if (textRef.current !== null) {
             const element = textRef.current;
-            
+
             // Create a temporary element to measure natural text width
             const testElement = element.cloneNode(true) as HTMLElement;
             testElement.style.position = "absolute";
@@ -34,14 +34,14 @@ const TooltipTableCell: React.FC<TooltipTableCellProps> = ({
             testElement.style.width = "auto";
             testElement.style.maxWidth = "none";
             testElement.style.whiteSpace = "nowrap";
-            
+
             document.body.appendChild(testElement);
             const naturalWidth = testElement.offsetWidth;
             document.body.removeChild(testElement);
-            
+
             // Compare natural width with current element width
             const actualOverflow = naturalWidth > element.clientWidth;
-            
+
             setIsOverflowing(actualOverflow);
           }
         });
@@ -50,7 +50,7 @@ const TooltipTableCell: React.FC<TooltipTableCellProps> = ({
 
     // Initial check with delay
     const timer = setTimeout(checkOverflow, 100);
-    
+
     // Check on resize
     window.addEventListener("resize", checkOverflow);
 

@@ -25,7 +25,7 @@ import type {
   Warehouse,
   WarehouseItem,
 } from "../../interface";
-import { addFourPlaces } from "../../helper";
+import { addFourPlaces, getErrorMessage } from "../../helper";
 
 const formatWithCommas = (value: string | number): string => {
   if (value === "" || value === undefined || value === null) return "";
@@ -115,7 +115,7 @@ const StockAdjustmentForm = ({
       }
     };
 
-    fetchItems();
+    void fetchItems();
   }, []);
 
   // Fetch warehouses for autocomplete
@@ -134,13 +134,16 @@ const StockAdjustmentForm = ({
       }
     };
 
-    fetchWarehouses();
+    void fetchWarehouses();
   }, []);
 
   // Fetch item details and set default net cost when item is selected
   useEffect(() => {
-    if (selectedItem) {
-      const defaultNetCost = Number(selectedItem.net_cost_before_tax) || 0;
+    if (selectedItem !== null) {
+      const rawDefaultNetCost = Number(selectedItem.net_cost_before_tax);
+      const defaultNetCost = Number.isNaN(rawDefaultNetCost)
+        ? 0
+        : rawDefaultNetCost;
       setNetCost(addFourPlaces(defaultNetCost).toString());
     } else {
       setNetCost("");
@@ -162,8 +165,8 @@ const StockAdjustmentForm = ({
 
   // Fetch warehouse items when item is selected
   useEffect(() => {
-    if (selectedItem) {
-      fetchWarehouseItems(selectedItem.id);
+    if (selectedItem !== null) {
+      void fetchWarehouseItems(selectedItem.id);
     } else {
       setWarehouseItems([]);
     }
@@ -171,7 +174,7 @@ const StockAdjustmentForm = ({
 
   // Fetch current stock when both item and warehouse are selected
   useEffect(() => {
-    if (selectedItem && selectedWarehouse) {
+    if (selectedItem !== null && selectedWarehouse !== null) {
       const fetchCurrentStock = async (): Promise<void> => {
         setIsLoadingStock(true);
         try {
@@ -180,8 +183,8 @@ const StockAdjustmentForm = ({
           );
           // Extract the first item from the paginated response
           const warehouseItem = response.data.items[0];
-          setCurrentStock(warehouseItem?.on_stock || 0);
-        } catch (err: any) {
+          setCurrentStock(warehouseItem?.on_stock ?? 0);
+        } catch (err: unknown) {
           // If 404 or no items found, stock doesn't exist yet, default to 0
           console.error("Error fetching current stock:", err);
           setCurrentStock(0);
@@ -190,7 +193,7 @@ const StockAdjustmentForm = ({
         }
       };
 
-      fetchCurrentStock();
+      void fetchCurrentStock();
     } else {
       setCurrentStock(0);
     }
@@ -202,12 +205,12 @@ const StockAdjustmentForm = ({
     setSuccess("");
 
     // Validation
-    if (!selectedItem) {
+    if (selectedItem === null) {
       setError("Please select an item");
       return;
     }
 
-    if (!selectedWarehouse) {
+    if (selectedWarehouse === null) {
       setError("Please select a warehouse");
       return;
     }
@@ -227,7 +230,7 @@ const StockAdjustmentForm = ({
 
     // Check for max 4 decimal places
     const decimalPart = rawNetCost.split(".")[1];
-    if (decimalPart && decimalPart.length > 4) {
+    if (decimalPart !== undefined && decimalPart.length > 4) {
       setError("Net Cost can have a maximum of 4 decimal places");
       return;
     }
@@ -261,9 +264,9 @@ const StockAdjustmentForm = ({
       setTimeout(() => {
         setOpen(false);
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(
-        err.response?.data?.detail ||
+        getErrorMessage(err, "Failed to adjust stock. Please try again.") ??
           "Failed to adjust stock. Please try again.",
       );
     } finally {
@@ -293,25 +296,25 @@ const StockAdjustmentForm = ({
 
   // Validation helpers with error messages
   const getAmountError = useMemo(() => {
-    if (!touched.amount || isSubmitting || success) return null;
+    if (!touched.amount || isSubmitting || success !== "") return null;
     const amount = parseFloat(adjustmentAmount);
-    if (!adjustmentAmount) return "Amount is required";
+    if (adjustmentAmount === "") return "Amount is required";
     if (isNaN(amount)) return "Please enter a valid number";
     if (amount <= 0) return "Amount must be greater than 0";
     return null;
   }, [adjustmentAmount, touched.amount, isSubmitting, success]);
 
   const getNetCostError = useMemo(() => {
-    if (!touched.netCost || isSubmitting || success) return null;
+    if (!touched.netCost || isSubmitting || success !== "") return null;
     const rawNetCost = stripCommas(netCost);
     const cost = parseFloat(rawNetCost);
-    if (!rawNetCost) return "Net Cost is required";
+    if (rawNetCost === "") return "Net Cost is required";
     if (isNaN(cost)) return "Please enter a valid number";
     if (cost <= 0) return "Net Cost must be greater than 0";
 
     // Check for max 4 decimal places
     const decimalPart = rawNetCost.split(".")[1];
-    if (decimalPart && decimalPart.length > 4) {
+    if (decimalPart !== undefined && decimalPart.length > 4) {
       return "Net Cost can have a maximum of 4 decimal places";
     }
 
@@ -325,7 +328,8 @@ const StockAdjustmentForm = ({
 
     // Check for max 4 decimal places
     const decimalPart = rawNetCost.split(".")[1];
-    const hasValidDecimals = !decimalPart || decimalPart.length <= 4;
+    const hasValidDecimals =
+      decimalPart === undefined || decimalPart.length <= 4;
 
     return (
       selectedItem !== null &&
@@ -350,13 +354,13 @@ const StockAdjustmentForm = ({
     // For surplus, show all warehouses
     const baseWarehouses =
       adjustmentType === "deficit"
-        ? warehouses.items.filter((wh) => (stockMap.get(wh.id) || 0) > 0)
+        ? warehouses.items.filter((wh) => (stockMap.get(wh.id) ?? 0) > 0)
         : warehouses.items;
 
     // Extend warehouses with stock information for display
     const warehousesWithStock = baseWarehouses.map((wh) => ({
       ...wh,
-      _stock: stockMap.get(wh.id) || 0,
+      _stock: stockMap.get(wh.id) ?? 0,
     }));
 
     // Sort warehouses
@@ -379,7 +383,7 @@ const StockAdjustmentForm = ({
   // Clear selected warehouse if it's no longer in the filtered options
   // This happens when switching from surplus to deficit and the selected warehouse has no stock
   useEffect(() => {
-    if (selectedWarehouse && warehouseOptions.length > 0) {
+    if (selectedWarehouse !== null && warehouseOptions.length > 0) {
       const isWarehouseInOptions = warehouseOptions.some(
         (wh) => wh.id === selectedWarehouse.id,
       );
@@ -406,13 +410,13 @@ const StockAdjustmentForm = ({
           <form onSubmit={handleSubmit}>
             <Stack spacing={3}>
               {/* Error and Success Messages */}
-              {error && (
+              {error !== "" && (
                 <Alert color="danger" variant="soft" size="sm">
                   <Typography level="body-sm">{error}</Typography>
                 </Alert>
               )}
 
-              {success && (
+              {success !== "" && (
                 <Alert color="success" variant="soft" size="sm">
                   <Typography level="body-sm">{success}</Typography>
                 </Alert>
@@ -527,7 +531,7 @@ const StockAdjustmentForm = ({
               </Stack>
 
               {/* Current Stock Display */}
-              {selectedItem && selectedWarehouse && (
+              {selectedItem !== null && selectedWarehouse !== null && (
                 <Alert color="neutral" variant="soft" size="sm">
                   <Stack spacing={0.5}>
                     <Typography level="body-sm">
@@ -578,7 +582,7 @@ const StockAdjustmentForm = ({
               <Stack direction="row" spacing={2}>
                 <FormControl
                   required
-                  error={!!getAmountError}
+                  error={getAmountError !== null}
                   size="sm"
                   sx={{ flex: 1 }}
                 >
@@ -600,14 +604,14 @@ const StockAdjustmentForm = ({
                       },
                     }}
                   />
-                  {getAmountError && (
+                  {getAmountError !== null && (
                     <FormHelperText>{getAmountError}</FormHelperText>
                   )}
                 </FormControl>
 
                 <FormControl
                   required
-                  error={!!getNetCostError}
+                  error={getNetCostError !== null}
                   size="sm"
                   sx={{ flex: 1 }}
                 >
@@ -625,9 +629,9 @@ const StockAdjustmentForm = ({
                       setTouched((prev) => ({ ...prev, netCost: true }))
                     }
                     placeholder="Enter net cost before tax"
-                    disabled={isSubmitting || !selectedItem}
+                    disabled={isSubmitting || selectedItem === null}
                   />
-                  {getNetCostError ? (
+                  {getNetCostError !== null ? (
                     <FormHelperText>{getNetCostError}</FormHelperText>
                   ) : (
                     <FormHelperText>
@@ -638,11 +642,11 @@ const StockAdjustmentForm = ({
               </Stack>
 
               {/* Predicted Stock Display */}
-              {adjustmentAmount &&
+              {adjustmentAmount !== "" &&
                 !isNaN(parseFloat(adjustmentAmount)) &&
                 parseFloat(adjustmentAmount) > 0 &&
-                selectedItem &&
-                selectedWarehouse && (
+                selectedItem !== null &&
+                selectedWarehouse !== null && (
                   <Typography level="body-sm">
                     New stock level will be:{" "}
                     <strong
@@ -676,14 +680,14 @@ const StockAdjustmentForm = ({
                   onClick={() => setOpen(false)}
                   disabled={isSubmitting}
                 >
-                  {success ? "Go Back" : "Cancel"}
+                  {success !== "" ? "Go Back" : "Cancel"}
                 </Button>
                 <Button
                   size="sm"
                   type="submit"
                   className="bg-button-primary"
                   loading={isSubmitting}
-                  disabled={isSubmitting || !isFormValid || !!success}
+                  disabled={isSubmitting || !isFormValid || success !== ""}
                 >
                   {adjustmentType === "surplus"
                     ? "Add Stock"

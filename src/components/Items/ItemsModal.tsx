@@ -21,20 +21,9 @@ import type {
   Item,
   PaginatedSuppliers,
   ItemsModalProps,
-  Supplier,
-  Currency,
 } from "../../interface";
 import StockHistory from "./StockHistory";
-import { addTwoPlaces, addFourPlaces } from "../../helper";
-
-// Helper function to format values to 4 decimal places
-const formatToFourDecimals = (
-  value: number | undefined,
-): number | undefined => {
-  if (value === undefined || value === null) return value;
-  // Format to 4 decimal places
-  return parseFloat(value.toFixed(4));
-};
+import { addTwoPlaces, addFourPlaces, getErrorMessage } from "../../helper";
 
 const formatWithCommas = (value: string | number): string => {
   if (value === "" || value === undefined || value === null) return "";
@@ -56,7 +45,7 @@ const ItemsModal = ({
   onSave,
   currencies = [],
 }: ItemsModalProps): JSX.Element => {
-  const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
+  const [, setSuppliers] = useState<PaginatedSuppliers>({
     total: 0,
     items: [],
   });
@@ -76,7 +65,7 @@ const ItemsModal = ({
       currencies.length > 0 ? currencies[0] : { id: 0, code: "" };
 
     // Check if this is a new item (no existing row data)
-    const isNewItem = !row || !row.id;
+    const isNewItem = row?.id === undefined;
 
     return {
       id: row?.id ?? 0,
@@ -142,9 +131,7 @@ const ItemsModal = ({
     setItem({ ...item, [name]: value });
   };
 
-  const handlePriceChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     const raw = stripCommas(value);
     if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
@@ -163,7 +150,7 @@ const ItemsModal = ({
     if (value !== null) {
       // Find the selected currency to get both ID and code
       const selectedCurrency = currencies.find((curr) => curr.id === value);
-      if (selectedCurrency) {
+      if (selectedCurrency !== undefined) {
         setItem({
           ...item,
           currency_id: selectedCurrency.id,
@@ -184,12 +171,21 @@ const ItemsModal = ({
 
       // Ensure net_cost_before_tax and last_sale_price default to 0 if empty
       if (
-        !itemToSave.net_cost_before_tax ||
-        itemToSave.net_cost_before_tax === ""
+        itemToSave.net_cost_before_tax === undefined ||
+        itemToSave.net_cost_before_tax === 0 ||
+        itemToSave.net_cost_before_tax === "" ||
+        (typeof itemToSave.net_cost_before_tax === "number" &&
+          isNaN(itemToSave.net_cost_before_tax))
       ) {
         itemToSave.net_cost_before_tax = 0;
       }
-      if (!itemToSave.last_sale_price || itemToSave.last_sale_price === "") {
+      if (
+        itemToSave.last_sale_price === undefined ||
+        itemToSave.last_sale_price === 0 ||
+        itemToSave.last_sale_price === "" ||
+        (typeof itemToSave.last_sale_price === "number" &&
+          isNaN(itemToSave.last_sale_price))
+      ) {
         itemToSave.last_sale_price = 0;
       }
 
@@ -199,7 +195,7 @@ const ItemsModal = ({
       setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -390,7 +386,9 @@ const ItemsModal = ({
                         <Box sx={{ textAlign: "center" }}>
                           <p className="text-xs text-gray-500">On Stock</p>
                           <p className="text-sm font-semibold">
-                            {formatWithCommas(item?.total_on_stock + item?.total_allocated)}
+                            {formatWithCommas(
+                              item?.total_on_stock + item?.total_allocated,
+                            )}
                           </p>
                         </Box>
                         <Box sx={{ textAlign: "center" }}>

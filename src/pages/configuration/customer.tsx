@@ -25,8 +25,11 @@ import type { Customer, PaginatedCustomers } from "../../interface";
 
 import { convertToQueryParams, formatToCP, formatToDate } from "../../helper";
 import { generatePDF } from "../../components/AR/generatePDF";
-import { generateMaturityPDF } from "../../components/AR/generateMaturityPDF";
-import { CustomerReceivableResponse } from "../../components/AR/interface";
+import {
+  generateMaturityPDF,
+  type MaturityReport,
+} from "../../components/AR/generateMaturityPDF";
+import { type CustomerReceivableResponse } from "../../components/AR/interface";
 import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
@@ -65,7 +68,7 @@ const CustomerForm = (): JSX.Element => {
 
   // Initial load function - resets everything and loads first page
   const getAllCustomers = (searchTerm: string): void => {
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -140,9 +143,9 @@ const CustomerForm = (): JSX.Element => {
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -159,12 +162,12 @@ const CustomerForm = (): JSX.Element => {
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -258,7 +261,7 @@ const CustomerForm = (): JSX.Element => {
     }
   };
 
-  const handleGeneratePDF = () => {
+  const handleGeneratePDF = (): void => {
     setIsPrinting(true);
     axiosInstance
       .get<CustomerReceivableResponse>(
@@ -295,7 +298,7 @@ const CustomerForm = (): JSX.Element => {
   const handleGenerateMaturityPDF = (): void => {
     setIsPrintingMaturity(true);
     axiosInstance
-      .get("/customer-financial/maturity")
+      .get<MaturityReport>("/customer-financial/maturity")
       .then((response) => {
         setIsPrintingMaturity(false);
         generateMaturityPDF(response.data, companyId);
@@ -357,10 +360,7 @@ const CustomerForm = (): JSX.Element => {
                 >
                   Top Customers by Sales
                 </MenuItem>
-                <MenuItem
-                  onClick={handleGeneratePDF}
-                  sx={{ fontSize: "14px" }}
-                >
+                <MenuItem onClick={handleGeneratePDF} sx={{ fontSize: "14px" }}>
                   Summary of Receivables
                 </MenuItem>
                 <MenuItem
@@ -494,10 +494,22 @@ const CustomerForm = (): JSX.Element => {
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={12} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={12}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading customers...</Typography>
+                      <Typography level="body-sm">
+                        Loading customers...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -506,7 +518,9 @@ const CustomerForm = (): JSX.Element => {
               <>
                 <thead>
                   <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Code
+                    </th>
                     <th style={{ width: 300 }}>Name</th>
                     <th style={{ width: 400 }}>Address</th>
                     <th style={{ width: 150 }}>Contact Person</th>
@@ -524,103 +538,108 @@ const CustomerForm = (): JSX.Element => {
                   </tr>
                 </thead>
                 <tbody>
-              {customers.items.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={12}
-                    style={{ textAlign: "center", padding: "24px" }}
-                  >
-                    <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                      No customers found.
-                    </Typography>
-                  </td>
-                </tr>
-              )}
-              {customers.items.map((customer) => (
-                <tr
-                  key={customer.customer_id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(customer);
-                  }}
-                >
-                  <td>{formatToCP(customer.customer_id)}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="300px">
-                      {customer.name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="400px">
-                      {customer.address}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="150px">
-                      {customer.contact_person}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="150px">
-                      {customer.contact_number}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="300px">
-                      {customer.email}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{customer.customer_balance}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="200px">
-                      {customer?.creator?.full_name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{formatToDate(customer.date_created)}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="200px">
-                      {customer?.modifier?.full_name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{formatToDate(customer.date_modified ?? undefined)}</td>
-                  <td>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 0.5,
-                        alignItems: "center",
-                        justifyContent: "center",
+                  {customers.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={12}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No customers found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
+                  {customers.items.map((customer) => (
+                    <tr
+                      key={customer.customer_id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(customer);
                       }}
                     >
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(customer);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(customer);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </td>
-                </tr>
-              ))}
+                      <td>{formatToCP(customer.customer_id)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {customer.name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="400px">
+                          {customer.address}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {customer.contact_person}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {customer.contact_number}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {customer.email}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{customer.customer_balance}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {customer?.creator?.full_name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{formatToDate(customer.date_created)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {customer?.modifier?.full_name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        {formatToDate(customer.date_modified ?? undefined)}
+                      </td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(customer);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(customer);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </>
             )}
@@ -646,8 +665,8 @@ const CustomerForm = (): JSX.Element => {
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {customers.items.length} of {customers.total} items • Scroll for
-                more
+                Showing {customers.items.length} of {customers.total} items •
+                Scroll for more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

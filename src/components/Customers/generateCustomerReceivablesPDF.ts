@@ -27,7 +27,7 @@ const formatDate = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12; // if hours is 0, set it to 12
+  hours = hours === 0 ? 12 : hours; // if hours is 0, set it to 12
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
@@ -116,19 +116,27 @@ export const generateCustomerReceivablesPDF = (
 
   // Add filter information if any filters are applied
   let yPosition = 80;
-  if (filters) {
+  if (filters !== undefined) {
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
 
     const filterTexts: string[] = [];
-    if (filters.fromDate)
+    if (filters.fromDate !== undefined && filters.fromDate !== "")
       filterTexts.push(`From: ${formatDisplayDate(filters.fromDate)}`);
-    if (filters.toDate)
+    if (filters.toDate !== undefined && filters.toDate !== "")
       filterTexts.push(`To: ${formatDisplayDate(filters.toDate)}`);
-    if (filters.sourceType && filters.sourceType !== "all") {
+    if (
+      filters.sourceType !== undefined &&
+      filters.sourceType !== "" &&
+      filters.sourceType !== "all"
+    ) {
       filterTexts.push(`Source: ${filters.sourceType.toUpperCase()}`);
     }
-    if (filters.agingBucket && filters.agingBucket !== "all") {
+    if (
+      filters.agingBucket !== undefined &&
+      filters.agingBucket !== "" &&
+      filters.agingBucket !== "all"
+    ) {
       filterTexts.push(`Aging: ${filters.agingBucket}`);
     }
 
@@ -160,12 +168,18 @@ export const generateCustomerReceivablesPDF = (
       item.transaction_number,
       formatSourceType(item.source_type),
       formatDisplayDate(item.transaction_date),
-      item.reference_number || "N/A",
+      item.reference_number !== undefined && item.reference_number !== ""
+        ? item.reference_number
+        : "N/A",
       formatCurrency(item.original_amount),
       formatCurrency(paidAmount.toString()),
       formatCurrency(item.balance),
-      item.days_outstanding ? item.days_outstanding.toString() : "N/A",
-      item.aging_bucket || "N/A",
+      item.days_outstanding !== undefined && item.days_outstanding !== 0
+        ? item.days_outstanding.toString()
+        : "N/A",
+      item.aging_bucket !== undefined && item.aging_bucket !== ""
+        ? item.aging_bucket
+        : "N/A",
     ];
   });
 
@@ -181,7 +195,6 @@ export const generateCustomerReceivablesPDF = (
 
   // 4. Table setup
   const pageWidth = doc.internal.pageSize.getWidth();
-  const tableWidth = 700; // Reduced width to prevent cutoff (landscape A4 safe zone)
   const marginX = 40; // Fixed left margin for consistent positioning
 
   autoTable(doc, {
@@ -253,7 +266,9 @@ export const generateCustomerReceivablesPDF = (
 
       // Add totals on the last page with proper spacing check
       if (currentPage === totalPages && data.pageNumber === totalPages) {
-        const finalY = (data as any).cursor?.y || data.settings.startY;
+        const cursorY = (data as { cursor?: { y?: number } }).cursor?.y;
+        const finalY =
+          typeof cursorY === "number" ? cursorY : data.settings.startY;
         const totalsStartY = finalY + 30; // More space after table
         const totalsSectionHeight = 60; // Approximate height for 3 total lines
         const minimumSpaceNeeded = totalsSectionHeight + 20; // Buffer space
@@ -300,10 +315,6 @@ export const generateCustomerReceivablesPDF = (
   });
 
   // 6. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-  const customerNameForFilename = customerName.replace(/[^a-zA-Z0-9]/g, "_");
-
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

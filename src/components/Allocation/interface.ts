@@ -23,7 +23,7 @@ export interface StockAvailabilityResponse {
 
 export interface AllocFormDetailsProps {
   openEdit: boolean;
-  selectedRow: any;
+  selectedRow: Alloc | undefined;
   status: string;
   setStatus: (status: string) => void;
   transactionDate: string;

@@ -10,14 +10,12 @@ import {
   Stack,
   Button,
   Box,
-  Select,
-  Option,
   Textarea,
 } from "@mui/joy";
 import { toast } from "react-toastify";
 
 import type { Customer, CustomersModalProps } from "../../interface";
-import { formatToCP } from "../../helper";
+import { formatToCP, getErrorMessage } from "../../helper";
 
 const CustomersModal = ({
   open,
@@ -72,7 +70,7 @@ const CustomersModal = ({
       setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -175,7 +173,7 @@ const CustomersModal = ({
                       size="sm"
                       placeholder="Email"
                       name="email"
-                      value={customer.email || ""}
+                      value={customer.email ?? ""}
                       onChange={handleChange}
                     />
                   </FormControl>
@@ -186,7 +184,7 @@ const CustomersModal = ({
                       type="number"
                       placeholder="0"
                       name="customer_balance"
-                      value={customer.customer_balance || 0}
+                      value={customer.customer_balance ?? 0}
                       onChange={handleChange}
                       required
                     />

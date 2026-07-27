@@ -29,6 +29,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
   formatToDate,
+  getErrorMessage,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
@@ -68,7 +69,7 @@ const ViewDeliveryReceipt = ({
 
   const getAllSDR = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -171,10 +172,10 @@ const ViewDeliveryReceipt = ({
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -193,13 +194,13 @@ const ViewDeliveryReceipt = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -226,7 +227,7 @@ const ViewDeliveryReceipt = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -247,7 +248,7 @@ const ViewDeliveryReceipt = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }

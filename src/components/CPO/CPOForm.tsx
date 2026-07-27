@@ -20,9 +20,8 @@ import type {
   PaginatedCustomers,
   PaginatedItems,
 } from "../../interface";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
-import { addFourPlaces } from "../../helper";
+import { addFourPlaces, getErrorMessage } from "../../helper";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -57,7 +56,7 @@ const CPOForm = ({
   const [transactionDate, setTransactionDate] = useState(currentDate);
   const [referenceNumber, setReferenceNumber] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [userId, setUserId] = useState<number | null>(null);
+  const [, setUserId] = useState<number | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [indexOfModal, setIndexOfModal] = useState(0);
 
@@ -89,7 +88,7 @@ const CPOForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    const fetchValues = (selectedRow: CPO) => {
+    const fetchValues = (selectedRow: CPO): void => {
       setDiscounts({
         customer: [
           selectedRow?.customer_discount_1 ?? 0,
@@ -181,10 +180,10 @@ const CPOForm = ({
     if (
       typeof item.id === "number" && // Check that id is a number.
       item?.price !== undefined &&
-      !isNaN(item.price) &&
+      !isNaN(Number(item.price)) &&
       item.price > 0 &&
       item?.volume !== undefined &&
-      !isNaN(item.volume) &&
+      !isNaN(Number(item.volume)) &&
       item.volume > 0
     ) {
       return acc + item.price * item.volume;
@@ -258,7 +257,7 @@ const CPOForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -301,7 +300,7 @@ const CPOForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

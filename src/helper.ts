@@ -1,4 +1,21 @@
-export const convertToQueryParams = (queryParams: any): string => {
+export function getErrorMessage(
+  error: unknown,
+  fallback?: string,
+): string | undefined {
+  const detail = (
+    error as { response?: { data?: { detail?: unknown } } } | undefined
+  )?.response?.data?.detail;
+
+  const firstMsg = Array.isArray(detail)
+    ? (detail[0] as { msg?: unknown } | undefined)?.msg
+    : undefined;
+
+  if (typeof firstMsg === "string" && firstMsg !== "") return firstMsg;
+  if (typeof detail === "string" && detail !== "") return detail;
+  return fallback;
+}
+
+export const convertToQueryParams = (queryParams: object): string => {
   const queryString = Object.entries(queryParams)
     .filter(([_, value]) => value !== undefined)
     .map(([key, value]) => {
@@ -53,16 +70,24 @@ export function formatToDateTime(dateStr: string | undefined): string {
   return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
-export function addCommaToNumberWithFourPlaces(num: number | string | undefined): any {
+export function addCommaToNumberWithFourPlaces(
+  num: number | string | undefined,
+): any {
   if (num === undefined || num === null) return num;
 
-  return Number(num).toFixed(4).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  return Number(num)
+    .toFixed(4)
+    .replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-export function addCommaToNumberWithTwoPlaces(num: number | string | undefined): any {
+export function addCommaToNumberWithTwoPlaces(
+  num: number | string | undefined,
+): any {
   if (num === undefined || num === null) return num;
 
-  return Number(num).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  return Number(num)
+    .toFixed(2)
+    .replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
 export function addTwoPlaces(num: number | string | undefined): any {
@@ -71,7 +96,11 @@ export function addTwoPlaces(num: number | string | undefined): any {
   return Number(num).toFixed(2);
 }
 
-export function addFourPlaces(num: number | string | undefined): any {
+export function addFourPlaces(num: number | string): string;
+export function addFourPlaces(num: undefined): undefined;
+export function addFourPlaces(
+  num: number | string | undefined,
+): string | undefined {
   if (num === undefined || num === null) return num;
 
   return Number(num).toFixed(4);

@@ -29,10 +29,14 @@ import {
   addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
   formatToDate,
+  getErrorMessage,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewReceivingReport = ({
   setOpenCreate,
@@ -66,7 +70,7 @@ const ViewReceivingReport = ({
   // Initial load function - resets everything and loads first page
   const getAllRR = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -155,15 +159,24 @@ const ViewReceivingReport = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo, limit]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    dateFrom,
+    dateTo,
+    limit,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -182,13 +195,13 @@ const ViewReceivingReport = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -215,7 +228,7 @@ const ViewReceivingReport = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -236,7 +249,7 @@ const ViewReceivingReport = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -412,10 +425,22 @@ const ViewReceivingReport = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={16} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={16}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading reports...</Typography>
+                      <Typography level="body-sm">
+                        Loading reports...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -479,7 +504,9 @@ const ViewReceivingReport = ({
                     >
                       <td>{receivingReport.id}</td>
                       <td>{receivingReport.transaction_date}</td>
-                      <td>{withTooltip(receivingReport.supplier.name, "280px")}</td>
+                      <td>
+                        {withTooltip(receivingReport.supplier.name, "280px")}
+                      </td>
                       <td>
                         {withTooltip(receivingReport.reference_number, "160px")}
                       </td>
@@ -487,10 +514,14 @@ const ViewReceivingReport = ({
                         <StatusChip status={receivingReport.status} />
                       </td>
                       <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(receivingReport.net_amount)}
+                        {addCommaToNumberWithTwoPlaces(
+                          receivingReport.net_amount,
+                        )}
                       </td>
                       <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}
+                        {addCommaToNumberWithTwoPlaces(
+                          receivingReport.fob_total,
+                        )}
                       </td>
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithFourPlaces(
@@ -498,13 +529,21 @@ const ViewReceivingReport = ({
                         )}
                       </td>
                       <td>{receivingReport.currency}</td>
-                      <td style={{ textAlign: "right" }}>{addCommaToNumberWithTwoPlaces(receivingReport.rate)}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(receivingReport.rate)}
+                      </td>
                       <td>{withTooltip(receivingReport.remarks, "180px")}</td>
                       <td>
-                        {withTooltip(receivingReport?.creator?.username, "130px")}
+                        {withTooltip(
+                          receivingReport?.creator?.username,
+                          "130px",
+                        )}
                       </td>
                       <td>
-                        {withTooltip(receivingReport?.modifier?.username, "130px")}
+                        {withTooltip(
+                          receivingReport?.modifier?.username,
+                          "130px",
+                        )}
                       </td>
                       <td>{formatToDate(receivingReport.date_created)}</td>
                       <td>{formatToDate(receivingReport.date_modified)}</td>
@@ -593,8 +632,8 @@ const ViewReceivingReport = ({
             </>
           ) : hasMore ? (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-              Showing {receivingReports.items.length} of {receivingReports.total}{" "}
-              items • Scroll for more
+              Showing {receivingReports.items.length} of{" "}
+              {receivingReports.total} items • Scroll for more
             </Typography>
           ) : (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

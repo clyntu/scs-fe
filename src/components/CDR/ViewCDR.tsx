@@ -28,10 +28,14 @@ import {
   convertToQueryParams,
   addCommaToNumberWithTwoPlaces,
   formatToDate,
+  getErrorMessage,
 } from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewCDR = ({
   setOpenCreate,
@@ -65,7 +69,7 @@ const ViewCDR = ({
   // Initial load function - resets everything and loads first page
   const getAllCDRs = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -154,23 +158,15 @@ const ViewCDR = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [
-    isLoadingMore,
-    hasMore,
-    page,
-    searchTerm,
-    status,
-    dateFrom,
-    dateTo,
-  ]);
+  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -189,13 +185,13 @@ const ViewCDR = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -222,7 +218,7 @@ const ViewCDR = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -243,7 +239,7 @@ const ViewCDR = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -419,10 +415,22 @@ const ViewCDR = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={15} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={15}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading delivery receipts...</Typography>
+                      <Typography level="body-sm">
+                        Loading delivery receipts...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -496,7 +504,9 @@ const ViewCDR = ({
                       <td style={{ textAlign: "right" }}>
                         {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
                       </td>
-                      <td style={{ textAlign: "right" }}>{CDR.total_items?.toLocaleString()}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {CDR.total_items?.toLocaleString()}
+                      </td>
                       <td>{CDR.delivery_plan_id}</td>
                       <td>{withTooltip(CDR.remarks, "180px")}</td>
                       <td>{withTooltip(CDR?.creator?.username, "130px")}</td>
@@ -585,7 +595,8 @@ const ViewCDR = ({
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {CDRs.items.length} of {CDRs.total} items • Scroll for more
+                Showing {CDRs.items.length} of {CDRs.total} items • Scroll for
+                more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

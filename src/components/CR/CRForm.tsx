@@ -8,21 +8,17 @@ import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { type DRItemsFE } from "./interface";
-import { addCommaToNumberWithTwoPlaces } from "../../helper";
 import { calculateTotalWithDiscounts } from "./CRForm/helpers";
 import type {
   CRFormProps,
   PaginatedCustomers,
   Customer,
-  Alloc,
-  DeliveryPlanItem,
-  CPO,
   PaginatedWarehouse,
-  Warehouse,
   CR,
 } from "../../interface";
 import { generateCRPDF } from "./generatePDF";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { getErrorMessage } from "../../helper";
 
 const CRForm = ({
   setOpen,
@@ -88,7 +84,7 @@ const CRForm = ({
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
 
-    const fetchValues = (selectedRow: CR) => {
+    const fetchValues = (selectedRow: CR): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
@@ -159,7 +155,14 @@ const CRForm = ({
   const calculateNetForRow = (
     newValue: number,
     price: number,
-    DRItem: any,
+    DRItem: {
+      customer_discount_1: string;
+      transaction_discount_1: string;
+      customer_discount_2: string;
+      transaction_discount_2: string;
+      customer_discount_3: string;
+      transaction_discount_3: string;
+    },
   ): number => {
     const grossAmount = newValue * price;
 
@@ -193,7 +196,21 @@ const CRForm = ({
     setDiscountReturn(0);
   };
 
-  const createPayload = () => {
+  const createPayload = (): {
+    status: string;
+    transaction_date: string;
+    reference_number: string;
+    discount_return_amount: string | number;
+    remarks: string;
+    customer_id: number | undefined;
+    items: Array<{
+      delivery_receipt_item_id: number;
+      warehouse_id: number | null;
+      item_id: number;
+      return_qty: string;
+      price: string;
+    }>;
+  } => {
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -202,7 +219,9 @@ const CRForm = ({
       remarks,
       customer_id: selectedCustomer?.customer_id,
       items: formattedDRs
-        .filter((DRItem) => DRItem.return_qty && Number(DRItem.return_qty) > 0)
+        .filter(
+          (DRItem) => DRItem.return_qty !== "" && Number(DRItem.return_qty) > 0,
+        )
         .map((DRItem) => {
           return {
             delivery_receipt_item_id: DRItem.delivery_receipt_item_id,
@@ -235,7 +254,7 @@ const CRForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -263,7 +282,7 @@ const CRForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

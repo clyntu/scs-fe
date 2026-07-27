@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import jsPDF from "jspdf";
+import JsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CDR } from "../../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
@@ -51,7 +51,7 @@ export const generateDeliveryReceiptPDF = (
   selectedRow: CDR,
   companyId: string,
 ): void => {
-  const doc = new jsPDF({
+  const doc = new JsPDF({
     orientation: "portrait",
     unit: "pt",
     format: "A4",
@@ -246,8 +246,6 @@ export const generateDeliveryReceiptPDF = (
   doc.line(pageWidth - 130, footerY + 53, pageWidth - 40, footerY + 53); // line under date
 
   // 9. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

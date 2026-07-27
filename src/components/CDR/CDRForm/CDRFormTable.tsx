@@ -91,9 +91,7 @@ const CDRFormTable = ({
             <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Name</th>
             <th style={{ width: 100, textAlign: "right" }}>Price</th>
-            <th style={{ width: 100, textAlign: "right" }}>
-              DR Receipt Qty.
-            </th>
+            <th style={{ width: 100, textAlign: "right" }}>DR Receipt Qty.</th>
             <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
             <th style={{ width: 130, textAlign: "right" }}>
               Cust. Disc. 1 (%)

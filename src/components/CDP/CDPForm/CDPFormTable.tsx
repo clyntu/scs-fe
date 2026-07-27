@@ -2,7 +2,7 @@ import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { AllocItemsFE, CDPFormTableProps } from "../interface";
-import { addCommaToNumberWithTwoPlaces, removeCommas } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import { withTooltip } from "../../shared/withTooltip";
 
 const CDPFormTable = ({

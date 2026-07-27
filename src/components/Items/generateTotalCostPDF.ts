@@ -153,9 +153,6 @@ export const generateTotalCostPDF = (
   });
 
   // 4. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-
   // Open in new tab instead of downloading
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);

@@ -110,14 +110,20 @@ export default function Login(): JSX.Element {
           console.error("User sync error:", syncError);
 
           // Check if user is disabled
-          if (axios.isAxiosError(syncError) && syncError.response?.status === 400) {
-            const errorDetail = syncError.response?.data?.detail || "";
+          if (
+            axios.isAxiosError(syncError) &&
+            syncError.response?.status === 400
+          ) {
+            const rawDetail: unknown = syncError.response?.data?.detail;
+            const errorDetail = typeof rawDetail === "string" ? rawDetail : "";
             if (errorDetail.toLowerCase().includes("disabled")) {
               // Sign out from Supabase
               await supabase.auth.signOut();
 
               // Show error to user
-              setError("Your account has been disabled. Please contact an administrator.");
+              setError(
+                "Your account has been disabled. Please contact an administrator.",
+              );
               setIsLoading(false);
               return;
             }
@@ -151,13 +157,14 @@ export default function Login(): JSX.Element {
       if (router.query.expired === "true") {
         setError("Your session has expired. Please log in again.");
       } else if (router.query.error === "disabled") {
-        setError("Your account has been disabled. Please contact an administrator.");
+        setError(
+          "Your account has been disabled. Please contact an administrator.",
+        );
       }
     };
 
     checkQueryParams();
   }, [router.query]);
-
 
   return (
     <main>

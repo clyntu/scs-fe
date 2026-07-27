@@ -102,7 +102,7 @@ export default function Sidebar(): JSX.Element | null {
       }}
     >
       <Typography sx={{ mt: 0.5, px: 1, fontWeight: "bold", fontSize: "18px" }}>
-        Hi, {currentUser?.full_name || ""}!
+        Hi, {currentUser?.full_name ?? ""}!
       </Typography>
 
       {isAdmin ? (

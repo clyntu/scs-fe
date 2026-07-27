@@ -1,4 +1,4 @@
-import { Input, Button, Sheet, Select, Option } from "@mui/joy";
+import { Input, Button, Sheet } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { Item } from "../../../interface";
@@ -287,7 +287,9 @@ const CPOFormTable = ({
                           changePrice(raw, index);
                         }
                       }}
-                      value={formatWithCommas(selectedItem.price)}
+                      value={formatWithCommas(
+                        selectedItem.price as string | number,
+                      )}
                       disabled={isEditDisabled}
                       required
                     />

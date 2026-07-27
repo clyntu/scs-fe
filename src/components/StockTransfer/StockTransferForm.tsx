@@ -1,6 +1,6 @@
 import STFormDetails from "./STForm/STFormDetails";
 import STFormTable from "./STForm/STFormTable";
-import { Button, Divider, Typography } from "@mui/joy";
+import { Button, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useMemo, useState } from "react";
@@ -13,18 +13,16 @@ import type {
   PaginatedRR,
   ReceivingReport,
   STFormProps,
-  WarehouseItem,
-  Item,
   Supplier,
   PaginatedSuppliers,
   FetchedWarehouseItems,
   StockTransfer,
 } from "../../interface";
-import { convertToQueryParams } from "../../helper";
+import { convertToQueryParams, getErrorMessage } from "../../helper";
 import {
-  STFormPayload,
-  WarehouseItemsFE,
-  RRAvailableStockResponse,
+  type STFormPayload,
+  type WarehouseItemsFE,
+  type RRAvailableStockResponse,
 } from "./interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 
@@ -45,7 +43,7 @@ const StockTransferForm = ({
   });
   const [selectedRR, setSelectedRR] = useState<ReceivingReport | null>(null);
   const [rrTransfer, setRRTransfer] = useState("no");
-  const [userId, setUserId] = useState<number | null>(null);
+  const [, setUserId] = useState<number | null>(null);
   const [warehouses, setWarehouses] = useState<PaginatedWarehouse>({
     total: 0,
     items: [],
@@ -120,14 +118,14 @@ const StockTransferForm = ({
 
   // Fetch warehouse items when receiving area warehouse is set (for create mode)
   useEffect(() => {
-    if (openCreate && selectedWarehouse) {
+    if (openCreate && selectedWarehouse !== null) {
       fetchWarehouseItems(selectedWarehouse.id);
     }
   }, [selectedWarehouse, openCreate]);
 
   useEffect(() => {
     // Fill in fields for Edit
-    const fetchValues = (selectedRow: StockTransfer) => {
+    const fetchValues = (selectedRow: StockTransfer): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setRemarks(selectedRow?.remarks ?? "");
@@ -136,11 +134,14 @@ const StockTransferForm = ({
     };
 
     if (selectedRow !== null && selectedRow !== undefined) {
-      if (warehouses?.items?.length) {
+      if (warehouses.items.length > 0) {
         fetchValues(selectedRow);
-        const promises: Promise<any>[] = [];
+        const promises: Array<Promise<void>> = [];
 
-        if (selectedRow?.supplier_id) {
+        if (
+          selectedRow?.supplier_id !== undefined &&
+          selectedRow.supplier_id !== 0
+        ) {
           const supplierPromise = axiosInstance
             .get<Supplier>(`/api/suppliers/${selectedRow.supplier_id}`)
             .then((response) => {
@@ -171,7 +172,7 @@ const StockTransferForm = ({
           promises.push(rrPromise);
         }
 
-        Promise.all(promises).finally(() => {
+        void Promise.all(promises).finally(() => {
           setIsFetching(false);
         });
       }
@@ -197,8 +198,13 @@ const StockTransferForm = ({
     warehouseItemFE: WarehouseItemsFE,
     isRRTransfer: boolean = false,
     rrId?: number,
-  ) => {
-    if (isRRTransfer && rrId && receivingAreaWarehouse) {
+  ): void => {
+    if (
+      isRRTransfer &&
+      rrId !== undefined &&
+      rrId !== 0 &&
+      receivingAreaWarehouse !== null
+    ) {
       // For RR transfers, use the stored receiving area warehouse
       const params = new URLSearchParams({
         warehouse_id: receivingAreaWarehouse.id.toString(),
@@ -206,7 +212,7 @@ const StockTransferForm = ({
 
       axiosInstance
         .get<RRAvailableStockResponse>(
-          `/api/stock-transfers/rr-available-stock/${rrId}?${params}`,
+          `/api/stock-transfers/rr-available-stock/${rrId}?${params.toString()}`,
         )
         .then((response): void => {
           const rrStockData = response.data;
@@ -236,20 +242,20 @@ const StockTransferForm = ({
   };
 
   const fetchWarehouseItems = (
-    warehouse_id: number,
+    warehouseId: number,
     rr: ReceivingReport | null = null,
-  ) => {
+  ): void => {
     setIsLoadingItems(true);
 
     // For RR Transfer = Yes, use the stored receiving area warehouse
-    if (rr !== null && rr !== undefined && receivingAreaWarehouse) {
+    if (rr !== null && rr !== undefined && receivingAreaWarehouse !== null) {
       const params = new URLSearchParams({
         warehouse_id: receivingAreaWarehouse.id.toString(),
       });
 
       axiosInstance
         .get<RRAvailableStockResponse>(
-          `/api/stock-transfers/rr-available-stock/${rr.id}?${params}`,
+          `/api/stock-transfers/rr-available-stock/${rr.id}?${params.toString()}`,
         )
         .then((response): void => {
           const rrStockData = response.data;
@@ -288,7 +294,7 @@ const StockTransferForm = ({
       const params: {
         warehouse_id: number;
       } = {
-        warehouse_id,
+        warehouse_id: warehouseId,
       };
       axiosInstance
         .get<FetchedWarehouseItems>(
@@ -328,7 +334,7 @@ const StockTransferForm = ({
     }
   };
 
-  const getWarehouseItemsOnView = () => {
+  const getWarehouseItemsOnView = (): void => {
     if (selectedRow !== null && selectedRow !== undefined) {
       const formattedItems = selectedRow.stock_transfer_details.map((item) => {
         const result: WarehouseItemsFE = {
@@ -390,8 +396,8 @@ const StockTransferForm = ({
     }
   };
 
-  const createStockTransferDetails = () => {
-    const results = [];
+  const createStockTransferDetails = (): STFormPayload[] => {
+    const results: STFormPayload[] = [];
 
     for (const item of warehouseItems) {
       if (selectedWarehouse !== null) {
@@ -406,21 +412,27 @@ const StockTransferForm = ({
         if (item.warehouse_1 !== null) {
           result.destinations.push({
             to_warehouse_id: item.warehouse_1.id,
-            quantity: Number(item.warehouse_1_qty) || 0,
+            quantity: Number.isNaN(Number(item.warehouse_1_qty))
+              ? 0
+              : Number(item.warehouse_1_qty),
           });
         }
 
         if (item.warehouse_2 !== null) {
           result.destinations.push({
             to_warehouse_id: item.warehouse_2.id,
-            quantity: Number(item.warehouse_2_qty) || 0,
+            quantity: Number.isNaN(Number(item.warehouse_2_qty))
+              ? 0
+              : Number(item.warehouse_2_qty),
           });
         }
 
         if (item.warehouse_3 !== null) {
           result.destinations.push({
             to_warehouse_id: item.warehouse_3.id,
-            quantity: Number(item.warehouse_3_qty) || 0,
+            quantity: Number.isNaN(Number(item.warehouse_3_qty))
+              ? 0
+              : Number(item.warehouse_3_qty),
           });
         }
 
@@ -433,10 +445,10 @@ const StockTransferForm = ({
     return results;
   };
 
-  const handleCreateStockTransfer = async () => {
+  const handleCreateStockTransfer = async (): Promise<void> => {
     if (selectedWarehouse !== null) {
-      const stock_transfer_details = createStockTransferDetails();
-      if (stock_transfer_details.length === 0) {
+      const stockTransferDetails = createStockTransferDetails();
+      if (stockTransferDetails.length === 0) {
         toast.error(
           "Error: At least one warehouse and quantity input is required.",
         );
@@ -451,7 +463,7 @@ const StockTransferForm = ({
         remarks,
         supplier_id: selectedSupplier?.supplier_id ?? null,
         from_warehouse_id: selectedWarehouse.id,
-        stock_transfer_details,
+        stock_transfer_details: stockTransferDetails,
       };
 
       try {
@@ -462,18 +474,16 @@ const StockTransferForm = ({
         setHasSaved(true);
         // Handle the response, update state, etc.
       } catch (error: any) {
-        toast.error(
-          `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
-        );
+        toast.error(`Error: ${getErrorMessage(error, "Save unsuccessful")}`);
         setIsSaving(false);
       }
     }
   };
 
-  const handleEditStockTransfer = async () => {
+  const handleEditStockTransfer = async (): Promise<void> => {
     if (selectedWarehouse !== null) {
-      const stock_transfer_details = createStockTransferDetails();
-      if (stock_transfer_details.length === 0) {
+      const stockTransferDetails = createStockTransferDetails();
+      if (stockTransferDetails.length === 0) {
         toast.error(
           "Error: At least one warehouse and quantity input is required.",
         );
@@ -488,7 +498,7 @@ const StockTransferForm = ({
         remarks,
         supplier_id: selectedRR?.supplier_id ?? null,
         from_warehouse_id: selectedWarehouse.id,
-        stock_transfer_details,
+        stock_transfer_details: stockTransferDetails,
       };
 
       try {
@@ -503,9 +513,7 @@ const StockTransferForm = ({
 
         // Handle the response, update state, etc.
       } catch (error: any) {
-        toast.error(
-          `Error: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
-        );
+        toast.error(`Error: ${getErrorMessage(error, "Save unsuccessful")}`);
         setIsSaving(false);
       }
     }

@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { POPayload, POItemValues, NewPriceInstance } from "./interface";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import CircularProgress from "@mui/joy/CircularProgress";
 
 import type { User } from "../../pages/Login";
@@ -24,7 +23,7 @@ import type {
   PurchaseOrder,
 } from "../../interface";
 
-import { addFourPlaces } from "../../helper";
+import { addFourPlaces, getErrorMessage } from "../../helper";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -102,7 +101,7 @@ const PurchaseOrderForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    const fetchValues = (selectedRow: PurchaseOrder) => {
+    const fetchValues = (selectedRow: PurchaseOrder): void => {
       setCurrencyUsed(selectedRow?.currency_used ?? "USD");
       setDiscounts({
         supplier: [
@@ -189,10 +188,10 @@ const PurchaseOrderForm = ({
     if (
       typeof item.id === "number" && // Check that id is a number.
       item?.price !== undefined &&
-      !isNaN(item.price) &&
+      !isNaN(Number(item.price)) &&
       item.price > 0 &&
       item?.volume !== undefined &&
-      !isNaN(item.volume) &&
+      !isNaN(Number(item.volume)) &&
       item.volume > 0
     ) {
       return acc + item.price * item.volume;
@@ -266,7 +265,7 @@ const PurchaseOrderForm = ({
       await Promise.all(requests);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
     }
   };
@@ -340,7 +339,7 @@ const PurchaseOrderForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -392,7 +391,7 @@ const PurchaseOrderForm = ({
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

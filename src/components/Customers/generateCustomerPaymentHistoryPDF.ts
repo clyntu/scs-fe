@@ -36,7 +36,7 @@ const formatDate = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12; // if hours is 0, set it to 12
+  hours = hours === 0 ? 12 : hours; // if hours is 0, set it to 12
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
@@ -112,21 +112,29 @@ export const generateCustomerPaymentHistoryPDF = (
 
   // Add filter information if any filters are applied
   let yPosition = 80;
-  if (filters) {
+  if (filters !== undefined) {
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
 
     const filterTexts: string[] = [];
-    if (filters.fromDate)
+    if (filters.fromDate !== undefined && filters.fromDate !== "")
       filterTexts.push(`From: ${formatDisplayDate(filters.fromDate)}`);
-    if (filters.toDate)
+    if (filters.toDate !== undefined && filters.toDate !== "")
       filterTexts.push(`To: ${formatDisplayDate(filters.toDate)}`);
-    if (filters.paymentMethod && filters.paymentMethod !== "all") {
+    if (
+      filters.paymentMethod !== undefined &&
+      filters.paymentMethod !== "" &&
+      filters.paymentMethod !== "all"
+    ) {
       filterTexts.push(
         `Payment Method: ${filters.paymentMethod.toUpperCase()}`,
       );
     }
-    if (filters.paymentStatus && filters.paymentStatus !== "all") {
+    if (
+      filters.paymentStatus !== undefined &&
+      filters.paymentStatus !== "" &&
+      filters.paymentStatus !== "all"
+    ) {
       filterTexts.push(`Status: ${filters.paymentStatus.toUpperCase()}`);
     }
 
@@ -152,13 +160,15 @@ export const generateCustomerPaymentHistoryPDF = (
   const tableRows = data.map((item) => [
     item.id.toString(),
     formatDisplayDate(item.payment_date),
-    item.reference_number || "N/A",
+    item.reference_number !== null && item.reference_number !== ""
+      ? item.reference_number
+      : "N/A",
     item.payment_method.toUpperCase(),
     formatCurrency(item.payment_amount),
     formatCurrency(item.total_applied),
     item.payment_status.toUpperCase(),
-    item.clearing_date ? formatDisplayDate(item.clearing_date) : "N/A",
-    item.remarks || "N/A",
+    item.clearing_date !== null ? formatDisplayDate(item.clearing_date) : "N/A",
+    item.remarks !== null && item.remarks !== "" ? item.remarks : "N/A",
   ]);
 
   // 3. Calculate total amounts
@@ -238,7 +248,9 @@ export const generateCustomerPaymentHistoryPDF = (
 
       // Add totals on the last page
       if (currentPage === totalPages && data.pageNumber === totalPages) {
-        const finalY = (data as any).cursor?.y || data.settings.startY;
+        const cursorY = (data as { cursor?: { y?: number } }).cursor?.y;
+        const finalY =
+          typeof cursorY === "number" ? cursorY : data.settings.startY;
 
         // Add some space before totals
         const totalsY = finalY + 20;
@@ -262,10 +274,6 @@ export const generateCustomerPaymentHistoryPDF = (
   });
 
   // 6. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-  const customerNameForFilename = customerName.replace(/[^a-zA-Z0-9]/g, "_");
-
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

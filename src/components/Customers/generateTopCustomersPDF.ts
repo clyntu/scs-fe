@@ -12,6 +12,12 @@ interface CustomerSalesAnalytics {
   net_sales: number;
 }
 
+// Coerces a value to a number, falling back to 0 for NaN results
+const toNumberOrZero = (value: number | string): number => {
+  const num = Number(value);
+  return Number.isNaN(num) ? 0 : num;
+};
+
 // Helper function to format the date
 const formatDate = (date: Date): string => {
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -22,7 +28,7 @@ const formatDate = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12; // if hours is 0, set it to 12
+  hours = hours === 0 ? 12 : hours; // if hours is 0, set it to 12
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
@@ -92,7 +98,7 @@ export const generateTopCustomersPDF = (
 
   // Add filter information if any filters are applied
   let yPosition = 70;
-  if (filters) {
+  if (filters !== undefined) {
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
 
@@ -125,36 +131,36 @@ export const generateTopCustomersPDF = (
   const tableRows = data.map((item, index) => [
     (index + 1).toString(), // Rank
     item.customer_name,
-    formatNumber(Number(item.dr_count) || 0),
-    formatCurrency(Number(item.dr_total) || 0),
-    formatNumber(Number(item.cr_count) || 0),
-    formatCurrency(Number(item.cr_total) || 0),
-    formatCurrency(Number(item.net_sales) || 0),
+    formatNumber(toNumberOrZero(item.dr_count)),
+    formatCurrency(toNumberOrZero(item.dr_total)),
+    formatNumber(toNumberOrZero(item.cr_count)),
+    formatCurrency(toNumberOrZero(item.cr_total)),
+    formatCurrency(toNumberOrZero(item.net_sales)),
   ]);
 
   // 3. Calculate totals with proper number validation
   const totalDRCount = data.reduce((sum, item) => {
-    const count = Number(item.dr_count) || 0;
+    const count = toNumberOrZero(item.dr_count);
     return sum + count;
   }, 0);
 
   const totalDRAmount = data.reduce((sum, item) => {
-    const amount = Number(item.dr_total) || 0;
+    const amount = toNumberOrZero(item.dr_total);
     return sum + amount;
   }, 0);
 
   const totalCRCount = data.reduce((sum, item) => {
-    const count = Number(item.cr_count) || 0;
+    const count = toNumberOrZero(item.cr_count);
     return sum + count;
   }, 0);
 
   const totalCRAmount = data.reduce((sum, item) => {
-    const amount = Number(item.cr_total) || 0;
+    const amount = toNumberOrZero(item.cr_total);
     return sum + amount;
   }, 0);
 
   const totalNetSales = data.reduce((sum, item) => {
-    const netSales = Number(item.net_sales) || 0;
+    const netSales = toNumberOrZero(item.net_sales);
     return sum + netSales;
   }, 0);
 
@@ -200,7 +206,7 @@ export const generateTopCustomersPDF = (
       }
       // Highlight negative net sales in red
       if (hookData.section === "body" && hookData.column.index === 6) {
-        const netSales = Number(data[hookData.row.index].net_sales) || 0;
+        const netSales = toNumberOrZero(data[hookData.row.index].net_sales);
         if (netSales < 0) {
           hookData.cell.styles.textColor = [220, 53, 69]; // Red color for negative values
         }
@@ -236,7 +242,9 @@ export const generateTopCustomersPDF = (
 
       // Add totals on the last page with proper spacing check
       if (currentPage === totalPages && data.pageNumber === totalPages) {
-        const finalY = (data as any).cursor?.y || data.settings.startY;
+        const cursorY = (data as { cursor?: { y?: number } }).cursor?.y;
+        const finalY =
+          typeof cursorY === "number" ? cursorY : data.settings.startY;
         const totalsStartY = finalY + 30; // More space after table
         const totalsSectionHeight = 90; // Approximate height for 5 total lines
         const minimumSpaceNeeded = totalsSectionHeight + 20; // Buffer space
@@ -313,9 +321,6 @@ export const generateTopCustomersPDF = (
   });
 
   // 6. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
-
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

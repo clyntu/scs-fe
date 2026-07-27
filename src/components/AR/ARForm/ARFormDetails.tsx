@@ -60,6 +60,7 @@ const ARFormDetails = ({
   outstandingTrans,
   setOutstandingTrans,
 }: ARFormDetailsProps): JSX.Element => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDRFilter = (
     event: React.SyntheticEvent,
     newValue: string | null,

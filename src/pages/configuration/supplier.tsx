@@ -5,7 +5,13 @@ import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Input, FormControl, FormLabel, CircularProgress, Typography } from "@mui/joy";
+import {
+  Input,
+  FormControl,
+  FormLabel,
+  CircularProgress,
+  Typography,
+} from "@mui/joy";
 import SuppliersModal from "../../components/Suppliers/SuppliersModal";
 import DeleteSuppliersModal from "../../components/Suppliers/DeleteSupplierModal";
 import axiosInstance from "../../utils/axiosConfig";
@@ -45,7 +51,7 @@ const SupplierForm = (): JSX.Element => {
   // Initial load function - resets everything and loads first page
   const getAllSuppliers = (searchTerm: string): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -123,10 +129,10 @@ const SupplierForm = (): JSX.Element => {
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -145,13 +151,13 @@ const SupplierForm = (): JSX.Element => {
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -382,10 +388,22 @@ const SupplierForm = (): JSX.Element => {
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={13} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={13}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading suppliers...</Typography>
+                      <Typography level="body-sm">
+                        Loading suppliers...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -394,7 +412,9 @@ const SupplierForm = (): JSX.Element => {
               <>
                 <thead>
                   <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Code
+                    </th>
                     <th style={{ width: 300 }}>Name</th>
                     <th style={{ width: 400 }}>Address</th>
                     <th style={{ width: 150 }}>Contact Person</th>
@@ -415,106 +435,109 @@ const SupplierForm = (): JSX.Element => {
                   </tr>
                 </thead>
                 <tbody>
-              {suppliers.items.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={13}
-                    style={{ textAlign: "center", padding: "24px" }}
-                  >
-                    <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                      No suppliers found.
-                    </Typography>
-                  </td>
-                </tr>
-              )}
-              {suppliers.items.map((supplier) => (
-                <tr
-                  key={supplier.supplier_id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(supplier);
-                  }}
-                >
-                  <td>{formatToSP(supplier.supplier_id)}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="300px">
-                      {supplier.name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="400px">
-                      {supplier.address}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="150px">
-                      {supplier.contact_person}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="150px">
-                      {supplier.contact_number}
-                    </TooltipTableCell>
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="300px">
-                      {supplier.email}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{supplier.currency}</td>
-                  <td style={{ textAlign: "right" }}>
-                    {supplier.supplier_balance}
-                  </td>
-                  <td>
-                    <TooltipTableCell maxWidth="200px">
-                      {supplier?.creator?.full_name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{formatToDate(supplier.date_created)}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="200px">
-                      {supplier?.modifier?.full_name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{formatToDate(supplier.date_modified)}</td>
-                  <td>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 0.5,
-                        alignItems: "center",
-                        justifyContent: "center",
+                  {suppliers.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={13}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No suppliers found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
+                  {suppliers.items.map((supplier) => (
+                    <tr
+                      key={supplier.supplier_id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(supplier);
                       }}
                     >
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(supplier);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(supplier);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </td>
-                </tr>
-              ))}
+                      <td>{formatToSP(supplier.supplier_id)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {supplier.name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="400px">
+                          {supplier.address}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {supplier.contact_person}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {supplier.contact_number}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {supplier.email}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{supplier.currency}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {supplier.supplier_balance}
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {supplier?.creator?.full_name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{formatToDate(supplier.date_created)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {supplier?.modifier?.full_name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{formatToDate(supplier.date_modified)}</td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(supplier);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(supplier);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </>
             )}
@@ -540,8 +563,8 @@ const SupplierForm = (): JSX.Element => {
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {suppliers.items.length} of {suppliers.total} items • Scroll for
-                more
+                Showing {suppliers.items.length} of {suppliers.total} items •
+                Scroll for more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

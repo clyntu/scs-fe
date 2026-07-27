@@ -21,7 +21,7 @@ import type {
   StockAdjustmentResponse,
   PaginatedItems,
 } from "../../interface";
-import { addFourPlaces } from "../../helper";
+import { addFourPlaces, getErrorMessage } from "../../helper";
 
 const formatWithCommas = (value: string | number): string => {
   if (value === "" || value === undefined || value === null) return "";
@@ -74,15 +74,19 @@ const StockAdjustmentModal = ({
 
   // Fetch item details when modal opens to get default net cost
   useEffect(() => {
-    if (open && itemId) {
+    if (open && itemId !== 0) {
       setIsLoadingItem(true);
       axiosInstance
         .get<PaginatedItems>(`/api/items/?item_id=${itemId}`)
         .then((response) => {
           console.log(itemId);
           console.log(response.data);
-          const defaultNetCost =
-            Number(response.data.items[0]?.net_cost_before_tax) || 0;
+          const rawDefaultNetCost = Number(
+            response.data.items[0]?.net_cost_before_tax,
+          );
+          const defaultNetCost = Number.isNaN(rawDefaultNetCost)
+            ? 0
+            : rawDefaultNetCost;
           setNetCost(addFourPlaces(defaultNetCost).toString());
           setIsLoadingItem(false);
         })
@@ -126,7 +130,7 @@ const StockAdjustmentModal = ({
 
     // Check for max 4 decimal places
     const decimalPart = rawNetCost.split(".")[1];
-    if (decimalPart && decimalPart.length > 4) {
+    if (decimalPart !== undefined && decimalPart.length > 4) {
       setError("Net Cost can have a maximum of 4 decimal places");
       return;
     }
@@ -161,9 +165,9 @@ const StockAdjustmentModal = ({
         setOpen(false);
         onSuccess();
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(
-        err.response?.data?.detail ||
+        getErrorMessage(err, "Failed to adjust stock. Please try again.") ??
           "Failed to adjust stock. Please try again.",
       );
     } finally {
@@ -193,9 +197,9 @@ const StockAdjustmentModal = ({
   // Validation helpers with error messages
   const getAmountError = useMemo(() => {
     // Don't show errors during submission or after success
-    if (!touched.amount || isSubmitting || success) return null;
+    if (!touched.amount || isSubmitting || success !== "") return null;
     const amount = parseFloat(adjustmentAmount);
-    if (!adjustmentAmount) return "Amount is required";
+    if (adjustmentAmount === "") return "Amount is required";
     if (isNaN(amount)) return "Please enter a valid number";
     if (amount <= 0) return "Amount must be greater than 0";
     return null;
@@ -203,16 +207,16 @@ const StockAdjustmentModal = ({
 
   const getNetCostError = useMemo(() => {
     // Don't show errors during submission or after success
-    if (!touched.netCost || isSubmitting || success) return null;
+    if (!touched.netCost || isSubmitting || success !== "") return null;
     const rawNetCost = stripCommas(netCost);
     const cost = parseFloat(rawNetCost);
-    if (!rawNetCost) return "Net Cost is required";
+    if (rawNetCost === "") return "Net Cost is required";
     if (isNaN(cost)) return "Please enter a valid number";
     if (cost <= 0) return "Net Cost must be greater than 0";
 
     // Check for max 4 decimal places
     const decimalPart = rawNetCost.split(".")[1];
-    if (decimalPart && decimalPart.length > 4) {
+    if (decimalPart !== undefined && decimalPart.length > 4) {
       return "Net Cost can have a maximum of 4 decimal places";
     }
 
@@ -226,7 +230,8 @@ const StockAdjustmentModal = ({
 
     // Check for max 4 decimal places
     const decimalPart = rawNetCost.split(".")[1];
-    const hasValidDecimals = !decimalPart || decimalPart.length <= 4;
+    const hasValidDecimals =
+      decimalPart === undefined || decimalPart.length <= 4;
 
     return (
       !isNaN(amount) &&
@@ -259,13 +264,13 @@ const StockAdjustmentModal = ({
               </Stack>
             </Alert>
 
-            {error && (
+            {error !== "" && (
               <Alert color="danger" variant="soft" size="sm">
                 <Typography level="body-sm">{error}</Typography>
               </Alert>
             )}
 
-            {success && (
+            {success !== "" && (
               <Alert color="success" variant="soft" size="sm">
                 <Typography level="body-sm">{success}</Typography>
               </Alert>
@@ -315,7 +320,11 @@ const StockAdjustmentModal = ({
                   </FormControl>
 
                   {/* Amount */}
-                  <FormControl required error={!!getAmountError} size="sm">
+                  <FormControl
+                    required
+                    error={getAmountError !== null}
+                    size="sm"
+                  >
                     <FormLabel sx={{ fontSize: "0.875rem" }}>Amount</FormLabel>
                     <Input
                       type="number"
@@ -334,12 +343,12 @@ const StockAdjustmentModal = ({
                         },
                       }}
                     />
-                    {getAmountError && (
+                    {getAmountError !== null && (
                       <FormHelperText sx={{ fontSize: "0.75rem" }}>
                         {getAmountError}
                       </FormHelperText>
                     )}
-                    {adjustmentAmount &&
+                    {adjustmentAmount !== "" &&
                       !isNaN(parseFloat(adjustmentAmount)) &&
                       parseFloat(adjustmentAmount) > 0 && (
                         <Typography level="body-sm" sx={{ mt: 0.5 }}>
@@ -361,7 +370,11 @@ const StockAdjustmentModal = ({
                   </FormControl>
 
                   {/* Net Cost */}
-                  <FormControl required error={!!getNetCostError} size="sm">
+                  <FormControl
+                    required
+                    error={getNetCostError !== null}
+                    size="sm"
+                  >
                     <FormLabel sx={{ fontSize: "0.875rem" }}>
                       Net Cost
                     </FormLabel>
@@ -380,7 +393,7 @@ const StockAdjustmentModal = ({
                       placeholder="Enter net cost before tax"
                       disabled={isSubmitting}
                     />
-                    {getNetCostError ? (
+                    {getNetCostError !== null ? (
                       <FormHelperText sx={{ fontSize: "0.75rem" }}>
                         {getNetCostError}
                       </FormHelperText>

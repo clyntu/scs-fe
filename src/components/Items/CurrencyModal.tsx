@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosConfig";
 import { AxiosError } from "axios";
 import type { Currency } from "../../interface";
+import { getErrorMessage } from "../../helper";
 import CircularProgress from "@mui/joy/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,7 +25,11 @@ interface CurrencyModalProps {
   onChange?: () => void;
 }
 
-const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
+const CurrencyModal = ({
+  open,
+  setOpen,
+  onChange,
+}: CurrencyModalProps): JSX.Element => {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [newCode, setNewCode] = useState("");
   const [editing, setEditing] = useState<Currency | null>(null);
@@ -33,7 +38,7 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
-  const fetchCurrencies = async () => {
+  const fetchCurrencies = async (): Promise<void> => {
     setIsLoading(true);
     try {
       const res = await axiosInstance.get<Currency[]>("/api/currencies");
@@ -49,12 +54,12 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
 
   useEffect(() => {
     if (open) {
-      fetchCurrencies();
+      void fetchCurrencies();
     }
   }, [open]);
 
-  const handleAdd = async () => {
-    if (!newCode.trim()) return;
+  const handleAdd = async (): Promise<void> => {
+    if (newCode.trim() === "") return;
     setIsAdding(true);
     try {
       await axiosInstance.post("/api/currencies", { code: newCode.trim() });
@@ -66,7 +71,7 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
       if (e instanceof AxiosError) {
         console.log(e);
         toast.error(
-          `Failed to add currency: ${e.response?.data?.detail[0].msg || e.response?.data?.detail || "Unknown error"}`,
+          `Failed to add currency: ${getErrorMessage(e, "Unknown error")}`,
         );
       } else {
         toast.error("Failed to add currency: Unknown error");
@@ -76,8 +81,8 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
     }
   };
 
-  const handleEdit = async () => {
-    if (!editing || !editCode.trim()) return;
+  const handleEdit = async (): Promise<void> => {
+    if (editing === null || editCode.trim() === "") return;
     try {
       await axiosInstance.put(`/api/currencies/${editing.id}`, {
         code: editCode.trim(),
@@ -90,7 +95,7 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
     } catch (e: unknown) {
       if (e instanceof AxiosError) {
         toast.error(
-          `Failed to update currency: ${e.response?.data?.detail[0].msg || e.response?.data?.detail || "Unknown error"}`,
+          `Failed to update currency: ${getErrorMessage(e, "Unknown error")}`,
         );
       } else {
         toast.error("Failed to update currency: Unknown error");
@@ -98,7 +103,7 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number): Promise<void> => {
     if (!window.confirm("Delete this currency?")) return;
     setIsDeleting(String(id));
     try {
@@ -109,7 +114,7 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
     } catch (e: unknown) {
       if (e instanceof AxiosError) {
         toast.error(
-          `Failed to delete currency: ${e.response?.data?.detail || "Unknown error"}`,
+          `Failed to delete currency: ${getErrorMessage(e, "Unknown error")}`,
         );
       } else {
         toast.error("Failed to delete currency: Unknown error");
@@ -186,7 +191,7 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
             onClick={handleAdd}
             variant="soft"
             color="primary"
-            disabled={isAdding || !newCode.trim()}
+            disabled={isAdding || newCode.trim() === ""}
             sx={{
               px: 2,
               fontWeight: 600,
@@ -335,7 +340,9 @@ const CurrencyModal = ({ open, setOpen, onChange }: CurrencyModalProps) => {
                           <Button
                             size="sm"
                             color="danger"
-                            onClick={() => handleDelete(cur.id)}
+                            onClick={() => {
+                              void handleDelete(cur.id);
+                            }}
                             variant="soft"
                             disabled={isDeleting === String(cur.id)}
                             sx={{ fontWeight: 500, minWidth: "70px" }}

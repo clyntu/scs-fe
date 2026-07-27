@@ -38,9 +38,9 @@ const DeleteUserModal = ({
             <h4 className="mb-6">{title}</h4>
             <div className="mb-7">
               <p className="text-sm">
-                Are you sure you want to delete this user? This action will remove
-                the user from both the database and Supabase authentication system.
-                This action cannot be undone.
+                Are you sure you want to delete this user? This action will
+                remove the user from both the database and Supabase
+                authentication system. This action cannot be undone.
               </p>
             </div>
             <div className="flex justify-end mt-5">

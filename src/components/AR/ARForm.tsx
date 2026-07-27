@@ -1,11 +1,10 @@
 import ARFormDetails from "./ARForm/ARFormDetails";
 import ARFormTable from "./ARForm/ARFormTable";
-import { Button, Divider, Typography } from "@mui/joy";
+import { Button, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState, useCallback } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { type OutstandingTrans } from "./interface";
 import type {
@@ -16,7 +15,7 @@ import type {
 } from "../../interface";
 import ReverseARModal from "./ReverseARModal";
 import CircularProgress from "@mui/joy/CircularProgress";
-import { addTwoPlaces } from "../../helper";
+import { addTwoPlaces, getErrorMessage } from "../../helper";
 
 const ARForm = ({
   setOpen,
@@ -73,14 +72,15 @@ const ARForm = ({
   const paymentAmount = totalApplied - Number(lessAmount) + Number(addAmount);
 
   const isEditDisabled =
-    selectedRow !== undefined && (selectedRow?.status !== "unposted" || !isAdmin);
+    selectedRow !== undefined &&
+    (selectedRow?.status !== "unposted" || !isAdmin);
 
   // Fetch user info if not provided (for backward compatibility)
   useEffect(() => {
     if (isAdminProp === undefined) {
       axiosInstance
         .get<{ id: number; is_admin?: boolean }>("/api/users/me/")
-        .then((response) => setIsAdmin(response.data.is_admin || false))
+        .then((response) => setIsAdmin(response.data.is_admin ?? false))
         .catch((error) => console.error("Error fetching user:", error));
     }
   }, [isAdminProp]);
@@ -170,7 +170,7 @@ const ARForm = ({
       selectedRow: AR,
       savedPayments: Record<string, string>,
       formattedARItems: OutstandingTrans[],
-    ) => {
+    ): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setPaymentMode(selectedRow.payment_method);
@@ -198,7 +198,6 @@ const ARForm = ({
     };
 
     if (selectedRow !== null && selectedRow !== undefined) {
-      const promises: Promise<any>[] = [];
       // Get Customer for Edit
       const customerPromise = axiosInstance
         .get<Customer>(`/api/customers/${customerID}`)
@@ -206,8 +205,6 @@ const ARForm = ({
           setSelectedCustomer(response.data);
         })
         .catch((error) => console.error("Error:", error));
-
-      promises.push(customerPromise);
 
       const arPromise = axiosInstance
         .get<AR>(`/api/ar-receipts/${selectedRow.id}`)
@@ -221,7 +218,7 @@ const ARForm = ({
             savedPayments[key] = String(parseFloat(item.payment_amount));
 
             // Format the items for display (used for posted ARs AND for restoring missing items in unposted)
-            // For Unposted: We subtract payment to mimic the API's "pending balance" 
+            // For Unposted: We subtract payment to mimic the API's "pending balance"
             // so that our merge logic (which adds it back) works consistently.
             // For Posted: We display the values as stored in the DB item.
             const isUnposted = selectedRow?.status === "unposted";
@@ -229,9 +226,9 @@ const ARForm = ({
             const rawPaymentAmount = Number(item.payment_amount);
 
             // If unposted, we need to "hide" the payment from the transaction amount
-            // so that the restoration logic (which adds it back) doesn't double count 
+            // so that the restoration logic (which adds it back) doesn't double count
             // or result in correct "Before Payment" value.
-            const displayTransactionAmount = isUnposted 
+            const displayTransactionAmount = isUnposted
               ? rawTransactionAmount - rawPaymentAmount
               : rawTransactionAmount;
 
@@ -247,7 +244,9 @@ const ARForm = ({
               transaction_amount: String(displayTransactionAmount),
               payment: String(rawPaymentAmount),
               // Balance is remaining amount
-              balance: String(displayTransactionAmount - (isUnposted ? 0 : rawPaymentAmount)),
+              balance: String(
+                displayTransactionAmount - (isUnposted ? 0 : rawPaymentAmount),
+              ),
               reference: item.reference,
             };
           });
@@ -259,12 +258,12 @@ const ARForm = ({
           return { savedPayments: {}, formattedARItems: [] };
         });
 
-      promises.push(arPromise);
-
-      Promise.all(promises).then(([, { savedPayments, formattedARItems }]) => {
-        fetchValues(selectedRow, savedPayments, formattedARItems);
-        setIsFetching(false);
-      });
+      void Promise.all([customerPromise, arPromise]).then(
+        ([, { savedPayments, formattedARItems }]) => {
+          fetchValues(selectedRow, savedPayments, formattedARItems);
+          setIsFetching(false);
+        },
+      );
     } else {
       setIsFetching(false);
     }
@@ -291,7 +290,7 @@ const ARForm = ({
     if (isSaving) return;
 
     const receiptItems = outstandingTrans
-      .filter((row) => !!row.payment)
+      .filter((row) => row.payment !== undefined && row.payment !== "")
       .map((row) => {
         return {
           source_type: row.source_type,
@@ -306,13 +305,13 @@ const ARForm = ({
     const payload = {
       reference_number: refNo,
       status,
-      transaction_date: transactionDate == "" ? null : transactionDate,
+      transaction_date: transactionDate === "" ? null : transactionDate,
       customer_id: selectedCustomer?.customer_id,
       payment_method: paymentMode,
-      check_amount: amountPaid == "" ? null : Number(amountPaid),
-      check_date: checkDate == "" ? null : checkDate,
-      less_amount: lessAmount == "" ? 0 : Number(lessAmount),
-      add_amount: addAmount == "" ? 0 : Number(addAmount),
+      check_amount: amountPaid === "" ? null : Number(amountPaid),
+      check_date: checkDate === "" ? null : checkDate,
+      less_amount: lessAmount === "" ? 0 : Number(lessAmount),
+      add_amount: addAmount === "" ? 0 : Number(addAmount),
       remarks,
       days_to_clear: 1,
       receipt_items: receiptItems,
@@ -325,7 +324,10 @@ const ARForm = ({
 
     try {
       setIsSaving(true);
-      const response = await axiosInstance.post<AR>("/api/ar-receipts/", payload);
+      const response = await axiosInstance.post<AR>(
+        "/api/ar-receipts/",
+        payload,
+      );
 
       // Lock form immediately after successful response
       setHasSaved(true);
@@ -343,7 +345,7 @@ const ARForm = ({
       }
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
@@ -353,7 +355,7 @@ const ARForm = ({
     if (isSaving) return;
 
     const receiptItems = outstandingTrans
-      .filter((row) => !!row.payment)
+      .filter((row) => row.payment !== undefined && row.payment !== "")
       .map((row) => {
         return {
           source_type: row.source_type,
@@ -369,14 +371,14 @@ const ARForm = ({
     // Otherwise we send "unposted" (or the current status, which is likely unposted if we are editing)
     const payload = {
       reference_number: refNo,
-      status: status, // Send the actual intended status
-      transaction_date: transactionDate == "" ? null : transactionDate,
+      status, // Send the actual intended status
+      transaction_date: transactionDate === "" ? null : transactionDate,
       customer_id: selectedCustomer?.customer_id,
       payment_method: paymentMode,
-      check_amount: amountPaid == "" ? null : Number(amountPaid),
-      check_date: checkDate == "" ? null : checkDate,
-      less_amount: lessAmount == "" ? 0 : Number(lessAmount),
-      add_amount: addAmount == "" ? 0 : Number(addAmount),
+      check_amount: amountPaid === "" ? null : Number(amountPaid),
+      check_date: checkDate === "" ? null : checkDate,
+      less_amount: lessAmount === "" ? 0 : Number(lessAmount),
+      add_amount: addAmount === "" ? 0 : Number(addAmount),
       remarks,
       days_to_clear: 1,
       receipt_items: receiptItems,
@@ -388,7 +390,10 @@ const ARForm = ({
     try {
       setIsSaving(true);
       // Single atomic request for both update and post (if status is posted)
-      const response = await axiosInstance.put<AR>(`/api/ar-receipts/${selectedRow?.id}`, payload);
+      const response = await axiosInstance.put<AR>(
+        `/api/ar-receipts/${selectedRow?.id}`,
+        payload,
+      );
 
       // Lock form immediately after successful response
       setHasSaved(true);
@@ -406,13 +411,13 @@ const ARForm = ({
       }
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }
   };
 
-  const onReverse = async () => {
+  const onReverse = async (): Promise<void> => {
     try {
       await axiosInstance.put(
         `/api/ar-receipts/${selectedRow?.id}/payment-status`,
@@ -425,9 +430,7 @@ const ARForm = ({
       setOpenReverse(false);
       setHasSaved(true);
     } catch (error: any) {
-      toast.error(
-        `Error message: ${error?.response?.data?.detail?.[0]?.msg || error?.response?.data?.detail}`,
-      );
+      toast.error(`Error message: ${getErrorMessage(error)}`);
     }
   };
 

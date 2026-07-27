@@ -1,4 +1,4 @@
-import { Sheet, Input, Autocomplete } from "@mui/joy";
+import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { DRItemsFE, CRFormTableProps } from "../interface";
@@ -169,7 +169,9 @@ const CRFormTable = ({
                     options={warehouses.items.filter(
                       (warehouse) => warehouse.id,
                     )}
-                    getOptionLabel={(option) => `${option.code} - ${option.name}`}
+                    getOptionLabel={(option) =>
+                      `${option.code} - ${option.name}`
+                    }
                     value={item.return_warehouse}
                     onChange={(e, newValue) => {
                       setFormattedDRs((prevDRItems) =>

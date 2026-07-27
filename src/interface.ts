@@ -900,7 +900,7 @@ export interface Dealloc {
   transaction_date: string;
   remarks: string;
   total_qty: number;
-  deallocation_items: any;
+  deallocation_items: DeallocItem[];
   creator: User;
   modifier: User;
   date_created: string;

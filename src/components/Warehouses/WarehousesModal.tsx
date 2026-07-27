@@ -15,6 +15,7 @@ import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import { toast } from "react-toastify";
 import type { Warehouse, WarehousesModalProps } from "../../interface";
+import { getErrorMessage } from "../../helper";
 
 const WarehousesModal = ({
   open,
@@ -75,7 +76,7 @@ const WarehousesModal = ({
       setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail || "Save unsuccessful"}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
       setIsSaving(false);
     }

@@ -242,7 +242,7 @@ const SDRFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>LANDED Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(landedTotal / pesoRate || 0)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(Number.isNaN(landedTotal / pesoRate) ? 0 : landedTotal / pesoRate)}`}</h5>
             </FormControl>
           </div>
           <div className="flex justify-around">

@@ -5,7 +5,13 @@ import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import { Input, FormControl, FormLabel, CircularProgress, Typography } from "@mui/joy";
+import {
+  Input,
+  FormControl,
+  FormLabel,
+  CircularProgress,
+  Typography,
+} from "@mui/joy";
 import WarehousesModal from "../../components/Warehouses/WarehousesModal";
 import DeleteWarehousesModal from "../../components/Warehouses/DeleteWarehouseModal";
 import ViewWHModal from "../../components/Items/ViewWHModal";
@@ -15,7 +21,7 @@ import { toast } from "react-toastify";
 
 import type { Warehouse, PaginatedWarehouse } from "../../interface";
 
-import { convertToQueryParams, formatToWH, formatToDate } from "../../helper";
+import { convertToQueryParams, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const WarehouseForm = (): JSX.Element => {
@@ -46,7 +52,7 @@ const WarehouseForm = (): JSX.Element => {
 
   // Initial load function - resets everything and loads first page
   const getAllWarehouse = (searchTerm: string): void => {
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -121,9 +127,9 @@ const WarehouseForm = (): JSX.Element => {
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -140,12 +146,12 @@ const WarehouseForm = (): JSX.Element => {
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -382,10 +388,22 @@ const WarehouseForm = (): JSX.Element => {
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={8}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading warehouses...</Typography>
+                      <Typography level="body-sm">
+                        Loading warehouses...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -394,7 +412,9 @@ const WarehouseForm = (): JSX.Element => {
               <>
                 <thead>
                   <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Code
+                    </th>
                     <th style={{ width: 300 }}>Name</th>
                     <th style={{ width: 100 }}>Type</th>
                     <th style={{ width: 150 }}>Created By</th>
@@ -408,96 +428,99 @@ const WarehouseForm = (): JSX.Element => {
                   </tr>
                 </thead>
                 <tbody>
-              {warehouses.items.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={8}
-                    style={{ textAlign: "center", padding: "24px" }}
-                  >
-                    <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                      No warehouses found.
-                    </Typography>
-                  </td>
-                </tr>
-              )}
-              {warehouses.items.map((warehouse) => (
-                <tr
-                  key={warehouse.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(warehouse);
-                  }}
-                >
-                  <td>{warehouse.code}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="300px">
-                      {warehouse.name}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{warehouse.type}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="200px">
-                      {warehouse?.creator?.username}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{formatToDate(warehouse.date_created)}</td>
-                  <td>
-                    <TooltipTableCell maxWidth="200px">
-                      {warehouse?.modifier?.username}
-                    </TooltipTableCell>
-                  </td>
-                  <td>{formatToDate(warehouse.date_modified)}</td>
-                  <td>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 0.5,
-                        alignItems: "center",
-                        justifyContent: "center",
+                  {warehouses.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No warehouses found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
+                  {warehouses.items.map((warehouse) => (
+                    <tr
+                      key={warehouse.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(warehouse);
                       }}
                     >
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="plain"
-                        color="primary"
-                        className="bg-primary"
-                        onClick={() => {
-                          setOpenWH(true);
-                          setSelectedRow(warehouse);
-                        }}
-                      >
-                        Stocks
-                      </Button>
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(warehouse);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        sx={{ fontSize: "13px" }}
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(warehouse);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </td>
-                </tr>
-              ))}
+                      <td>{warehouse.code}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {warehouse.name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{warehouse.type}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {warehouse?.creator?.username}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{formatToDate(warehouse.date_created)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {warehouse?.modifier?.username}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{formatToDate(warehouse.date_modified)}</td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="primary"
+                            className="bg-primary"
+                            onClick={() => {
+                              setOpenWH(true);
+                              setSelectedRow(warehouse);
+                            }}
+                          >
+                            Stocks
+                          </Button>
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(warehouse);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(warehouse);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </>
             )}
@@ -523,8 +546,8 @@ const WarehouseForm = (): JSX.Element => {
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {warehouses.items.length} of {warehouses.total} items • Scroll for
-                more
+                Showing {warehouses.items.length} of {warehouses.total} items •
+                Scroll for more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

@@ -22,12 +22,19 @@ import type {
   ViewDeallocProps,
 } from "../../interface";
 
-import { convertToQueryParams, formatToDate } from "../../helper";
+import {
+  convertToQueryParams,
+  formatToDate,
+  getErrorMessage,
+} from "../../helper";
 import DeleteDeallocModal from "./DeleteDeallocModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewDealloc = ({
   setOpenCreate,
@@ -61,7 +68,7 @@ const ViewDealloc = ({
   // Initial load function - resets everything and loads first page
   const getAllDealloc = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -150,15 +157,24 @@ const ViewDealloc = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, limit, dateFrom, dateTo]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    limit,
+    dateFrom,
+    dateTo,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -177,13 +193,13 @@ const ViewDealloc = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -211,7 +227,7 @@ const ViewDealloc = ({
         });
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -234,7 +250,7 @@ const ViewDealloc = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -410,10 +426,22 @@ const ViewDealloc = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={11} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={11}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading deallocations...</Typography>
+                      <Typography level="body-sm">
+                        Loading deallocations...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -472,8 +500,12 @@ const ViewDealloc = ({
                       </td>
                       <td>{dealloc?.allocation_id}</td>
                       <td>{withTooltip(dealloc?.remarks, "180px")}</td>
-                      <td>{withTooltip(dealloc?.creator?.username, "130px")}</td>
-                      <td>{withTooltip(dealloc?.modifier?.username, "130px")}</td>
+                      <td>
+                        {withTooltip(dealloc?.creator?.username, "130px")}
+                      </td>
+                      <td>
+                        {withTooltip(dealloc?.modifier?.username, "130px")}
+                      </td>
                       <td>{formatToDate(dealloc.date_created)}</td>
                       <td>{formatToDate(dealloc.date_modified)}</td>
                       <td>
@@ -557,8 +589,8 @@ const ViewDealloc = ({
               </>
             ) : hasMore ? (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-                Showing {deallocs.items.length} of {deallocs.total} items • Scroll for
-                more
+                Showing {deallocs.items.length} of {deallocs.total} items •
+                Scroll for more
               </Typography>
             ) : (
               <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

@@ -1,6 +1,10 @@
 // utils/axiosConfig.tsx
-import { SupabaseClient } from "@supabase/supabase-js";
-import axios, { AxiosRequestConfig, AxiosError } from "axios";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import axios, {
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosError,
+} from "axios";
 import { getSupabase } from "../supabase/supabaseClient";
 
 // Type definitions
@@ -15,7 +19,7 @@ let refreshSubscribers: RefreshSubscriber[] = [];
 export function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? match[2] : null;
+  return match !== null ? match[2] : null;
 }
 
 // Get company ID from various sources with fallback
@@ -27,16 +31,21 @@ export function getCompanyId(): string {
   const fromCookie = getCookie("company_id");
   const fromLegacyStorage = window.localStorage.getItem("companyId");
 
-  return fromNewContext || fromCookie || fromLegacyStorage || "company-a";
+  if (fromNewContext !== null && fromNewContext !== "") return fromNewContext;
+  if (fromCookie !== null && fromCookie !== "") return fromCookie;
+  if (fromLegacyStorage !== null && fromLegacyStorage !== "") {
+    return fromLegacyStorage;
+  }
+  return "company-a";
 }
 
 // Create a queue for failed requests
-function subscribeTokenRefresh(callback: RefreshSubscriber) {
+function subscribeTokenRefresh(callback: RefreshSubscriber): void {
   refreshSubscribers.push(callback);
 }
 
 // Process the queue with a new token
-function onTokenRefreshed(newToken: string) {
+function onTokenRefreshed(newToken: string): void {
   refreshSubscribers.forEach((callback) => callback(newToken));
   refreshSubscribers = [];
 }
@@ -48,7 +57,7 @@ async function refreshAuthToken(
   try {
     const { data, error } = await supabase.auth.refreshSession();
 
-    if (error) {
+    if (error !== null) {
       console.error("Token refresh failed:", error);
 
       // Handle permanent auth failures
@@ -62,7 +71,10 @@ async function refreshAuthToken(
       return null;
     }
 
-    if (data?.session?.access_token) {
+    if (
+      data?.session?.access_token !== undefined &&
+      data.session.access_token !== ""
+    ) {
       return data.session.access_token;
     }
 
@@ -74,7 +86,7 @@ async function refreshAuthToken(
 }
 
 // Configure the Axios instance
-export function setupAxiosInterceptors(axiosInstance: typeof axios) {
+export function setupAxiosInterceptors(axiosInstance: typeof axios): void {
   // Request interceptor
   axiosInstance.interceptors.request.use(
     async (config) => {
@@ -90,7 +102,10 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (session?.access_token) {
+        if (
+          session?.access_token !== undefined &&
+          session.access_token !== ""
+        ) {
           config.headers = {
             ...config.headers,
             Authorization: `Bearer ${session.access_token}`,
@@ -120,7 +135,7 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
         return config;
       }
     },
-    (error) => Promise.reject(error),
+    async (error) => await Promise.reject(error),
   );
 
   // Response interceptor for handling authentication issues
@@ -128,29 +143,27 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
     (response) => response,
     async (error: AxiosError) => {
       // Only handle in browser context
-      if (typeof window === "undefined") return Promise.reject(error);
+      if (typeof window === "undefined") return await Promise.reject(error);
 
       const status = error.response?.status;
       const path = window.location.pathname;
-      const companyId = getCompanyId() as CompanyId;
+      const detail: unknown = error.response?.data?.detail;
 
       // Check for network issues
       if (!navigator.onLine) {
         localStorage.setItem("auth_retry_needed", "true");
-        return Promise.reject({
-          ...error,
-          isOffline: true,
-          message: "You appear to be offline. Please check your connection.",
-        });
+        (error as AxiosError & { isOffline?: boolean }).isOffline = true;
+        error.message =
+          "You appear to be offline. Please check your connection.";
+        return await Promise.reject(error);
       }
 
       // Check if server is unreachable
-      if (!error.response && error.request) {
-        return Promise.reject({
-          ...error,
-          isServerDown: true,
-          message: "Server is currently unavailable. Please try again later.",
-        });
+      if (error.response === undefined && Boolean(error.request)) {
+        (error as AxiosError & { isServerDown?: boolean }).isServerDown = true;
+        error.message =
+          "Server is currently unavailable. Please try again later.";
+        return await Promise.reject(error);
       }
 
       // Handle timeouts
@@ -158,20 +171,19 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
         const originalRequest = error.config as AxiosRequestConfig & {
           _retry?: boolean;
         };
-        if (!originalRequest._retry) {
+        if (originalRequest._retry !== true) {
           originalRequest._retry = true;
 
           // Get a fresh token
           const supabase = getSupabase();
           const { data } = await supabase.auth.getSession();
 
-          if (data?.session) {
-            originalRequest.headers = originalRequest.headers || {};
-            originalRequest.headers["Authorization"] =
-              `Bearer ${data.session.access_token}`;
+          if (data?.session !== undefined && data.session !== null) {
+            originalRequest.headers = originalRequest.headers ?? {};
+            originalRequest.headers.Authorization = `Bearer ${data.session.access_token}`;
           }
 
-          return axiosInstance(originalRequest);
+          return await axiosInstance(originalRequest);
         }
       }
 
@@ -182,11 +194,11 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
         };
 
         // Limit retries to avoid infinite loops
-        originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+        originalRequest._retryCount = (originalRequest._retryCount ?? 0) + 1;
         if (originalRequest._retryCount > 3) {
           console.error("Max retry attempts reached for request");
           window.location.href = "/?maxRetry=true";
-          return Promise.reject(error);
+          return await Promise.reject(error);
         }
 
         // Handle token refresh
@@ -198,26 +210,26 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
 
           isRefreshing = false;
 
-          if (newToken) {
+          if (newToken !== null && newToken !== "") {
             // Notify all subscribers about the new token
             onTokenRefreshed(newToken);
 
             // Retry the original request
-            originalRequest.headers = originalRequest.headers || {};
-            originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-            return axiosInstance(originalRequest);
+            originalRequest.headers = originalRequest.headers ?? {};
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return await axiosInstance(originalRequest);
           } else {
             // Token refresh failed - redirect to login
             console.error("Session refresh failed, redirecting to login");
             window.location.href = "/";
-            return Promise.reject(error);
+            return await Promise.reject(error);
           }
         } else {
           // Wait for the token refresh, then retry
-          return new Promise((resolve) => {
+          return await new Promise((resolve) => {
             subscribeTokenRefresh((newToken) => {
-              originalRequest.headers = originalRequest.headers || {};
-              originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+              originalRequest.headers = originalRequest.headers ?? {};
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
               resolve(axiosInstance(originalRequest));
             });
           });
@@ -226,16 +238,17 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
       // Handle 403 Forbidden
       else if (status === 403) {
         const msg =
-          error.response?.data?.detail ||
-          "You don't have permission to access this resource";
+          typeof detail === "string" && detail !== ""
+            ? detail
+            : "You don't have permission to access this resource";
         window.location.href = `/forbidden?message=${encodeURIComponent(msg)}`;
       }
       // Handle 400 Bad Request for disabled/inactive users
       else if (
         status === 400 &&
-        typeof error.response?.data?.detail === "string" &&
-        (error.response?.data?.detail.toLowerCase().includes("inactive user") ||
-          error.response?.data?.detail.toLowerCase().includes("disabled")) &&
+        typeof detail === "string" &&
+        (detail.toLowerCase().includes("inactive user") ||
+          detail.toLowerCase().includes("disabled")) &&
         path !== "/"
       ) {
         console.error("User account is disabled, signing out");
@@ -250,15 +263,15 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
       // Handle 400 Bad Request related to Company ID
       else if (
         status === 400 &&
-        typeof error.response?.data?.detail === "string" &&
-        error.response?.data?.detail.includes("X-Company-ID") &&
+        typeof detail === "string" &&
+        detail.includes("X-Company-ID") &&
         path !== "/"
       ) {
         console.error("Invalid or missing company ID, redirecting to login");
         window.location.href = "/";
       }
 
-      return Promise.reject(error);
+      return await Promise.reject(error);
     },
   );
 
@@ -279,19 +292,23 @@ export function setupAxiosInterceptors(axiosInstance: typeof axios) {
 
     // Add listener for storage events (for multi-tab support)
     window.addEventListener("storage", (event) => {
-      if (event.key?.includes("supabase.auth.token")) {
+      if (event.key !== null && event.key.includes("supabase.auth.token")) {
         // Force refresh of auth state in this tab
         const supabase = getSupabase();
-        supabase.auth.getSession(); // This will update the in-memory session
+        void supabase.auth.getSession(); // This will update the in-memory session
       }
     });
   }
 }
 
 // Export a configured axios instance
-export function createAuthenticatedAxios() {
+export function createAuthenticatedAxios(): AxiosInstance {
   const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+    baseURL:
+      process.env.NEXT_PUBLIC_API_URL !== undefined &&
+      process.env.NEXT_PUBLIC_API_URL !== ""
+        ? process.env.NEXT_PUBLIC_API_URL
+        : "http://localhost:8000",
     withCredentials: true,
     timeout: 200000, // 60 second timeout
   });

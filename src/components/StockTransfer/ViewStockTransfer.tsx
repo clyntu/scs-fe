@@ -24,10 +24,17 @@ import type {
   ViewStockTransferProps,
 } from "../../interface";
 
-import { convertToQueryParams, formatToDate } from "../../helper";
+import {
+  convertToQueryParams,
+  formatToDate,
+  getErrorMessage,
+} from "../../helper";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
-import DateRangeFilter, { getDefaultDateFrom, getDefaultDateTo } from "../shared/DateRangeFilter";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewStockTransfer = ({
   setOpenCreate,
@@ -60,7 +67,7 @@ const ViewStockTransfer = ({
 
   const getAllST = (): void => {
     // Clear any pending scroll timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -149,15 +156,24 @@ const ViewStockTransfer = ({
         setIsLoadingMore(false);
         isLoadingRef.current = false;
       });
-  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo, limit]);
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    status,
+    dateFrom,
+    dateTo,
+    limit,
+  ]);
 
   // Handle scroll event for infinite scroll with debouncing
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
+    if (scrollTimeoutRef.current !== null) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
@@ -184,13 +200,13 @@ const ViewStockTransfer = ({
   // Attach scroll listener
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (container === null) return;
 
     container.addEventListener("scroll", handleScroll);
     return () => {
       container.removeEventListener("scroll", handleScroll);
       // Clear timeout on cleanup
-      if (scrollTimeoutRef.current) {
+      if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);
       }
     };
@@ -209,7 +225,7 @@ const ViewStockTransfer = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Delete unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
         );
       }
     }
@@ -230,7 +246,7 @@ const ViewStockTransfer = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${error?.response?.data?.detail || "Archive unsuccessful"}`,
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
         );
       }
     }
@@ -406,10 +422,22 @@ const ViewStockTransfer = ({
             {isLoading ? (
               <tbody>
                 <tr>
-                  <td colSpan={11} style={{ textAlign: "center", padding: "20px" }}>
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                  <td
+                    colSpan={11}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading stock transfers...</Typography>
+                      <Typography level="body-sm">
+                        Loading stock transfers...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
@@ -472,7 +500,10 @@ const ViewStockTransfer = ({
                         {withTooltip(stockTransfer?.creator?.username, "130px")}
                       </td>
                       <td>
-                        {withTooltip(stockTransfer?.modifier?.username, "130px")}
+                        {withTooltip(
+                          stockTransfer?.modifier?.username,
+                          "130px",
+                        )}
                       </td>
                       <td>{formatToDate(stockTransfer.date_created)}</td>
                       <td>{formatToDate(stockTransfer.date_modified)}</td>
@@ -495,7 +526,9 @@ const ViewStockTransfer = ({
                               setSelectedRow(stockTransfer);
                             }}
                           >
-                            {stockTransfer.status !== "unposted" ? "View" : "Edit"}
+                            {stockTransfer.status !== "unposted"
+                              ? "View"
+                              : "Edit"}
                           </Button>
                           {(stockTransfer.status === "posted" ||
                             stockTransfer.status === "archived") && (
@@ -559,8 +592,8 @@ const ViewStockTransfer = ({
             </>
           ) : hasMore ? (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
-              Showing {stockTransfers.items.length} of {stockTransfers.total} items • Scroll for
-              more
+              Showing {stockTransfers.items.length} of {stockTransfers.total}{" "}
+              items • Scroll for more
             </Typography>
           ) : (
             <Typography level="body-sm" sx={{ color: "text.tertiary" }}>

@@ -11,7 +11,7 @@ const formatDate = (date: Date): string => {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12; // if hours is 0, set it to 12
+  hours = hours === 0 ? 12 : hours; // if hours is 0, set it to 12
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
@@ -124,8 +124,6 @@ export const generatePricelistPDF = (data: any[], companyId: string): void => {
   });
 
   // 5. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

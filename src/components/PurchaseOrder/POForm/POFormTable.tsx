@@ -315,7 +315,9 @@ const POFormTable = ({
                       minWidth: 0,
                       input: { textAlign: "right", minWidth: 0 },
                     }}
-                    value={formatWithCommas(selectedItem.price)}
+                    value={formatWithCommas(
+                      selectedItem.price as string | number,
+                    )}
                     onChange={(e) => {
                       const raw = stripCommas(e.target.value);
                       if (raw === "" || /^\d*\.?\d*$/.test(raw)) {

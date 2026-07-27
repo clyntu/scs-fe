@@ -121,7 +121,6 @@ export const generatePDF = (
     didDrawCell: (hookData) => {
       // If we are about to draw the foot row, draw a line above it
       if (hookData.row.section === "foot" && hookData.row.index === 0) {
-        const { table } = hookData;
         // Y coordinate of the row
         const footStartY = hookData.cell.y;
         doc.setLineWidth(0.5);
@@ -131,8 +130,6 @@ export const generatePDF = (
   });
 
   // 5. Open PDF in new tab for preview
-  const today = new Date();
-  const dateString = `${(today.getMonth() + 1).toString().padStart(2, "0")}-${today.getDate().toString().padStart(2, "0")}-${today.getFullYear()}`;
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");

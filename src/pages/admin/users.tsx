@@ -25,7 +25,7 @@ export default function UsersPage(): JSX.Element {
         const response = await axiosInstance.get<User>("/api/users/me/");
         const user = response.data;
 
-        if (!user.is_admin) {
+        if (user.is_admin !== true) {
           // Non-admin users are redirected to forbidden page
           await router.push("/forbidden");
         } else {

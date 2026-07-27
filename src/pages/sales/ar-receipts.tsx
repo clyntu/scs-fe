@@ -24,7 +24,7 @@ const AccountsReceivableMenu = (): JSX.Element => {
     const fetchUser = async (): Promise<void> => {
       try {
         const response = await axiosInstance.get<User>("/api/users/me/");
-        setIsAdmin(response.data.is_admin || false);
+        setIsAdmin(response.data.is_admin ?? false);
       } catch (error) {
         console.error("Error fetching user:", error);
       }
