@@ -212,115 +212,81 @@ export const generateTopCustomersPDF = (
         }
       }
     },
-
-    // 5. Add footer and totals using didDrawPage
-    didDrawPage: (data) => {
-      const footerFontSize = 9;
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const footerMargin = 50; // Increased margin for footer
-      const footerY = pageHeight - footerMargin;
-
-      // Current page and total pages
-      const currentPage = data.pageNumber;
-      const totalPages = doc.getNumberOfPages();
-
-      doc.setFontSize(footerFontSize);
-      doc.setFont("helvetica", "normal");
-
-      // Left footer: "Page X of Y"
-      const leftText = `Page ${currentPage} of ${totalPages}`;
-      doc.text(leftText, data.settings.margin.left, footerY);
-
-      // Right footer: formatted current date and time
-      const rightText = `Report run on: ${formatDate(new Date())}`;
-      const textWidth = doc.getTextWidth(rightText);
-      doc.text(
-        rightText,
-        pageWidth - data.settings.margin.right - textWidth,
-        footerY,
-      );
-
-      // Add totals on the last page with proper spacing check
-      if (currentPage === totalPages && data.pageNumber === totalPages) {
-        const cursorY = (data as { cursor?: { y?: number } }).cursor?.y;
-        const finalY =
-          typeof cursorY === "number" ? cursorY : data.settings.startY;
-        const totalsStartY = finalY + 30; // More space after table
-        const totalsSectionHeight = 90; // Approximate height for 5 total lines
-        const minimumSpaceNeeded = totalsSectionHeight + 20; // Buffer space
-
-        // Check if there's enough space for totals above footer
-        if (totalsStartY + minimumSpaceNeeded <= footerY - 10) {
-          // Enough space - add totals normally
-          doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
-
-          // Total customers
-          const totalCustomersText = `Total Customers: ${tableRows.length}`;
-          doc.text(totalCustomersText, marginX, totalsStartY);
-
-          // Total DR Count and Amount
-          const totalDRText = `Total DRs: ${formatNumber(totalDRCount)} (${formatCurrency(totalDRAmount)})`;
-          doc.text(totalDRText, marginX, totalsStartY + 15);
-
-          // Total CR Count and Amount
-          const totalCRText = `Total CRs: ${formatNumber(totalCRCount)} (${formatCurrency(totalCRAmount)})`;
-          doc.text(totalCRText, marginX, totalsStartY + 30);
-
-          // Total Net Sales
-          const totalNetSalesText = `Total Net Sales: ${formatCurrency(totalNetSales)}`;
-          doc.text(totalNetSalesText, marginX, totalsStartY + 45);
-
-          // Show total available customers if filtered
-          if (
-            filters?.total !== undefined &&
-            filters.total > tableRows.length
-          ) {
-            const availableText = `(Showing ${tableRows.length} of ${filters.total} total customers)`;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.text(availableText, marginX, totalsStartY + 60);
-          }
-        } else {
-          // Not enough space - add totals on new page
-          doc.addPage();
-          const newPageY = 80; // Start position on new page
-
-          doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
-
-          // Total customers
-          const totalCustomersText = `Total Customers: ${tableRows.length}`;
-          doc.text(totalCustomersText, marginX, newPageY);
-
-          // Total DR Count and Amount
-          const totalDRText = `Total DRs: ${formatNumber(totalDRCount)} (${formatCurrency(totalDRAmount)})`;
-          doc.text(totalDRText, marginX, newPageY + 15);
-
-          // Total CR Count and Amount
-          const totalCRText = `Total CRs: ${formatNumber(totalCRCount)} (${formatCurrency(totalCRAmount)})`;
-          doc.text(totalCRText, marginX, newPageY + 30);
-
-          // Total Net Sales
-          const totalNetSalesText = `Total Net Sales: ${formatCurrency(totalNetSales)}`;
-          doc.text(totalNetSalesText, marginX, newPageY + 45);
-
-          // Show total available customers if filtered
-          if (
-            filters?.total !== undefined &&
-            filters.total > tableRows.length
-          ) {
-            const availableText = `(Showing ${tableRows.length} of ${filters.total} total customers)`;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.text(availableText, marginX, newPageY + 60);
-          }
-        }
-      }
-    },
   });
 
-  // 6. Open PDF in new tab for preview
+  // 5. Add totals after the table is fully drawn, using its real final
+  // position (doc.getNumberOfPages()/lastAutoTable.finalY are only
+  // accurate once autoTable() has returned - reading them from inside
+  // didDrawPage reports stale, in-progress values and misplaces the
+  // totals block onto an earlier page).
+  const lastAutoTableFinalY = (doc as { lastAutoTable?: { finalY?: number } })
+    .lastAutoTable?.finalY;
+  const finalY =
+    typeof lastAutoTableFinalY === "number" ? lastAutoTableFinalY : yPosition;
+  const footerFontSize = 9;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const footerMargin = 50; // Increased margin for footer
+  const footerY = pageHeight - footerMargin;
+  const totalsStartY = finalY + 30; // More space after table
+  const totalsSectionHeight = 90; // Approximate height for 5 total lines
+  const minimumSpaceNeeded = totalsSectionHeight + 20; // Buffer space
+
+  const drawTotals = (startY: number): void => {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+
+    // Total customers
+    const totalCustomersText = `Total Customers: ${tableRows.length}`;
+    doc.text(totalCustomersText, marginX, startY);
+
+    // Total DR Count and Amount
+    const totalDRText = `Total DRs: ${formatNumber(totalDRCount)} (${formatCurrency(totalDRAmount)})`;
+    doc.text(totalDRText, marginX, startY + 15);
+
+    // Total CR Count and Amount
+    const totalCRText = `Total CRs: ${formatNumber(totalCRCount)} (${formatCurrency(totalCRAmount)})`;
+    doc.text(totalCRText, marginX, startY + 30);
+
+    // Total Net Sales
+    const totalNetSalesText = `Total Net Sales: ${formatCurrency(totalNetSales)}`;
+    doc.text(totalNetSalesText, marginX, startY + 45);
+
+    // Show total available customers if filtered
+    if (filters?.total !== undefined && filters.total > tableRows.length) {
+      const availableText = `(Showing ${tableRows.length} of ${filters.total} total customers)`;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(availableText, marginX, startY + 60);
+    }
+  };
+
+  // Check if there's enough space for totals above the footer
+  if (totalsStartY + minimumSpaceNeeded <= footerY - 10) {
+    drawTotals(totalsStartY);
+  } else {
+    // Not enough space - add totals on a new page
+    doc.addPage();
+    drawTotals(80);
+  }
+
+  // 6. Second pass: draw the "Page X of Y" footer on every page now that
+  // the true final page count (including any totals page) is known.
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(footerFontSize);
+    doc.setFont("helvetica", "normal");
+
+    // Left footer: "Page X of Y"
+    doc.text(`Page ${i} of ${totalPages}`, marginX, footerY);
+
+    // Right footer: formatted current date and time
+    const rightText = `Report run on: ${formatDate(new Date())}`;
+    const textWidth = doc.getTextWidth(rightText);
+    doc.text(rightText, pageWidth - marginX - textWidth, footerY);
+  }
+
+  // 7. Open PDF in new tab for preview
   const pdfBlob = doc.output("blob");
   const blobUrl = URL.createObjectURL(pdfBlob);
   window.open(blobUrl, "_blank");
