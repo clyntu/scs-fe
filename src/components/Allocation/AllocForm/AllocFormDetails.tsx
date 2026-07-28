@@ -125,7 +125,6 @@ const AllocFormDetails = ({
                   className="w-[100%]"
                   placeholder="Select CPO"
                   disabled={isEditDisabled}
-                  required
                 />
               </div>
             </FormControl>
