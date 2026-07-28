@@ -112,23 +112,6 @@ const AllocFormDetails = ({
                   onChange={(event, newValue) => {
                     setSelectedCPO(newValue);
 
-                    // one CPO per allocation: drop other CPOs' entries
-                    setCPOItems((prevCPOItems) =>
-                      prevCPOItems.map((item) =>
-                        item.id !== newValue
-                          ? {
-                              ...item,
-                              warehouse_1: null,
-                              warehouse_1_qty: undefined,
-                              warehouse_2: null,
-                              warehouse_2_qty: undefined,
-                              warehouse_3: null,
-                              warehouse_3_qty: undefined,
-                            }
-                          : item,
-                      ),
-                    );
-
                     // SIDE LOGIC: For edit, if its empty, need to fetch all CPO again (cause only posted items are displayed)
                     if (
                       selectedCustomer !== null &&
