@@ -18,7 +18,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/joy";
-import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import CurrencyModal from "../../components/Items/CurrencyModal";
 import PrintStocksModal from "../../components/Items/PrintStocksModal";
 import PrintTotalCostDetailModal from "../../components/Items/PrintTotalCostDetailModal";
@@ -876,10 +876,11 @@ const ItemForm = (): JSX.Element => {
         onSave={handleSaveItem}
         currencies={currencies}
       />
-      <DeleteItemsModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Stock"
+        entityLabel="Stock"
         onDelete={handleDeleteItem}
       />
       <CurrencyModal

@@ -15,7 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteReceivingReportModal from "./DeleteRRModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
@@ -643,10 +643,11 @@ const ViewReceivingReport = ({
         </Box>
       )}
 
-      <DeleteReceivingReportModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Receiving Report"
+        entityLabel="Receiving Report"
         onDelete={handleDeleteRR}
       />
 

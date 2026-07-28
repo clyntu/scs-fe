@@ -27,7 +27,7 @@ import {
   formatToDate,
   getErrorMessage,
 } from "../../helper";
-import DeleteDeallocModal from "./DeleteDeallocModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
@@ -600,10 +600,11 @@ const ViewDealloc = ({
           </Box>
         )}
       </Box>
-      <DeleteDeallocModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Deallocation"
+        entityLabel="Deallocation"
         onDelete={handleDeleteDealloc}
       />
       <ArchiveConfirmModal

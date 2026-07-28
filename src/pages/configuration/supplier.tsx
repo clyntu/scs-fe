@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import SuppliersModal from "../../components/Suppliers/SuppliersModal";
-import DeleteSuppliersModal from "../../components/Suppliers/DeleteSupplierModal";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import axiosInstance from "../../utils/axiosConfig";
 import type { User } from "../Login";
 import { toast } from "react-toastify";
@@ -589,10 +589,11 @@ const SupplierForm = (): JSX.Element => {
         row={selectedRow}
         onSave={handleSaveSupplier}
       />
-      <DeleteSuppliersModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Supplier"
+        entityLabel="Supplier"
         onDelete={handleDeleteSupplier}
       />
     </>

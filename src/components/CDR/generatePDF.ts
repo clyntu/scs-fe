@@ -4,48 +4,7 @@ import JsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CDR } from "../../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
-
-const calculateNetForRow = (
-  newValue: number,
-  allocItem: any,
-  price: number,
-): number => {
-  let result = newValue * price;
-
-  if (allocItem.customer_discount_1.includes("%")) {
-    const cd1 = allocItem.customer_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(cd1) / 100);
-  }
-
-  if (allocItem.customer_discount_2.includes("%")) {
-    const cd2 = allocItem.customer_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(cd2) / 100);
-  }
-
-  if (allocItem.customer_discount_3.includes("%")) {
-    const cd3 = allocItem.customer_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(cd3) / 100);
-  }
-
-  if (allocItem.transaction_discount_1.includes("%")) {
-    const td1 = allocItem.transaction_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(td1) / 100);
-  }
-
-  if (allocItem.transaction_discount_2.includes("%")) {
-    const td2 = allocItem.transaction_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(td2) / 100);
-  }
-
-  if (allocItem.transaction_discount_3.includes("%")) {
-    const td3 = allocItem.transaction_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(td3) / 100);
-  }
-
-  if (isNaN(result)) return 0;
-
-  return result;
-};
+import { calculatePercentageDiscountedAmount } from "../../utils/discountCalculations";
 
 export const generateDeliveryReceiptPDF = (
   selectedRow: CDR,
@@ -140,10 +99,10 @@ export const generateDeliveryReceiptPDF = (
       addCommaToNumberWithTwoPlaces(itemObj?.price) ?? 0.0,
       discString,
       addCommaToNumberWithTwoPlaces(
-        calculateNetForRow(
+        calculatePercentageDiscountedAmount(
           Number(item.delivery_plan_item.planned_qty),
-          allocItem.customer_purchase_order,
           itemObj?.price ?? 0,
+          allocItem.customer_purchase_order,
         ) || 0,
       ),
     ];

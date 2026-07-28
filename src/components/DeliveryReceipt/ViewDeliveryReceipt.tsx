@@ -15,7 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteDeliveryReceiptModal from "./DeleteDeliveryReceiptModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
@@ -625,10 +625,11 @@ const ViewDeliveryReceipt = ({
           )}
         </Box>
       )}
-      <DeleteDeliveryReceiptModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Delivery Receipt"
+        entityLabel="Delivery Receipt"
         onDelete={handleDeleteDeliveryReceipt}
       />
       <ArchiveConfirmModal

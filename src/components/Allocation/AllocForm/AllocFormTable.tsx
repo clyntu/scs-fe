@@ -4,6 +4,7 @@ import { type AllocFormTableProps } from "../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 import { withTooltip } from "../../shared/withTooltip";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import { UNALLOCATABLE_WAREHOUSE_ID } from "../../../constants";
 
 const AllocFormTable = ({
   selectedRow,
@@ -179,7 +180,8 @@ const AllocFormTable = ({
                       <td>
                         <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
-                            if (warehouse.id === 1) return false;
+                            if (warehouse.id === UNALLOCATABLE_WAREHOUSE_ID)
+                              return false;
 
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
@@ -314,7 +316,8 @@ const AllocFormTable = ({
                       <td style={{ width: 200 }}>
                         <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
-                            if (warehouse.id === 1) return false;
+                            if (warehouse.id === UNALLOCATABLE_WAREHOUSE_ID)
+                              return false;
 
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
@@ -449,7 +452,8 @@ const AllocFormTable = ({
                       <td style={{ width: 200 }}>
                         <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
-                            if (warehouse.id === 1) return false;
+                            if (warehouse.id === UNALLOCATABLE_WAREHOUSE_ID)
+                              return false;
 
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)

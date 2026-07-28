@@ -15,7 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteARModal from "./DeleteARModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
@@ -644,10 +644,11 @@ const ViewAR = ({
           </Box>
         )}
       </Box>
-      <DeleteARModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete AR Receipt"
+        entityLabel="AR Receipt"
         onDelete={handleDeleteAR}
       />
       <ArchiveConfirmModal

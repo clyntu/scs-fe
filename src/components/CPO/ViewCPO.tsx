@@ -15,7 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteCPOModal from "./DeleteCPOModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
@@ -597,10 +597,11 @@ const ViewCPO = ({
           </Box>
         )}
       </Box>
-      <DeleteCPOModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Customer Purchase Order"
+        entityLabel="Customer Purchase Order"
         onDelete={handleDeleteCPO}
       />
       <ArchiveConfirmModal

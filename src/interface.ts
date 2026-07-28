@@ -97,6 +97,7 @@ export interface IStockHistory {
 export interface DeleteModalProps {
   open: boolean;
   title: string;
+  entityLabel: string;
   setOpen: (isOpen: boolean) => void;
   onDelete: () => Promise<void>;
 }

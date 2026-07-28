@@ -15,7 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeletePurchaseOrderModal from "./DeletePurchaseOrderModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { withTooltip } from "../shared/withTooltip";
 import { toast } from "react-toastify";
@@ -623,10 +623,11 @@ const ViewPurchaseOrder = ({
           </Box>
         )}
       </Box>
-      <DeletePurchaseOrderModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Purchase Order"
+        entityLabel="Purchase Order"
         onDelete={handleDeletePurchaseOrder}
       />
       <ArchiveConfirmModal
