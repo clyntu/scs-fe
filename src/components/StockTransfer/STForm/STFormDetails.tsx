@@ -160,7 +160,7 @@ const STFormDetails = ({
               <FormLabel>From Warehouse</FormLabel>
               <TooltipAutocomplete
                 options={warehouses.items}
-                getOptionLabel={(option) => option.name}
+                getOptionLabel={(option) => option.code}
                 value={selectedWarehouse}
                 onChange={(event, newValue) => {
                   setSelectedWarehouse(newValue);
