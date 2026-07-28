@@ -156,7 +156,8 @@ const AllocFormTable = ({
             </thead>
             <tbody>
               {CPOItems.filter(
-                (item) => selectedCPO === null || item.id === selectedCPO,
+                (item) =>
+                  !openCreate || selectedCPO === null || item.id === selectedCPO,
               ).map((item) => {
                 return (
                   ((openCreate && item.volume !== item.alloc_qty) ||
