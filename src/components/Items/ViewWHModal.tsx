@@ -260,7 +260,7 @@ const ViewWHModal = ({
                           )
                           .map((warehouseItem: AggregatedWarehouseItem) => (
                             <tr
-                              key={`${warehouseItem.warehouse_id}-${warehouseItem.stock_code}`}
+                              key={`${warehouseItem.warehouse_id}-${warehouseItem.item_id}`}
                             >
                               {type === "item" && (
                                 <td>{warehouseItem.warehouse_code}</td>
