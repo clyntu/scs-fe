@@ -243,6 +243,10 @@ body {
     transition: padding-left 180ms ease;
   }
 
+  .app-shell--auth {
+    padding-left: 0;
+  }
+
   .app-shell--sidebar-collapsed {
     --sidebar-width: 4.75rem;
   }
