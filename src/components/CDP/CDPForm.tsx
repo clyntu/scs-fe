@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import { type AllocItemsFE } from "./interface";
-import CircularProgress from "@mui/joy/CircularProgress";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 import type {
   CDPFormProps,
   PaginatedCustomers,
@@ -313,9 +313,7 @@ const CDPForm = ({
       </div>
 
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <CDPFormDetails

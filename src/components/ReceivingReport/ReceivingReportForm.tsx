@@ -17,8 +17,8 @@ import type {
   ReceivingReport,
 } from "../../interface";
 import type { ExpenseFormRow } from "./interface";
-import CircularProgress from "@mui/joy/CircularProgress";
 import { removeCommas, getErrorMessage } from "../../helper";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 const createEmptyExpense = (): ExpenseFormRow => ({
   clientKey: uuid(),
@@ -285,9 +285,7 @@ const ReceivingReportForm = ({
         </Button> */}
       </div>
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <RRFormDetails

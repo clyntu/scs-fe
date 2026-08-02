@@ -96,8 +96,8 @@ const POFormDetails = ({
   }, []);
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
+    <Box className="transaction-details">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
@@ -274,7 +274,7 @@ const POFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card variant="soft" color="neutral" className="w-[40%]">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="flex justify-between mb-2">
             <Typography level="title-lg">Order Summary</Typography>

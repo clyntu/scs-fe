@@ -20,8 +20,8 @@ import type {
   PaginatedItems,
   User,
 } from "../../interface";
-import CircularProgress from "@mui/joy/CircularProgress";
 import { addFourPlaces, getErrorMessage } from "../../helper";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -345,9 +345,7 @@ const CPOForm = ({
       </div>
 
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <CPOFormDetails

@@ -35,6 +35,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewPurchaseOrder = ({
   setOpenCreate,
@@ -54,8 +59,9 @@ const ViewPurchaseOrder = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -76,6 +82,7 @@ const ViewPurchaseOrder = ({
     setPage(1);
     setPurchaseOrders({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -105,6 +112,9 @@ const ViewPurchaseOrder = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load purchase orders. Check your connection and try again.",
+        );
       });
   };
 
@@ -156,6 +166,7 @@ const ViewPurchaseOrder = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -405,190 +416,163 @@ const ViewPurchaseOrder = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  PO No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 300 }}>Supplier</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130, textAlign: "right" }}>Net Amount</th>
+                <th style={{ width: 130, textAlign: "right" }}>FOB Total</th>
+                <th style={{ width: 130, textAlign: "right" }}>Landed Total</th>
+                <th style={{ width: 150 }}>Currency Used</th>
+                <th style={{ width: 150, textAlign: "right" }}>Peso Rate</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={16}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading purchase orders...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={16}
+                numericColumns={[5, 6, 7, 9]}
+                statusColumns={[4]}
+                actionColumn={15}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      PO No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 300 }}>Supplier</th>
-                    <th style={{ width: 180 }}>Ref No.</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      Net Amount
-                    </th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      FOB Total
-                    </th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      Landed Total
-                    </th>
-                    <th style={{ width: 150 }}>Currency Used</th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Peso Rate
-                    </th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {purchaseOrders.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={16}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && purchaseOrders.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={16}
+                    message={loadError}
+                    onRetry={getAllPO}
+                  />
+                )}
+                {purchaseOrders.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={16}
+                    title="No purchase orders found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first purchase order."
+                    }
+                  />
+                )}
+                {purchaseOrders.items.map((purchaseOrder) => (
+                  <tr
+                    key={purchaseOrder.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(purchaseOrder);
+                    }}
+                  >
+                    <td>{purchaseOrder.id}</td>
+                    <td>{purchaseOrder.transaction_date}</td>
+                    <td>
+                      {withTooltip(purchaseOrder?.supplier?.name, "280px")}
+                    </td>
+                    <td>
+                      {withTooltip(purchaseOrder.reference_number, "160px")}
+                    </td>
+                    <td>
+                      <StatusChip status={purchaseOrder.status} />
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(purchaseOrder.net_amount)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(purchaseOrder.fob_total)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(
+                        purchaseOrder.landed_total,
+                      )}
+                    </td>
+                    <td>{purchaseOrder.currency_used}</td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(purchaseOrder.peso_rate)}
+                    </td>
+                    <td>{withTooltip(purchaseOrder.remarks, "180px")}</td>
+                    <td>
+                      {withTooltip(purchaseOrder?.creator?.username, "130px")}
+                    </td>
+                    <td>
+                      {withTooltip(purchaseOrder?.modifier?.username, "130px")}
+                    </td>
+                    <td>{formatToDate(purchaseOrder.date_created)}</td>
+                    <td>{formatToDate(purchaseOrder.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No purchase orders found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {purchaseOrders.items.map((purchaseOrder) => (
-                    <tr
-                      key={purchaseOrder.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(purchaseOrder);
-                      }}
-                    >
-                      <td>{purchaseOrder.id}</td>
-                      <td>{purchaseOrder.transaction_date}</td>
-                      <td>
-                        {withTooltip(purchaseOrder?.supplier?.name, "280px")}
-                      </td>
-                      <td>
-                        {withTooltip(purchaseOrder.reference_number, "160px")}
-                      </td>
-                      <td>
-                        <StatusChip status={purchaseOrder.status} />
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          purchaseOrder.net_amount,
-                        )}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(purchaseOrder.fob_total)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          purchaseOrder.landed_total,
-                        )}
-                      </td>
-                      <td>{purchaseOrder.currency_used}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(purchaseOrder.peso_rate)}
-                      </td>
-                      <td>{withTooltip(purchaseOrder.remarks, "180px")}</td>
-                      <td>
-                        {withTooltip(purchaseOrder?.creator?.username, "130px")}
-                      </td>
-                      <td>
-                        {withTooltip(
-                          purchaseOrder?.modifier?.username,
-                          "130px",
-                        )}
-                      </td>
-                      <td>{formatToDate(purchaseOrder.date_created)}</td>
-                      <td>{formatToDate(purchaseOrder.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(purchaseOrder);
                           }}
                         >
+                          {purchaseOrder.status !== "unposted"
+                            ? "View"
+                            : "Edit"}
+                        </Button>
+
+                        {(purchaseOrder.status === "posted" ||
+                          purchaseOrder.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(purchaseOrder);
+                            }}
+                            disabled={purchaseOrder.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+
+                        {purchaseOrder.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(purchaseOrder);
                             }}
                           >
-                            {purchaseOrder.status !== "unposted"
-                              ? "View"
-                              : "Edit"}
+                            Delete
                           </Button>
-
-                          {(purchaseOrder.status === "posted" ||
-                            purchaseOrder.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(purchaseOrder);
-                              }}
-                              disabled={purchaseOrder.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-
-                          {purchaseOrder.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(purchaseOrder);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

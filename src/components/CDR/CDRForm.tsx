@@ -16,8 +16,8 @@ import type {
   CDR,
 } from "../../interface";
 import { generateDeliveryReceiptPDF } from "./generatePDF";
-import CircularProgress from "@mui/joy/CircularProgress";
 import { getErrorMessage } from "../../helper";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 interface DiscountedPurchaseOrder {
   customer_discount_1: string;
@@ -411,9 +411,7 @@ const CDRForm = ({
         )}
       </div>
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           {hasInvalidSavedReceipt && (
