@@ -53,7 +53,7 @@ const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
     <div
       className={`app-shell font-inter ${
         isSidebarCollapsed ? "app-shell--sidebar-collapsed" : ""
-      }`}
+      } ${hideSidebar ? "app-shell--auth" : ""}`}
     >
       {!hideSidebar && (
         <>
