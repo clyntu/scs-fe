@@ -4,7 +4,9 @@ import type {
   CR,
   Warehouse,
   PaginatedWarehouse,
+  ReturnSourceFulfillment,
 } from "../../interface";
+import type { ReturnSourceAllocation } from "./CRForm/helpers";
 import type { Dispatch, SetStateAction } from "react";
 
 export interface CRFormDetailsProps {
@@ -62,4 +64,6 @@ export interface DRItemsFE {
   transaction_discount_1: string;
   transaction_discount_2: string;
   transaction_discount_3: string;
+  source_fulfillments: ReturnSourceFulfillment[];
+  source_allocations: ReturnSourceAllocation[];
 }

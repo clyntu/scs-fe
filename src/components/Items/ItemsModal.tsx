@@ -97,6 +97,9 @@ const ItemsModal = ({
       total_allocated: row?.total_allocated ?? 0,
       total_purchased: row?.total_purchased ?? 0,
       total_sold: row?.total_sold ?? 0,
+      total_gross_sold: row?.total_gross_sold ?? row?.total_sold ?? 0,
+      total_returned: row?.total_returned ?? 0,
+      total_net_sold: row?.total_net_sold ?? row?.total_sold ?? 0,
       created_by: row?.created_by ?? 0,
       modified_by: row?.modified_by ?? 0,
       date_created: row?.date_created ?? "",
@@ -412,9 +415,15 @@ const ItemsModal = ({
                           </p>
                         </Box>
                         <Box sx={{ textAlign: "center" }}>
-                          <p className="text-xs text-gray-500">Sold</p>
+                          <p className="text-xs text-gray-500">Returned</p>
                           <p className="text-sm font-semibold">
-                            {formatWithCommas(item?.total_sold)}
+                            {formatWithCommas(item?.total_returned)}
+                          </p>
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Net Sold</p>
+                          <p className="text-sm font-semibold">
+                            {formatWithCommas(item?.total_net_sold)}
                           </p>
                         </Box>
                       </Stack>

@@ -198,11 +198,11 @@ const ViewWHModal = ({
                           colSpan={
                             type === "item"
                               ? isAdmin
+                                ? 8
+                                : 7
+                              : isAdmin
                                 ? 7
                                 : 6
-                              : isAdmin
-                                ? 6
-                                : 5
                           }
                           style={{ textAlign: "center" }}
                         >
@@ -212,7 +212,10 @@ const ViewWHModal = ({
                     </tbody>
                   ) : warehouseItems.filter(
                       (warehouseItem: AggregatedWarehouseItem) =>
-                        warehouseItem.total_on_stock > 0,
+                        warehouseItem.total_on_stock > 0 ||
+                        warehouseItem.total_allocated > 0 ||
+                        warehouseItem.total_gross_sold > 0 ||
+                        warehouseItem.total_returned > 0,
                     ).length > 0 ? (
                     <>
                       <thead>
@@ -242,7 +245,10 @@ const ViewWHModal = ({
                             Allocated
                           </th>
                           <th style={{ width: 100, textAlign: "right" }}>
-                            Sold
+                            Returned
+                          </th>
+                          <th style={{ width: 100, textAlign: "right" }}>
+                            Net Sold
                           </th>
                           {isAdmin && (
                             <th style={{ width: 80, textAlign: "center" }}>
@@ -256,7 +262,9 @@ const ViewWHModal = ({
                           .filter(
                             (warehouseItem: AggregatedWarehouseItem) =>
                               warehouseItem.total_on_stock > 0 ||
-                              warehouseItem.total_allocated > 0,
+                              warehouseItem.total_allocated > 0 ||
+                              warehouseItem.total_gross_sold > 0 ||
+                              warehouseItem.total_returned > 0,
                           )
                           .map((warehouseItem: AggregatedWarehouseItem) => (
                             <tr
@@ -291,7 +299,10 @@ const ViewWHModal = ({
                                 {warehouseItem.total_allocated.toLocaleString()}
                               </td>
                               <td style={{ textAlign: "right" }}>
-                                {warehouseItem.total_sold.toLocaleString()}
+                                {warehouseItem.total_returned.toLocaleString()}
+                              </td>
+                              <td style={{ textAlign: "right" }}>
+                                {warehouseItem.total_net_sold.toLocaleString()}
                               </td>
                               {isAdmin && (
                                 <td style={{ textAlign: "center" }}>
@@ -320,11 +331,11 @@ const ViewWHModal = ({
                           colSpan={
                             type === "item"
                               ? isAdmin
+                                ? 8
+                                : 7
+                              : isAdmin
                                 ? 7
                                 : 6
-                              : isAdmin
-                                ? 6
-                                : 5
                           }
                           style={{ textAlign: "center" }}
                         >
