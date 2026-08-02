@@ -22,7 +22,7 @@
     "@mui/icons-material": "^5.18.0",
     "@mui/joy": "^5.0.0-beta.52",
     "@mui/material": "^5.18.0",
-    "@supabase/supabase-js": "^2.49.4",
+    "@supabase/supabase-js": "2.109.0",
     "axios": "^1.6.7",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
