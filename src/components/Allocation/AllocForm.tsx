@@ -22,7 +22,7 @@ import {
 } from "./interface";
 import AllocFormDetails from "./AllocForm/AllocFormDetails";
 import AllocFormTable from "./AllocForm/AllocFormTable";
-import CircularProgress from "@mui/joy/CircularProgress";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 const AllocForm = ({
   setOpen,
@@ -431,9 +431,7 @@ const AllocForm = ({
       </div>
 
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <AllocFormDetails

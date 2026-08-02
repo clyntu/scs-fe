@@ -35,6 +35,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewAR = ({
   setOpenCreate,
@@ -56,8 +61,9 @@ const ViewAR = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -78,6 +84,7 @@ const ViewAR = ({
     setPage(1);
     setARs({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -109,6 +116,9 @@ const ViewAR = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load AR receipts. Check your connection and try again.",
+        );
       });
   };
 
@@ -162,6 +172,7 @@ const ViewAR = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -456,160 +467,148 @@ const ViewAR = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  Receipt No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 150 }}>Check No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Payment Amount
+                </th>
+                <th style={{ width: 150 }}>Payment Status</th>
+                <th style={{ width: 100 }}>Method</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={14}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading receipts...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={14}
+                numericColumns={[5]}
+                statusColumns={[4, 6]}
+                actionColumn={13}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Receipt No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 250 }}>Customer</th>
-                    <th style={{ width: 150 }}>Check No.</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Payment Amount
-                    </th>
-                    <th style={{ width: 150 }}>Payment Status</th>
-                    <th style={{ width: 100 }}>Method</th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {ARs.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={14}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && ARs.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={14}
+                    message={loadError}
+                    onRetry={getAllAR}
+                  />
+                )}
+                {ARs.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={14}
+                    title="No AR receipts found"
+                    description={
+                      searchTerm !== "" ||
+                      status !== "all" ||
+                      paymentStatus !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first AR receipt."
+                    }
+                  />
+                )}
+                {ARs.items.map((AR) => (
+                  <tr
+                    key={AR.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(AR);
+                    }}
+                  >
+                    <td>{AR.id}</td>
+                    <td>{AR.transaction_date}</td>
+                    <td>{withTooltip(AR.customer.name, "280px")}</td>
+                    <td>{withTooltip(AR.reference_number, "160px")}</td>
+                    <td>
+                      <StatusChip status={AR.status} />
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {AR.status === "posted"
+                        ? addCommaToNumberWithTwoPlaces(AR.payment_amount)
+                        : "N/A"}
+                    </td>
+                    <td className="capitalize">{AR.payment_status}</td>
+                    <td className="capitalize">{AR.payment_method}</td>
+                    <td>{withTooltip(AR.remarks, "180px")}</td>
+                    <td>{withTooltip(AR?.creator?.username, "130px")}</td>
+                    <td>{withTooltip(AR?.modifier?.username, "130px")}</td>
+                    <td>{formatToDate(AR.date_created)}</td>
+                    <td>{formatToDate(AR.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No AR receipts found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {ARs.items.map((AR) => (
-                    <tr
-                      key={AR.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(AR);
-                      }}
-                    >
-                      <td>{AR.id}</td>
-                      <td>{AR.transaction_date}</td>
-                      <td>{withTooltip(AR.customer.name, "280px")}</td>
-                      <td>{withTooltip(AR.reference_number, "160px")}</td>
-                      <td>
-                        <StatusChip status={AR.status} />
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {AR.status === "posted"
-                          ? addCommaToNumberWithTwoPlaces(AR.payment_amount)
-                          : "N/A"}
-                      </td>
-                      <td className="capitalize">{AR.payment_status}</td>
-                      <td className="capitalize">{AR.payment_method}</td>
-                      <td>{withTooltip(AR.remarks, "180px")}</td>
-                      <td>{withTooltip(AR?.creator?.username, "130px")}</td>
-                      <td>{withTooltip(AR?.modifier?.username, "130px")}</td>
-                      <td>{formatToDate(AR.date_created)}</td>
-                      <td>{formatToDate(AR.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(AR);
                           }}
                         >
-                          <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
-                            size="sm"
-                            variant="plain"
-                            color="neutral"
-                            onClick={() => {
-                              setOpenEdit(true);
-                              setSelectedRow(AR);
-                            }}
-                          >
-                            {AR.status !== "unposted" || !isAdmin
-                              ? "View"
-                              : "Edit"}
-                          </Button>
-                          {isAdmin &&
-                            (AR.status === "posted" ||
-                              AR.status === "archived") && (
-                              <Button
-                                sx={{ fontSize: "13px" }}
-                                size="sm"
-                                variant="soft"
-                                color="warning"
-                                onClick={() => {
-                                  setOpenArchive(true);
-                                  setSelectedRow(AR);
-                                }}
-                                disabled={AR.status === "archived"}
-                              >
-                                Archive
-                              </Button>
-                            )}
-                          {isAdmin && AR.status === "unposted" && (
+                          {AR.status !== "unposted" || !isAdmin
+                            ? "View"
+                            : "Edit"}
+                        </Button>
+                        {isAdmin &&
+                          (AR.status === "posted" ||
+                            AR.status === "archived") && (
                             <Button
                               sx={{ fontSize: "13px" }}
                               size="sm"
                               variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
+                              color="warning"
                               onClick={() => {
-                                setOpenDelete(true);
+                                setOpenArchive(true);
                                 setSelectedRow(AR);
                               }}
+                              disabled={AR.status === "archived"}
                             >
-                              Delete
+                              Archive
                             </Button>
                           )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        {isAdmin && AR.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(AR);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

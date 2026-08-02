@@ -35,6 +35,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewCR = ({
   setOpenCreate,
@@ -54,8 +59,9 @@ const ViewCR = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -76,6 +82,7 @@ const ViewCR = ({
     setPage(1);
     setCRs({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -105,6 +112,9 @@ const ViewCR = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load customer returns. Check your connection and try again.",
+        );
       });
   };
 
@@ -156,6 +166,7 @@ const ViewCR = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -420,146 +431,131 @@ const ViewCR = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  Return No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 220 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={11}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading customer returns...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={11}
+                statusColumns={[4]}
+                actionColumn={10}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Return No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 250 }}>Customer</th>
-                    <th style={{ width: 220 }}>Ref No.</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {CRs.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={11}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && CRs.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={11}
+                    message={loadError}
+                    onRetry={getAllCR}
+                  />
+                )}
+                {CRs.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={11}
+                    title="No customer returns found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first customer return."
+                    }
+                  />
+                )}
+                {CRs.items.map((CR) => (
+                  <tr
+                    key={CR.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(CR);
+                    }}
+                  >
+                    <td>{CR.id}</td>
+                    <td>{CR.transaction_date}</td>
+                    <td>{withTooltip(CR.customer.name, "280px")}</td>
+                    <td>{withTooltip(CR.reference_number, "200px")}</td>
+                    <td>
+                      <StatusChip status={CR.status} />
+                    </td>
+                    <td>{withTooltip(CR.remarks, "180px")}</td>
+                    <td>{withTooltip(CR?.creator?.username, "130px")}</td>
+                    <td>{withTooltip(CR?.modifier?.username, "130px")}</td>
+                    <td>{formatToDate(CR.date_created)}</td>
+                    <td>{formatToDate(CR.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No customer returns found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {CRs.items.map((CR) => (
-                    <tr
-                      key={CR.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(CR);
-                      }}
-                    >
-                      <td>{CR.id}</td>
-                      <td>{CR.transaction_date}</td>
-                      <td>{withTooltip(CR.customer.name, "280px")}</td>
-                      <td>{withTooltip(CR.reference_number, "200px")}</td>
-                      <td>
-                        <StatusChip status={CR.status} />
-                      </td>
-                      <td>{withTooltip(CR.remarks, "180px")}</td>
-                      <td>{withTooltip(CR?.creator?.username, "130px")}</td>
-                      <td>{withTooltip(CR?.modifier?.username, "130px")}</td>
-                      <td>{formatToDate(CR.date_created)}</td>
-                      <td>{formatToDate(CR.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(CR);
                           }}
                         >
+                          {CR.status !== "unposted" ? "View" : "Edit"}
+                        </Button>
+                        {(CR.status === "posted" ||
+                          CR.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(CR);
+                            }}
+                            disabled={CR.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+
+                        {CR.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(CR);
                             }}
                           >
-                            {CR.status !== "unposted" ? "View" : "Edit"}
+                            Delete
                           </Button>
-                          {(CR.status === "posted" ||
-                            CR.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(CR);
-                              }}
-                              disabled={CR.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-
-                          {CR.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(CR);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

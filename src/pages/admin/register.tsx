@@ -9,7 +9,6 @@ import {
   Input,
   Button,
   Alert,
-  CircularProgress,
   Checkbox,
   Box,
 } from "@mui/joy";
@@ -180,18 +179,14 @@ export default function Register(): JSX.Element {
   // Show loading spinner while checking admin access
   if (isCheckingAuth) {
     return (
-      <main>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-          }}
-        >
-          <CircularProgress />
-        </div>
-      </main>
+      <Typography
+        level="body-sm"
+        role="status"
+        aria-busy="true"
+        sx={{ color: "text.tertiary" }}
+      >
+        Checking access...
+      </Typography>
     );
   }
 
@@ -199,9 +194,9 @@ export default function Register(): JSX.Element {
     <main>
       <Sheet
         sx={{
-          width: 350,
+          width: "min(100%, 350px)",
           mx: "auto",
-          my: 14,
+          my: { xs: 3, sm: 8, md: 14 },
           py: 4,
           px: 3,
           display: "flex",

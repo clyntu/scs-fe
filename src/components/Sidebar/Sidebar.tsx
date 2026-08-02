@@ -8,6 +8,9 @@ import {
   ListSubheader,
   ListItem,
   Button,
+  IconButton,
+  Skeleton,
+  Tooltip,
 } from "@mui/joy";
 import WarehouseRoundedIcon from "@mui/icons-material/WarehouseRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
@@ -24,6 +27,8 @@ import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PeopleIcon from "@mui/icons-material/People";
 import axiosInstance from "../../utils/axiosConfig";
@@ -33,14 +38,24 @@ import { CompanySelector } from "../CompanySelector";
 
 import SidebarLink from "./SidebarLink";
 
-export default function Sidebar(): JSX.Element | null {
+interface SidebarProps {
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
+  onToggleCollapsed: () => void;
+}
+
+export default function Sidebar({
+  collapsed,
+  mobileOpen,
+  onCloseMobile,
+  onToggleCollapsed,
+}: SidebarProps): JSX.Element {
   const router = useRouter();
   const currentPath = router.pathname;
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  // avoids SSR localStorage errors
-  const [mounted, setMounted] = useState(false);
+  const [isUserLoading, setIsUserLoading] = useState(true);
 
   const [expanded, setExpanded] = useState({
     configuration: true,
@@ -52,13 +67,11 @@ export default function Sidebar(): JSX.Element | null {
   const isAdmin = currentUser?.is_admin === true;
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    setMounted(true);
-
     axiosInstance
       .get<User>("/api/users/me/")
       .then((response) => setCurrentUser(response.data))
-      .catch((error) => console.error("Error fetching user ID:", error));
+      .catch((error) => console.error("Error fetching user ID:", error))
+      .finally(() => setIsUserLoading(false));
   }, []);
 
   const toggle = (key: keyof typeof expanded): void =>
@@ -78,8 +91,6 @@ export default function Sidebar(): JSX.Element | null {
     }
   };
 
-  if (!mounted) return null;
-
   const isConfig = currentPath.includes("/configuration");
   const isPurchasing = currentPath.includes("/purchasing");
   const isSales = currentPath.includes("/sales");
@@ -87,12 +98,14 @@ export default function Sidebar(): JSX.Element | null {
 
   return (
     <Box
+      id="app-sidebar"
       component="nav"
+      aria-label="Primary navigation"
+      className={`app-sidebar ${
+        collapsed ? "app-sidebar--collapsed" : ""
+      } ${mobileOpen ? "app-sidebar--mobile-open" : ""}`}
       sx={{
         p: 2,
-        height: "100vh",
-        width: "250px",
-        position: "fixed",
         bgcolor: "background.surface",
         borderRight: "1px solid",
         borderColor: "divider",
@@ -101,37 +114,60 @@ export default function Sidebar(): JSX.Element | null {
         overflow: "hidden",
       }}
     >
-      <Typography sx={{ mt: 0.5, px: 1, fontWeight: "bold", fontSize: "18px" }}>
-        Hi, {currentUser?.full_name ?? ""}!
-      </Typography>
-
-      {isAdmin ? (
-        <Typography
-          sx={{
-            mt: 0.5,
-            px: 1,
-            fontSize: "12px",
-            color: "primary.500",
-            fontWeight: "600",
-          }}
+      <Box className="sidebar-heading">
+        <Box className="sidebar-identity">
+          {isUserLoading ? (
+            <>
+              <Skeleton variant="text" level="title-md" width="75%" />
+              <Skeleton variant="text" level="body-xs" width="55%" />
+            </>
+          ) : (
+            <>
+              <Typography sx={{ fontWeight: "bold", fontSize: "18px" }}>
+                Hi, {currentUser?.full_name ?? "there"}!
+              </Typography>
+              <Typography
+                sx={{
+                  mt: 0.5,
+                  fontSize: "12px",
+                  color: "primary.500",
+                  fontWeight: "600",
+                }}
+              >
+                Role: {isAdmin ? "Administrator" : "Regular User"}
+              </Typography>
+            </>
+          )}
+        </Box>
+        <Tooltip
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          placement="right"
         >
-          Role: Administrator
-        </Typography>
-      ) : (
-        <Typography
-          sx={{
-            mt: 0.5,
-            px: 1,
-            fontSize: "12px",
-            color: "primary.500",
-            fontWeight: "600",
-          }}
+          <IconButton
+            className="sidebar-collapse-button"
+            size="sm"
+            variant="outlined"
+            color="neutral"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            onClick={onToggleCollapsed}
+          >
+            {collapsed ? <ChevronRightIcon /> : <ChevronLeftRoundedIcon />}
+          </IconButton>
+        </Tooltip>
+        <IconButton
+          className="sidebar-mobile-close"
+          size="sm"
+          variant="outlined"
+          color="neutral"
+          aria-label="Close navigation menu"
+          onClick={onCloseMobile}
         >
-          Role: Regular User
-        </Typography>
-      )}
+          <CloseRoundedIcon />
+        </IconButton>
+      </Box>
 
-      <Box sx={{ mb: 2, px: 1 }}>
+      <Box className="sidebar-company" sx={{ mb: 2, px: 1 }}>
         <CompanySelector />
       </Box>
       <Divider />
@@ -147,32 +183,38 @@ export default function Sidebar(): JSX.Element | null {
             active={isConfig}
             open={expanded.configuration}
             onToggle={() => toggle("configuration")}
+            collapsed={collapsed}
           >
             <SidebarLink
               Icon={WidgetsRoundedIcon}
               label="Stocks"
               link="/configuration/item"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={GroupsRoundedIcon}
               label="Suppliers"
               link="/configuration/supplier"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={GroupsRoundedIcon}
               label="Customers"
               link="/configuration/customer"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={WarehouseRoundedIcon}
               label="Warehouses"
               link="/configuration/warehouse"
+              collapsed={collapsed}
             />
             {isAdmin && (
               <SidebarLink
                 Icon={TuneRoundedIcon}
                 label="Stock Adjustment"
                 link="/configuration/stock-adjustment"
+                collapsed={collapsed}
               />
             )}
           </Section>
@@ -182,26 +224,31 @@ export default function Sidebar(): JSX.Element | null {
             active={isPurchasing}
             open={expanded.purchasing}
             onToggle={() => toggle("purchasing")}
+            collapsed={collapsed}
           >
             <SidebarLink
               Icon={ShoppingCartIcon}
               label="Purchase Order"
               link="/purchasing/purchase-order"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={LocalShippingIcon}
               label="Supplier Delivery"
               link="/purchasing/delivery-receipt"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={InventoryRoundedIcon}
               label="Receiving Report"
               link="/purchasing/receiving-report"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={SwapHorizontalCircleRoundedIcon}
               label="Stock Transfer"
               link="/purchasing/stock-transfer"
+              collapsed={collapsed}
             />
           </Section>
           {/* Sales */}
@@ -210,41 +257,49 @@ export default function Sidebar(): JSX.Element | null {
             active={isSales}
             open={expanded.sales}
             onToggle={() => toggle("sales")}
+            collapsed={collapsed}
           >
             <SidebarLink
               Icon={ShoppingCartIcon}
               label="Customer PO"
               link="/sales/customer-purchase-order"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={MoveDownRoundedIcon}
               label="Allocation"
               link="/sales/allocation"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={MoveUpRoundedIcon}
               label="De-Allocation"
               link="/sales/deallocation"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={LocalShippingIcon}
               label="Delivery Planning"
               link="/sales/delivery-planning"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={LocalShippingIcon}
               label="Delivery Receipt"
               link="/sales/delivery-receipt"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={AssignmentReturnRoundedIcon}
               label="Customer Return"
               link="/sales/customer-return"
+              collapsed={collapsed}
             />
             <SidebarLink
               Icon={PaidRoundedIcon}
               label="A.R. Receipts"
               link="/sales/ar-receipts"
+              collapsed={collapsed}
             />
           </Section>
           {/* User Management (Admin Only) */}
@@ -254,16 +309,19 @@ export default function Sidebar(): JSX.Element | null {
               active={isUserManagement}
               open={expanded.userManagement}
               onToggle={() => toggle("userManagement")}
+              collapsed={collapsed}
             >
               <SidebarLink
                 Icon={PeopleIcon}
                 label="View Users"
                 link="/admin/users"
+                collapsed={collapsed}
               />
               <SidebarLink
                 Icon={PersonAddIcon}
                 label="Register User"
                 link="/admin/register"
+                collapsed={collapsed}
               />
             </Section>
           )}
@@ -277,8 +335,9 @@ export default function Sidebar(): JSX.Element | null {
         onClick={handleLogout}
         size="sm"
         sx={{ mx: 1 }}
+        aria-label="Log out"
       >
-        Logout
+        <span className="sidebar-control-label">Logout</span>
       </Button>
     </Box>
   );
@@ -290,34 +349,40 @@ function Section({
   active,
   open,
   onToggle,
+  collapsed,
   children,
 }: {
   title: string;
   active: boolean;
   open: boolean;
   onToggle: () => void;
+  collapsed: boolean;
   children: React.ReactNode;
 }): JSX.Element {
   return (
     <ListItem nested sx={{ my: 1 }}>
-      <Box
+      <Button
+        className="sidebar-section-toggle"
+        variant="plain"
+        color={active ? "primary" : "neutral"}
         onClick={onToggle}
+        aria-expanded={open}
         sx={{
           display: "flex",
+          width: "100%",
           alignItems: "center",
-          cursor: "pointer",
           py: 1,
+          px: 1,
           borderRadius: "8px",
-          "&:hover": { bgcolor: "action.hover" },
+          justifyContent: collapsed ? "center" : "space-between",
         }}
       >
         <ListSubheader
+          className="sidebar-section-title"
           sx={{
             letterSpacing: "1px",
             fontWeight: 800,
-            cursor: "pointer",
             p: 0,
-            pl: 1,
             flex: 1,
             color: active ? "primary.500" : "inherit",
           }}
@@ -329,8 +394,8 @@ function Section({
         ) : (
           <ChevronRightIcon color={active ? "primary" : "action"} />
         )}
-      </Box>
-      {open && children}
+      </Button>
+      {(open || collapsed) && children}
     </ListItem>
   );
 }

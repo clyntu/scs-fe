@@ -37,6 +37,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewDeliveryReceipt = ({
   setOpenCreate,
@@ -56,8 +61,9 @@ const ViewDeliveryReceipt = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -77,6 +83,7 @@ const ViewDeliveryReceipt = ({
     setPage(1);
     setDeliveryReceipts({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -106,6 +113,9 @@ const ViewDeliveryReceipt = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load delivery receipts. Check your connection and try again.",
+        );
       });
   };
 
@@ -157,6 +167,7 @@ const ViewDeliveryReceipt = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -421,177 +432,157 @@ const ViewDeliveryReceipt = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  SDR No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Supplier</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130, textAlign: "right" }}>Net Amount</th>
+                <th style={{ width: 130, textAlign: "right" }}>FOB Total</th>
+                <th style={{ width: 130, textAlign: "right" }}>
+                  Landed Total (₱)
+                </th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={14}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading delivery receipts...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={14}
+                numericColumns={[5, 6, 7]}
+                statusColumns={[4]}
+                actionColumn={13}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      SDR No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 250 }}>Supplier</th>
-                    <th style={{ width: 180 }}>Ref No.</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      Net Amount
-                    </th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      FOB Total
-                    </th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      Landed Total (₱)
-                    </th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {deliveryReceipts.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={14}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && deliveryReceipts.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={14}
+                    message={loadError}
+                    onRetry={getAllSDR}
+                  />
+                )}
+                {deliveryReceipts.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={14}
+                    title="No delivery receipts found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first delivery receipt."
+                    }
+                  />
+                )}
+                {deliveryReceipts.items.map((deliveryReceipt) => (
+                  <tr
+                    key={deliveryReceipt.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(deliveryReceipt);
+                    }}
+                  >
+                    <td>{deliveryReceipt.id}</td>
+                    <td>{deliveryReceipt.transaction_date}</td>
+                    <td>
+                      {withTooltip(deliveryReceipt.supplier.name, "230px")}
+                    </td>
+                    <td>
+                      {withTooltip(deliveryReceipt.reference_number, "160px")}
+                    </td>
+                    <td>
+                      <StatusChip status={deliveryReceipt.status} />
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(
+                        deliveryReceipt.net_amount,
+                      )}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(deliveryReceipt.fob_total)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithFourPlaces(
+                        deliveryReceipt.landed_total,
+                      )}
+                    </td>
+                    <td>{withTooltip(deliveryReceipt.remarks, "180px")}</td>
+                    <td>{deliveryReceipt?.creator?.username}</td>
+                    <td>{deliveryReceipt?.modifier?.username}</td>
+                    <td>{formatToDate(deliveryReceipt.date_created)}</td>
+                    <td>{formatToDate(deliveryReceipt.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No delivery receipts found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {deliveryReceipts.items.map((deliveryReceipt) => (
-                    <tr
-                      key={deliveryReceipt.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(deliveryReceipt);
-                      }}
-                    >
-                      <td>{deliveryReceipt.id}</td>
-                      <td>{deliveryReceipt.transaction_date}</td>
-                      <td>
-                        {withTooltip(deliveryReceipt.supplier.name, "230px")}
-                      </td>
-                      <td>
-                        {withTooltip(deliveryReceipt.reference_number, "160px")}
-                      </td>
-                      <td>
-                        <StatusChip status={deliveryReceipt.status} />
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          deliveryReceipt.net_amount,
-                        )}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          deliveryReceipt.fob_total,
-                        )}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithFourPlaces(
-                          deliveryReceipt.landed_total,
-                        )}
-                      </td>
-                      <td>{withTooltip(deliveryReceipt.remarks, "180px")}</td>
-                      <td>{deliveryReceipt?.creator?.username}</td>
-                      <td>{deliveryReceipt?.modifier?.username}</td>
-                      <td>{formatToDate(deliveryReceipt.date_created)}</td>
-                      <td>{formatToDate(deliveryReceipt.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(deliveryReceipt);
                           }}
                         >
+                          {deliveryReceipt.status !== "unposted"
+                            ? "View"
+                            : "Edit"}
+                        </Button>
+
+                        {(deliveryReceipt.status === "posted" ||
+                          deliveryReceipt.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(deliveryReceipt);
+                            }}
+                            disabled={deliveryReceipt.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+
+                        {deliveryReceipt.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(deliveryReceipt);
                             }}
                           >
-                            {deliveryReceipt.status !== "unposted"
-                              ? "View"
-                              : "Edit"}
+                            Delete
                           </Button>
-
-                          {(deliveryReceipt.status === "posted" ||
-                            deliveryReceipt.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(deliveryReceipt);
-                              }}
-                              disabled={deliveryReceipt.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-
-                          {deliveryReceipt.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(deliveryReceipt);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

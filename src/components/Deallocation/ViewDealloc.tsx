@@ -35,6 +35,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewDealloc = ({
   setOpenCreate,
@@ -54,8 +59,9 @@ const ViewDealloc = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -76,6 +82,7 @@ const ViewDealloc = ({
     setPage(1);
     setDeallocs({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -105,6 +112,9 @@ const ViewDealloc = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load deallocations. Check your connection and try again.",
+        );
       });
   };
 
@@ -156,6 +166,7 @@ const ViewDealloc = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -423,149 +434,130 @@ const ViewDealloc = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  Dealloc No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 80 }}>Alloc No.</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={11}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading deallocations...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={11}
+                statusColumns={[3]}
+                actionColumn={10}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Dealloc No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 250 }}>Customer</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 80 }}>Alloc No.</th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {deallocs.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={11}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && deallocs.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={11}
+                    message={loadError}
+                    onRetry={getAllDealloc}
+                  />
+                )}
+                {deallocs.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={11}
+                    title="No deallocations found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first deallocation."
+                    }
+                  />
+                )}
+                {deallocs.items.map((dealloc) => (
+                  <tr
+                    key={dealloc.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(dealloc);
+                    }}
+                  >
+                    <td>{dealloc?.id}</td>
+                    <td>{dealloc?.transaction_date}</td>
+                    <td>{withTooltip(dealloc?.customer?.name, "230px")}</td>
+                    <td>
+                      <StatusChip status={dealloc.status} />
+                    </td>
+                    <td>{dealloc?.allocation_id}</td>
+                    <td>{withTooltip(dealloc?.remarks, "180px")}</td>
+                    <td>{withTooltip(dealloc?.creator?.username, "130px")}</td>
+                    <td>{withTooltip(dealloc?.modifier?.username, "130px")}</td>
+                    <td>{formatToDate(dealloc.date_created)}</td>
+                    <td>{formatToDate(dealloc.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No deallocations found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {deallocs.items.map((dealloc) => (
-                    <tr
-                      key={dealloc.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(dealloc);
-                      }}
-                    >
-                      <td>{dealloc?.id}</td>
-                      <td>{dealloc?.transaction_date}</td>
-                      <td>{withTooltip(dealloc?.customer?.name, "230px")}</td>
-                      <td>
-                        <StatusChip status={dealloc.status} />
-                      </td>
-                      <td>{dealloc?.allocation_id}</td>
-                      <td>{withTooltip(dealloc?.remarks, "180px")}</td>
-                      <td>
-                        {withTooltip(dealloc?.creator?.username, "130px")}
-                      </td>
-                      <td>
-                        {withTooltip(dealloc?.modifier?.username, "130px")}
-                      </td>
-                      <td>{formatToDate(dealloc.date_created)}</td>
-                      <td>{formatToDate(dealloc.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(dealloc);
                           }}
                         >
+                          {dealloc.status !== "unposted" ? "View" : "Edit"}
+                        </Button>
+                        {(dealloc.status === "posted" ||
+                          dealloc.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(dealloc);
+                            }}
+                            disabled={dealloc.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+                        {dealloc.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(dealloc);
                             }}
                           >
-                            {dealloc.status !== "unposted" ? "View" : "Edit"}
+                            Delete
                           </Button>
-                          {(dealloc.status === "posted" ||
-                            dealloc.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(dealloc);
-                              }}
-                              disabled={dealloc.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-                          {dealloc.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(dealloc);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

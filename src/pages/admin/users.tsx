@@ -1,9 +1,9 @@
 // src/pages/admin/users.tsx
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { CircularProgress, Box } from "@mui/joy";
 import axiosInstance from "../../utils/axiosConfig";
 import ViewUsers from "../../components/Users/ViewUsers";
+import Typography from "@mui/joy/Typography";
 
 interface User {
   id: number;
@@ -44,16 +44,14 @@ export default function UsersPage(): JSX.Element {
   // Show loading while checking authentication
   if (isCheckingAuth) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "100vh",
-        }}
+      <Typography
+        level="body-sm"
+        role="status"
+        aria-busy="true"
+        sx={{ color: "text.tertiary" }}
       >
-        <CircularProgress />
-      </Box>
+        Checking access...
+      </Typography>
     );
   }
 
