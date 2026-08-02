@@ -106,11 +106,11 @@ export function setupAxiosInterceptors(axiosInstance: AxiosInstance): void {
           session?.access_token !== undefined &&
           session.access_token !== ""
         ) {
-          config.headers.Authorization = `Bearer ${session.access_token}`;
+          config.headers.set("Authorization", `Bearer ${session.access_token}`);
         }
 
         // Set company ID header
-        config.headers["X-Company-ID"] = companyId;
+        config.headers.set("X-Company-ID", companyId);
 
         // Set credentials for cookies
         config.withCredentials = true;

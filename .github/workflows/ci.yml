@@ -1,0 +1,161 @@
+name: Frontend Release Gate
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+      - "feature/**"
+      - "fix/**"
+      - "test/**"
+  pull_request:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
+  NEXT_PUBLIC_SUPABASE_ANON_KEY_A: ci-anon-key
+  NEXT_PUBLIC_SUPABASE_URL_A: https://example.supabase.co
+
+jobs:
+  quality:
+    name: frontend-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and module contract tests
+        run: npm run test:run
+
+      - name: Production build
+        run: npm run build
+
+  browser-smoke:
+    name: frontend-browser-smoke
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PLAYWRIGHT_CHANNEL: chromium
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke tests
+        run: npm run test:e2e
+
+  backend-contract:
+    name: frontend-backend-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Read pinned backend version
+        id: backend-version
+        shell: bash
+        run: |
+          echo "repository=$(node -p "require('./backend-version.json').repository")" >> "$GITHUB_OUTPUT"
+          echo "sha=$(node -p "require('./backend-version.json').sha")" >> "$GITHUB_OUTPUT"
+          echo "openapi_sha256=$(node -p "require('./backend-version.json').openapi_sha256")" >> "$GITHUB_OUTPUT"
+
+      - name: Verify backend release gate
+        env:
+          GH_TOKEN: ${{ secrets.SCS_BACKEND_READ_TOKEN }}
+        run: node scripts/verify-backend-release.mjs
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.backend-version.outputs.repository }}
+          ref: ${{ steps.backend-version.outputs.sha }}
+          token: ${{ secrets.SCS_BACKEND_READ_TOKEN }}
+          path: scs-be
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scs-be/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: scs-be
+        run: pip install -r requirements.txt
+
+      - name: Verify backend OpenAPI hash
+        working-directory: scs-be
+        env:
+          ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+          ALGORITHM: HS256
+          DATABASE_URL: postgresql://postgres:postgres@localhost/scs_contract
+          EXPECTED_OPENAPI_SHA256: ${{ steps.backend-version.outputs.openapi_sha256 }}
+          SECRET_KEY: ci-only-secret
+          SUPABASE_KEY: ci-anon-key
+          SUPABASE_SERVICE_KEY: ci-service-key
+          SUPABASE_URL: https://example.supabase.co
+        shell: bash
+        run: |
+          actual="$(
+            python -c "import hashlib,json; from app.main import app; payload=json.dumps(app.openapi(),sort_keys=True,separators=(',',':')).encode(); print(hashlib.sha256(payload).hexdigest())"
+          )"
+          test "$actual" = "$EXPECTED_OPENAPI_SHA256"
+
+  frontend-release-gate:
+    name: frontend-release-gate
+    if: ${{ always() }}
+    needs:
+      - quality
+      - browser-smoke
+      - backend-contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every frontend and backend contract check
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          BROWSER_RESULT: ${{ needs.browser-smoke.result }}
+          BACKEND_RESULT: ${{ needs.backend-contract.result }}
+        shell: bash
+        run: |
+          for result in \
+            "$QUALITY_RESULT" \
+            "$BROWSER_RESULT" \
+            "$BACKEND_RESULT"
+          do
+            if [ "$result" != "success" ]; then
+              echo "Required frontend result was: $result"
+              exit 1
+            fi
+          done

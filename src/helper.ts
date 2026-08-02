@@ -36,7 +36,7 @@ export const convertToQueryParams = (queryParams: object): string => {
   return queryString;
 };
 
-export function formatToDate(dateStr: string | undefined): string {
+export function formatToDate(dateStr: string | null | undefined): string {
   if (dateStr === undefined || dateStr === null) return "";
   const date = new Date(dateStr);
 
@@ -49,7 +49,7 @@ export function formatToDate(dateStr: string | undefined): string {
   return `${year}-${month}-${day}`;
 }
 
-export function formatToDateTime(dateStr: string | undefined): string {
+export function formatToDateTime(dateStr: string | null | undefined): string {
   if (dateStr === undefined || dateStr === null) return "-";
   const date = new Date(dateStr);
 

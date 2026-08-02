@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import axiosInstance from "../../utils/axiosConfig";
 import ViewStockAdjustment from "../../components/StockAdjustment/ViewStockAdjustment";
 import StockAdjustmentForm from "../../components/StockAdjustment/StockAdjustmentForm";
-import type { User } from "../Login";
+import type { User } from "../../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";

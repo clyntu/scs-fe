@@ -15,10 +15,9 @@ import {
 import SuppliersModal from "../../components/Suppliers/SuppliersModal";
 import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import axiosInstance from "../../utils/axiosConfig";
-import type { User } from "../Login";
 import { toast } from "react-toastify";
 
-import type { Supplier, PaginatedSuppliers } from "../../interface";
+import type { PaginatedSuppliers, Supplier, User } from "../../interface";
 
 import { convertToQueryParams, formatToSP, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";

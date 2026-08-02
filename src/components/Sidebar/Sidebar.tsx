@@ -27,7 +27,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PeopleIcon from "@mui/icons-material/People";
 import axiosInstance from "../../utils/axiosConfig";
-import type { User } from "../../pages/Login";
+import type { User } from "../../interface";
 import { authHelpers } from "../../supabase/supabaseClient";
 import { CompanySelector } from "../CompanySelector";
 

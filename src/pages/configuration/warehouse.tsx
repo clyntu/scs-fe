@@ -16,10 +16,9 @@ import WarehousesModal from "../../components/Warehouses/WarehousesModal";
 import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import ViewWHModal from "../../components/Items/ViewWHModal";
 import axiosInstance from "../../utils/axiosConfig";
-import type { User } from "../Login";
 import { toast } from "react-toastify";
 
-import type { Warehouse, PaginatedWarehouse } from "../../interface";
+import type { PaginatedWarehouse, User, Warehouse } from "../../interface";
 
 import { convertToQueryParams, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";

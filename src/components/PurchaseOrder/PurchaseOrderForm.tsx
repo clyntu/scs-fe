@@ -9,7 +9,6 @@ import { toast } from "react-toastify";
 import type { POPayload, POItemValues, NewPriceInstance } from "./interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 
-import type { User } from "../../pages/Login";
 import {
   areDiscountsValid,
   calculateTotalWithDiscounts,
@@ -21,6 +20,7 @@ import type {
   PaginatedSuppliers,
   PaginatedItems,
   PurchaseOrder,
+  User,
 } from "../../interface";
 
 import { addFourPlaces, getErrorMessage } from "../../helper";

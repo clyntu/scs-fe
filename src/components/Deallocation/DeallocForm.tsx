@@ -4,8 +4,8 @@ import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import type { User } from "../../pages/Login";
 import {
+  type User,
   type PaginatedWarehouse,
   type Customer,
   type PaginatedCustomers,

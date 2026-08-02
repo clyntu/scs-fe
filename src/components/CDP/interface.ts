@@ -5,9 +5,9 @@ import type {
   Customer,
   CDP,
   CPO,
+  User,
 } from "../../interface";
 import type { Dispatch, SetStateAction } from "react";
-import { type User } from "../../pages/Login";
 
 export interface CDPFormDetailsProps {
   openEdit: boolean;

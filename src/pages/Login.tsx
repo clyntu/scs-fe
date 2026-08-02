@@ -16,16 +16,7 @@ import axiosInstance from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { getSupabase } from "../supabase/supabaseClient";
 import type { CompanyId } from "../supabase/supabaseClient";
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-  role?: string; // User role: "admin", "user", "read_only"
-  is_admin?: boolean; // Admin flag
-  disabled?: boolean; // Whether user is disabled
-}
+import type { User } from "../interface";
 
 export default function Login(): JSX.Element {
   const { setCompany, session, ready } = useSupabase();
