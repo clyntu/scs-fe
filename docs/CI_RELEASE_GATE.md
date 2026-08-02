@@ -3,8 +3,30 @@
 ## Branch policy
 
 - Work from feature branches based on `dev`.
-- `dev` is the current production frontend branch.
-- Do not merge this feature branch into `dev` without explicit owner approval.
+- `main` is the only Vercel Production branch.
+- `dev` is the integration branch and is intentionally disabled from Vercel
+  Git deployments in `vercel.json`; use it for local development.
+- Promote `dev` to `main` only through a pull request after both repositories'
+  aggregate gates are green.
+
+## Environment policy
+
+| Context | Branch/source | Backend | Supabase |
+|---|---|---|---|
+| Production | Vercel `main` | Production Render service | Production project |
+| Local development | Local `dev` checkout | Local/dev backend | Development project |
+| GitHub Actions | Any checked branch | CI fixtures and pinned backend evidence | CI placeholders |
+
+For local development, copy `.env.development.example` to
+`.env.development.local` and fill it with the development Supabase URL and
+publishable/anon key. This file is ignored by Git. Do not copy Production
+credentials into a development environment file.
+
+Vercel Production variables must target Production only. Preview or
+Development variables must never point to the Production Render or Supabase
+services. Until development values are configured in Vercel, use local
+development rather than a Vercel Preview for workflows that read or mutate
+business data.
 
 ## Required repository secret
 
@@ -40,9 +62,10 @@ unresolved “latest dev” reference.
 - `frontend-backend-contract`
 - `frontend-release-gate`
 
-Configure Vercel Deployment Checks to require `frontend-release-gate`. A failed
-backend module gate causes `frontend-backend-contract` to fail and therefore
-blocks frontend production promotion.
+Vercel Deployment Checks require `frontend-release-gate` before assigning the
+production alias. A failed backend module gate causes
+`frontend-backend-contract` to fail and therefore blocks frontend production
+promotion.
 
 Configure Render to require the backend repository's `backend-release-gate`
 using **After CI Checks Pass**.
