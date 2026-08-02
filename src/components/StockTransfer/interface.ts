@@ -23,6 +23,7 @@ export interface STFormDetailsProps {
   warehouses: PaginatedWarehouse;
   selectedWarehouse: Warehouse | null;
   setSelectedWarehouse: (warehouse: Warehouse | null) => void;
+  receivingAreaWarehouse: Warehouse | null;
   receivingReports: PaginatedRR;
   selectedRR: ReceivingReport | null;
   setSelectedRR: (receivingReport: ReceivingReport | null) => void;
@@ -44,6 +45,7 @@ export interface WarehouseItemsFE {
   stock_code: string;
   total_quantity: number;
   on_stock: number;
+  allocated: number;
   warehouse_1: Warehouse | null; // Name or identifier for Warehouse 1
   warehouse_1_qty: string | undefined; // Quantity allocated to Warehouse 1
   warehouse_2: Warehouse | null; // Name or identifier for Warehouse 2
@@ -57,6 +59,7 @@ export interface STFormTableProps {
   warehouses: PaginatedWarehouse;
   warehouseItems: WarehouseItemsFE[];
   setWarehouseItems: (warehouseItems: WarehouseItemsFE[]) => void;
+  isLoadingItems: boolean;
 }
 
 interface Destinations {
@@ -70,4 +73,20 @@ export interface STFormPayload {
   product_name: string;
   stock_code: string;
   destinations: Destinations[];
+}
+
+export interface RRAvailableStockItem {
+  item_id: number;
+  stock_code: string;
+  product_name: string;
+  rr_on_stock: number;
+  total_transferred: number;
+  available_stock: number;
+  warehouse_id: number;
+}
+
+export interface RRAvailableStockResponse {
+  rr_id: number;
+  warehouse_id: number;
+  items: RRAvailableStockItem[];
 }

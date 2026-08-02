@@ -1,21 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input } from "@mui/joy";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import {
+  Input,
+  FormControl,
+  FormLabel,
+  CircularProgress,
+  Typography,
+} from "@mui/joy";
 import SuppliersModal from "../../components/Suppliers/SuppliersModal";
-import DeleteSuppliersModal from "../../components/Suppliers/DeleteSupplierModal";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import axiosInstance from "../../utils/axiosConfig";
-import type { User } from "../Login";
 import { toast } from "react-toastify";
-import { Pagination } from "@mui/material";
 
-import type { Supplier, PaginatedSuppliers } from "../../interface";
+import type { PaginatedSuppliers, Supplier, User } from "../../interface";
 
-import { convertToQueryParams } from "../../helper";
-
-const PAGE_LIMIT = 10;
+import { convertToQueryParams, formatToSP, formatToDate } from "../../helper";
+import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const SupplierForm = (): JSX.Element => {
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
@@ -29,37 +34,148 @@ const SupplierForm = (): JSX.Element => {
   const [userId, setUserId] = useState<number | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
 
-  const getAllSuppliers = (page: number, search_term: string) => {
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
+  const getAllSuppliers = (searchTerm: string): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current !== null) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setSuppliers({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     axiosInstance
       .get<PaginatedSuppliers>(
         `/api/suppliers/?${convertToQueryParams({
-          page,
-          limit: PAGE_LIMIT,
-          sort_by: "supplier_id",
-          sort_order: "desc",
-          search_term,
+          page: 1,
+          limit,
+          sort_by: "name",
+          sort_order: "asc",
+          search_term: searchTerm,
         })}`,
       )
-      .then((response) => setSuppliers(response.data))
-      .catch((error) => console.error("Error:", error));
+      .then((response) => {
+        setSuppliers(response.data);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
-    getAllSuppliers(value, searchTerm);
-  };
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    axiosInstance
+      .get<PaginatedSuppliers>(
+        `/api/suppliers/?${convertToQueryParams({
+          page: nextPage,
+          limit,
+          sort_by: "name",
+          sort_order: "asc",
+          search_term: searchTerm,
+        })}`,
+      )
+      .then((response) => {
+        const newItems = response.data.items;
+        setSuppliers((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (container === null) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current !== null) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container === null) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current !== null) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      getAllSuppliers(searchTerm);
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm]);
 
   useEffect(() => {
     // Fetch suppliers
-    getAllSuppliers(page, searchTerm);
+    // getAllSuppliers(page, searchTerm);
     // Fetch user ID
     axiosInstance
-      .get<User>("/users/me/")
+      .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
   }, []);
@@ -69,20 +185,12 @@ const SupplierForm = (): JSX.Element => {
 
     const payload = {
       supplier_id: newSupplier.supplier_id,
-      code: newSupplier.code,
       name: newSupplier.name,
-      building_address: newSupplier.building_address,
-      street_address: newSupplier.street_address,
-      city: newSupplier.city,
-      province: newSupplier.province,
-      country: newSupplier.country,
-      zip_code: newSupplier.zip_code,
+      address: newSupplier.address,
       contact_person: newSupplier.contact_person,
       contact_number: newSupplier.contact_number,
       email: newSupplier.email,
-      fax_number: newSupplier.fax_number,
       currency: newSupplier.currency,
-      discount_rate: newSupplier.discount_rate,
       supplier_balance: newSupplier.supplier_balance,
       modified_by: userId,
       notes: newSupplier.notes,
@@ -103,20 +211,12 @@ const SupplierForm = (): JSX.Element => {
 
   const handleCreateSupplier = async (newSupplier: Supplier): Promise<void> => {
     const payload = {
-      code: newSupplier.code,
       name: newSupplier.name,
-      building_address: newSupplier.building_address,
-      street_address: newSupplier.street_address,
-      city: newSupplier.city,
-      province: newSupplier.province,
-      country: newSupplier.country,
-      zip_code: newSupplier.zip_code,
+      address: newSupplier.address,
       contact_person: newSupplier.contact_person,
       contact_number: newSupplier.contact_number,
       email: newSupplier.email,
-      fax_number: newSupplier.fax_number,
       currency: newSupplier.currency,
-      discount_rate: newSupplier.discount_rate,
       supplier_balance: newSupplier.supplier_balance,
       created_by: userId,
       notes: newSupplier.notes,
@@ -154,11 +254,24 @@ const SupplierForm = (): JSX.Element => {
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
-          <h2>Suppliers</h2>
+        <Box
+          sx={{
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography level="h2" component="h1">
+            Suppliers
+          </Typography>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="bg-button-primary"
             color="primary"
+            startDecorator={<AddRoundedIcon />}
             onClick={() => {
               setOpenAdd(true);
             }}
@@ -167,33 +280,41 @@ const SupplierForm = (): JSX.Element => {
           </Button>
         </Box>
 
-        <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Name"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button
-            onClick={() => getAllSuppliers(1, searchTerm)}
-            className="ml-4 w-[80px] bg-button-primary"
-            size="sm"
-          >
-            Search
-          </Button>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Name"
+              startDecorator={<SearchRoundedIcon fontSize="small" />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
         </Box>
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
-            "--Table-lastColumnWidth": "144px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--Table-firstColumnWidth": "100px",
+            "--Table-lastColumnWidth": "140px",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -216,126 +337,243 @@ const SupplierForm = (): JSX.Element => {
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "600px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
+            stickyHeader
+            hoverRow
             sx={{
-              "& tr > *:first-child": {
+              fontSize: "13px",
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
-              "& tr > *:last-child": {
+              "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
+                zIndex: 10,
+              },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "background.level1",
+                zIndex: 11,
+              },
+              "& thead tr > *:last-child": {
+                position: "sticky",
+                right: 0,
+                top: 0,
+                bgcolor: "background.level1",
+                zIndex: 11,
+              },
+              "& thead th": {
+                backgroundColor: "background.level1",
               },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
-                <th style={{ width: 300 }}>Name</th>
-                <th style={{ width: 300 }}>Building Address</th>
-                <th style={{ width: 300 }}>Street Address</th>
-                <th style={{ width: 150 }}>City</th>
-                <th style={{ width: 150 }}>Province</th>
-                <th style={{ width: 150 }}>Country</th>
-                <th style={{ width: 100 }}>Zip Code</th>
-                <th style={{ width: 150 }}>Contact Person</th>
-                <th style={{ width: 150 }}>Contact Number</th>
-                <th style={{ width: 300 }}>Contact Email</th>
-                <th style={{ width: 150 }}>Fax Number</th>
-                <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 100 }}>Discount Rate</th>
-                <th style={{ width: 100 }}>Supplier Balance</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
-              {suppliers.items.map((supplier) => (
-                <tr
-                  key={supplier.supplier_id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(supplier);
-                  }}
-                >
-                  <td>{supplier.code}</td>
-                  <td>{supplier.name}</td>
-                  <td>{supplier.building_address}</td>
-                  <td>{supplier.street_address}</td>
-                  <td>{supplier.city}</td>
-                  <td>{supplier.province}</td>
-                  <td>{supplier.country}</td>
-                  <td>{supplier.zip_code}</td>
-                  <td>{supplier.contact_person}</td>
-                  <td>{supplier.contact_number}</td>
-                  <td>{supplier.email}</td>
-                  <td>{supplier.fax_number}</td>
-                  <td>{supplier.currency}</td>
-                  <td>{supplier.discount_rate}</td>
-                  <td>{supplier.supplier_balance}</td>
-                  <td>{supplier?.creator?.full_name}</td>
-                  <td>{supplier.date_created}</td>
-                  <td>{supplier?.modifier?.full_name}</td>
-                  <td>{supplier.date_modified}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(supplier);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(supplier);
-                        }}
-                      >
-                        Delete
-                      </Button>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td
+                    colSpan={13}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">
+                        Loading suppliers...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Code
+                    </th>
+                    <th style={{ width: 300 }}>Name</th>
+                    <th style={{ width: 400 }}>Address</th>
+                    <th style={{ width: 150 }}>Contact Person</th>
+                    <th style={{ width: 150 }}>Contact Number</th>
+                    <th style={{ width: 300 }}>Email</th>
+                    <th style={{ width: 100 }}>Currency</th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Supplier Balance
+                    </th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="actions"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {suppliers.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={13}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No suppliers found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
+                  {suppliers.items.map((supplier) => (
+                    <tr
+                      key={supplier.supplier_id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(supplier);
+                      }}
+                    >
+                      <td>{formatToSP(supplier.supplier_id)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {supplier.name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="400px">
+                          {supplier.address}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {supplier.contact_person}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {supplier.contact_number}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {supplier.email}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{supplier.currency}</td>
+                      <td style={{ textAlign: "right" }}>
+                        {supplier.supplier_balance}
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {supplier?.creator?.full_name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{formatToDate(supplier.date_created)}</td>
+                      <td>
+                        <TooltipTableCell maxWidth="200px">
+                          {supplier?.modifier?.full_name}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        {formatToDate(supplier.date_modified ?? undefined)}
+                      </td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(supplier);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(supplier);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
-      </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.floor(suppliers.total / PAGE_LIMIT) + 1}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
+
+        {/* Infinite Scroll Status */}
+        {suppliers.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {suppliers.items.length} of {suppliers.total} items •
+                Scroll for more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {suppliers.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <SuppliersModal
         open={openAdd}
@@ -350,10 +588,11 @@ const SupplierForm = (): JSX.Element => {
         row={selectedRow}
         onSave={handleSaveSupplier}
       />
-      <DeleteSuppliersModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Supplier"
+        entityLabel="Supplier"
         onDelete={handleDeleteSupplier}
       />
     </>

@@ -4,6 +4,7 @@ import ModalClose from "@mui/joy/ModalClose";
 import Sheet from "@mui/joy/Sheet";
 import { Button, Box, ListItem, List, Checkbox, Table } from "@mui/joy";
 import type { PurchaseOrder } from "../../../interface";
+import { withTooltip } from "../../shared/withTooltip";
 
 const SelectPOModal = ({
   open,
@@ -97,7 +98,7 @@ const SelectPOModal = ({
                             </ListItem>
                           </td>
                           <td>{PO.id}</td>
-                          <td>{PO.reference_number}</td>
+                          <td>{withTooltip(PO.reference_number, "120px")}</td>
                           <td>{PO.transaction_date}</td>
                         </tr>
                       ))}
@@ -112,15 +113,16 @@ const SelectPOModal = ({
             </div>
             <div className="flex justify-end mt-5">
               <Button
-                className="ml-4 w-[130px]"
                 size="sm"
                 variant="outlined"
+                sx={{ ml: 2, width: 130 }}
                 onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{ ml: 2, width: 130 }}
+                className="bg-button-primary"
                 color="primary"
                 size="sm"
                 onClick={selectCheckedPOs}

@@ -5,17 +5,16 @@ import {
   Textarea,
   Card,
   Stack,
-  Button,
   Select,
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Typography,
 } from "@mui/joy";
-import { AVAILABLE_CURRENCIES } from "../../../constants";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../../helper";
 import type { CPOFormProps } from "../interface";
 
@@ -40,8 +39,6 @@ const CPOFormDetails = ({
   setRemarks,
   referenceNumber,
   setReferenceNumber,
-  priceLevel,
-  setPriceLevel,
   // Summary Amounts
   netTotal,
   grossTotal,
@@ -61,12 +58,14 @@ const CPOFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>CPO No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  CPO No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -75,12 +74,14 @@ const CPOFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
                   onChange={(event, newValue) => {
                     setSelectedCustomer(newValue);
+                    // @ts-expect-error (Used null instead of undefined.)
+                    setSelectedItems(INITIAL_SELECTED_ITEMS);
                   }}
                   size="sm"
                   className="w-[100%]"
@@ -89,21 +90,6 @@ const CPOFormDetails = ({
                   required
                 />
               </div>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Price Level</FormLabel>
-              <Select
-                onChange={(event, value) => {
-                  if (value !== null) setPriceLevel(value);
-                }}
-                size="sm"
-                value={priceLevel}
-                disabled={isEditDisabled}
-              >
-                <Option value="1">1</Option>
-                <Option value="2">2</Option>
-                <Option value="3">3</Option>
-              </Select>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Status</FormLabel>
@@ -117,7 +103,6 @@ const CPOFormDetails = ({
               >
                 <Option value="unposted">Unposted</Option>
                 <Option value="posted">Posted</Option>
-                <Option value="completed">Completed</Option>
               </Select>
             </FormControl>
 
@@ -131,100 +116,75 @@ const CPOFormDetails = ({
                 required
               />
             </FormControl>
+            <FormControl size="sm" sx={{ width: "22%" }}>
+              <FormLabel>Ref No.</FormLabel>
+              <Input
+                size="sm"
+                placeholder="Ref No."
+                onChange={(e) => setReferenceNumber(e.target.value)}
+                value={referenceNumber}
+                disabled={isEditDisabled}
+              />
+            </FormControl>
           </Stack>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Cust Disc. 1</FormLabel>
+              <FormLabel>Cust Disc. 1 (%)</FormLabel>
               <Input
                 value={discounts.customer[0]}
                 onChange={(e) =>
                   handleDiscountChange("customer", 0, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Trans Disc. 1</FormLabel>
+              <FormLabel>Trans Disc. 1 (%)</FormLabel>
               <Input
                 value={discounts.transaction[0]}
                 onChange={(e) =>
                   handleDiscountChange("transaction", 0, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Cust Disc. 2</FormLabel>
+              <FormLabel>Cust Disc. 2 (%)</FormLabel>
               <Input
                 value={discounts.customer[1]}
                 onChange={(e) =>
                   handleDiscountChange("customer", 1, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="0"
                 disabled={isEditDisabled}
               />
             </FormControl>
             <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Trans Disc. 2</FormLabel>
+              <FormLabel>Trans Disc. 2 (%)</FormLabel>
               <Input
                 value={discounts.transaction[1]}
                 onChange={(e) =>
                   handleDiscountChange("transaction", 1, e.target.value)
                 }
-                placeholder="Enter % or actual discount"
+                placeholder="0"
                 disabled={isEditDisabled}
-              />
-            </FormControl>
-          </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
-            <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Cust Disc. 3</FormLabel>
-              <Input
-                value={discounts.customer[2]}
-                onChange={(e) =>
-                  handleDiscountChange("customer", 2, e.target.value)
-                }
-                placeholder="Enter % or actual discount"
-                disabled={isEditDisabled}
-              />
-            </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Trans Disc. 3</FormLabel>
-              <Input
-                value={discounts.transaction[2]}
-                onChange={(e) =>
-                  handleDiscountChange("transaction", 2, e.target.value)
-                }
-                placeholder="Enter % or actual discount"
-                disabled={isEditDisabled}
-              />
-            </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
-              <FormLabel>Ref No.</FormLabel>
-              <Input
-                size="sm"
-                placeholder="Search"
-                onChange={(e) => setReferenceNumber(e.target.value)}
-                value={referenceNumber}
-                disabled={isEditDisabled}
-                required
               />
             </FormControl>
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Gross Total</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(grossTotal)}</h5>{" "}
+              <h5>{addCommaToNumberWithTwoPlaces(grossTotal)}</h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>NET Amount</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(netTotal)}</h5>
+              <h5>{addCommaToNumberWithTwoPlaces(netTotal)}</h5>
             </FormControl>
           </div>
           <Divider />

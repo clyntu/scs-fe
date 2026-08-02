@@ -1,54 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import jsPDF from "jspdf";
+import JsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CDR } from "../../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { calculatePercentageDiscountedAmount } from "../../utils/discountCalculations";
 
-const calculateNetForRow = (
-  newValue: number,
-  allocItem: any,
-  price: number,
-): number => {
-  let result = newValue * price;
-
-  if (allocItem.customer_discount_1.includes("%")) {
-    const cd1 = allocItem.customer_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(cd1) / 100);
-  }
-
-  if (allocItem.customer_discount_2.includes("%")) {
-    const cd2 = allocItem.customer_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(cd2) / 100);
-  }
-
-  if (allocItem.customer_discount_3.includes("%")) {
-    const cd3 = allocItem.customer_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(cd3) / 100);
-  }
-
-  if (allocItem.transaction_discount_1.includes("%")) {
-    const td1 = allocItem.transaction_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(td1) / 100);
-  }
-
-  if (allocItem.transaction_discount_2.includes("%")) {
-    const td2 = allocItem.transaction_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(td2) / 100);
-  }
-
-  if (allocItem.transaction_discount_3.includes("%")) {
-    const td3 = allocItem.transaction_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(td3) / 100);
-  }
-
-  if (isNaN(result)) return 0;
-
-  return result;
-};
-
-export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
-  const doc = new jsPDF({
+export const generateDeliveryReceiptPDF = (
+  selectedRow: CDR,
+  companyId: string,
+): void => {
+  const doc = new JsPDF({
     orientation: "portrait",
     unit: "pt",
     format: "A4",
@@ -59,30 +21,34 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   // Company Name (bold)
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("Peterson Parts Trading Inc.", 40, 40);
 
-  // Address and contact info (normal)
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-  doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-  doc.text("FAX#: 724-8680", 40, 70);
-  doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
+  const title = companyId === "company-a" ? "P.P.T." : "MA Inc.";
+  doc.text(title, 40, 40);
 
-  // "PRICELIST" aligned to the right
+  // D.R. No. aligned to the right (same Y position as company title)
+  const headerText = `D.R. No.: ${selectedRow.id}`;
+  const rightMargin = pageWidth - 40;
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text(`D.R. No.: ${selectedRow.id}`, pageWidth - 130, 80); // Adjust x-position as needed
 
-  // Bottom border line
+  // Get text width
+  const headerTextWidth = doc.getTextWidth(headerText);
+
+  // Calculate aligned X position
+  const xPos = rightMargin - headerTextWidth;
+
+  // Add text at the right-aligned position
+  doc.text(headerText, xPos, 40);
+
+  // Bottom border line - just below the title
   doc.setLineWidth(0.5);
-  doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
+  doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
 
   // 3. Customer and Date
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Customer: ${selectedRow.customer.name}`, 40, 110);
-  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 130);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Customer: ${selectedRow.customer.name}`, 40, 70);
+  doc.text(`Address: ${selectedRow.customer?.address ?? ""}`, 40, 85);
   doc.text(
     `Date: ${new Date(selectedRow.transaction_date).toLocaleDateString(
       "en-US",
@@ -92,13 +58,13 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
         day: "2-digit",
       },
     )}`,
-    pageWidth - 140,
-    110,
+    pageWidth - 125,
+    70,
   ); // top-right area
 
   // 4. Draw a horizontal line below header if you like (optional)
   doc.setLineWidth(0.5);
-  doc.line(40, 140, pageWidth - 40, 140);
+  doc.line(40, 100, pageWidth - 40, 100);
 
   // 5. Table columns and data
   const columns = [
@@ -133,10 +99,10 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
       addCommaToNumberWithTwoPlaces(itemObj?.price) ?? 0.0,
       discString,
       addCommaToNumberWithTwoPlaces(
-        calculateNetForRow(
+        calculatePercentageDiscountedAmount(
           Number(item.delivery_plan_item.planned_qty),
-          allocItem.customer_purchase_order,
           itemObj?.price ?? 0,
+          allocItem.customer_purchase_order,
         ) || 0,
       ),
     ];
@@ -144,7 +110,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
 
   // 6. Render the table
   autoTable(doc, {
-    startY: 150,
+    startY: 110,
     head: [columns],
     body: bodyData,
     theme: "plain",
@@ -157,7 +123,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
       5: { halign: "right", cellWidth: 60 }, // Amount
     },
     styles: {
-      fontSize: 10,
+      fontSize: 9,
       cellPadding: { top: 2, right: 8, bottom: 2, left: 8 },
     },
     didParseCell: (hookData) => {
@@ -179,7 +145,7 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   //   doc.line(40, finalY + 10, pageWidth - 40, finalY + 10);
 
   // Draw LESS label and value
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("Fixed Discount:", pageWidth - 180, finalY + 30);
   doc.setFont("helvetica", "normal");
@@ -238,6 +204,8 @@ export const generateDeliveryReceiptPDF = (selectedRow: CDR): void => {
   doc.text("Date Received:", pageWidth - 220, footerY + 50);
   doc.line(pageWidth - 130, footerY + 53, pageWidth - 40, footerY + 53); // line under date
 
-  // 9. Save or download
-  doc.save("delivery-receipt.pdf");
+  // 9. Open PDF in new tab for preview
+  const pdfBlob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, "_blank");
 };

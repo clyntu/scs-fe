@@ -10,15 +10,17 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Typography,
 } from "@mui/joy";
 import type { SDRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import type { PaginatedPO, PurchaseOrder } from "../../../interface";
 import SelectPOModal from "./SelectPOModal";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
 
@@ -103,7 +105,10 @@ const SDRFormDetails = ({
         )
         .then((response) =>
           setUnservedPOs(
-            response.data.items.filter((PO) => PO.status === "posted"),
+            response.data.items
+              .filter((PO) => PO.status === "posted")
+              .filter((PO) => PO.status === "posted")
+              .sort((a, b) => b.id - a.id),
           ),
         )
         .catch((error) => console.error("Error:", error));
@@ -111,7 +116,7 @@ const SDRFormDetails = ({
   }, [selectedSupplier]);
 
   useEffect(() => {
-    if (!openEdit) getFixedAmtDiscounts();
+    getFixedAmtDiscounts();
   }, [selectedPOs]);
 
   return (
@@ -122,22 +127,24 @@ const SDRFormDetails = ({
         unservedPOs={unservedPOs}
         setSelectedPOs={setSelectedPOs}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>SDR No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  SDR No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
           {openEdit && <Divider />}
 
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={suppliers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedSupplier}
@@ -222,32 +229,32 @@ const SDRFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>FOB Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(fobTotal)}`}</h5>{" "}
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(fobTotal)}`}</h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>NET Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>LANDED Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(landedTotal / pesoRate || 0)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(Number.isNaN(landedTotal / pesoRate) ? 0 : landedTotal / pesoRate)}`}</h5>
             </FormControl>
           </div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>FOB Total</FormLabel>
               <h5>
-                ₱{addCommaToNumberWithFourPlaces(fobTotal * pesoRate)}
+                ₱{addCommaToNumberWithTwoPlaces(fobTotal * pesoRate)}
               </h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>NET Amount</FormLabel>
-              <h5>₱{addCommaToNumberWithFourPlaces(netAmount * pesoRate)}</h5>
+              <h5>₱{addCommaToNumberWithTwoPlaces(netAmount * pesoRate)}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>LANDED Total</FormLabel>

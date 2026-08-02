@@ -1,22 +1,36 @@
 import RRFormDetails from "./RRForm/RRFormDetails";
 import RRFormTable from "./RRForm/RRFormTable";
 import RRFormExpenses from "./RRForm/RRFormExpenses";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import type { User } from "../../pages/Login";
 import type {
+  User,
   Supplier,
   PaginatedSuppliers,
   RRFormProps,
   DeliveryReceipt,
+  ReceivingReport,
 } from "../../interface";
-import { Expense } from "./interface";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import type { ExpenseFormRow } from "./interface";
+import CircularProgress from "@mui/joy/CircularProgress";
+import { removeCommas, getErrorMessage } from "../../helper";
+
+const createEmptyExpense = (): ExpenseFormRow => ({
+  clientKey: uuid(),
+  expense: "",
+  amount: undefined,
+  comments: "",
+});
+
+const normalizeExpenseAmount = (amount: ExpenseFormRow["amount"]): number => {
+  const parsedAmount = Number(removeCommas(String(amount ?? "")));
+  return Number.isFinite(parsedAmount) ? parsedAmount : 0;
+};
 
 const ReceivingReportForm = ({
   setOpen,
@@ -26,12 +40,6 @@ const ReceivingReportForm = ({
   title,
 }: RRFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
-  const initialExpense: Expense = {
-    id: uuid(),
-    expense: "",
-    amount: undefined,
-    comments: "",
-  };
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
     total: 0,
     items: [],
@@ -45,14 +53,20 @@ const ReceivingReportForm = ({
   const [referenceNumber, setReferenceNumber] = useState("");
   const [remarks, setRemarks] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
-  const [pesoRate, setPesoRate] = useState<number | string>(56);
+  const [pesoRate, setPesoRate] = useState<number | string>("");
   const [currencyUsed, setCurrencyUsed] = useState<string>("USD");
   const [amountDiscount, setAmountDiscount] = useState(0);
   const [totalGross, setTotalGross] = useState(0);
   const [totalNet, setTotalNet] = useState(0);
   const [servedAmt, setServedAmt] = useState<Record<string, number>>({});
-  const [expenses, setExpenses] = useState([initialExpense]);
+  const [expenses, setExpenses] = useState<ExpenseFormRow[]>(() => [
+    createEmptyExpense(),
+  ]);
   const [totalExpense, setTotalExpense] = useState(0);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
 
   const fobTotal = totalGross;
   const netAmount = totalNet - amountDiscount;
@@ -67,13 +81,15 @@ const ReceivingReportForm = ({
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/")
+      .get<PaginatedSuppliers>(
+        "/api/suppliers/?with_active_sdr=True&sort_by=name",
+      )
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 
     // Fetch user ID
     axiosInstance
-      .get<User>("/users/me/")
+      .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
   }, []);
@@ -83,39 +99,51 @@ const ReceivingReportForm = ({
     const supplierID = selectedRow?.supplier_id;
 
     if (selectedRow !== null && selectedRow !== undefined) {
-      setStatus(selectedRow?.status ?? "unposted");
-      setTransactionDate(selectedRow?.transaction_date ?? currentDate);
-      setReferenceNumber(selectedRow?.reference_number ?? "");
-      setRemarks(selectedRow?.remarks ?? "");
-      setSelectedSDRs(selectedRow?.sdrs);
-      setPesoRate(selectedRow?.rate ?? 56);
+      const fetchValues = (selectedRow: ReceivingReport): void => {
+        setStatus(selectedRow?.status ?? "unposted");
+        setTransactionDate(selectedRow?.transaction_date ?? currentDate);
+        setReferenceNumber(selectedRow?.reference_number ?? "");
+        setRemarks(selectedRow?.remarks ?? "");
+        setSelectedSDRs(selectedRow?.sdrs);
+        setPesoRate(selectedRow?.rate ?? "");
+        setCurrencyUsed(selectedRow?.currency ?? "USD");
 
-      // Get Fixed Discounts and sum them
-      let totalDiscount = 0;
-      selectedRow.sdrs.forEach((sdr) => {
-        totalDiscount += sdr.discount_amount;
-      });
-      setAmountDiscount(totalDiscount);
+        // Get Fixed Discounts and sum them
+        let totalDiscount = 0;
+        selectedRow.sdrs.forEach((sdr) => {
+          totalDiscount += sdr.discount_amount;
+        });
+        setAmountDiscount(totalDiscount);
 
-      // Set expenses
-      setExpenses(
-        selectedRow.expenses.map((expense) => {
-          return {
-            id: expense.id,
-            expense: expense.expense,
-            amount: expense.amount,
-            comments: expense.comments,
-          };
-        }),
-      );
+        // Set expenses
+        setExpenses(
+          selectedRow.expenses.map((expense) => {
+            return {
+              id: expense.id,
+              clientKey: uuid(),
+              expense: expense.expense,
+              amount: normalizeExpenseAmount(expense.amount),
+              comments: expense.comments,
+            };
+          }),
+        );
+      };
 
       // Get Supplier for Edit
       axiosInstance
         .get<Supplier>(`/api/suppliers/${supplierID}`)
         .then((response) => {
           setSelectedSupplier(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -123,16 +151,21 @@ const ReceivingReportForm = ({
     setSelectedSupplier(null);
     setSelectedSDRs([]);
     setStatus("unposted");
-    setPesoRate(56);
+    setPesoRate("");
     setCurrencyUsed("USD");
     setTransactionDate(currentDate);
     setReferenceNumber("");
     setRemarks("");
     setAmountDiscount(0);
-    setExpenses([initialExpense]);
+    setExpenses([createEmptyExpense()]);
   };
 
   const handleCreateReceivingReport = async (): Promise<void> => {
+    if (referenceNumber === "") {
+      toast.error("Please choose an SDR.");
+      return;
+    }
+
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -151,7 +184,7 @@ const ReceivingReportForm = ({
       expenses: expenses.map((expense) => {
         return {
           expense: expense.expense,
-          amount: expense.amount || 0,
+          amount: normalizeExpenseAmount(expense.amount),
           currency: "",
           comments: expense.comments,
           created_by: userId,
@@ -160,19 +193,27 @@ const ReceivingReportForm = ({
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/receiving-reports/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
   const handleEditReceivingReport = async (): Promise<void> => {
+    if (referenceNumber === "") {
+      toast.error("Please choose an SDR.");
+      return;
+    }
+
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -189,33 +230,36 @@ const ReceivingReportForm = ({
       modified_by: userId,
       sdr_ids: selectedSDRs.map((SDR) => SDR.id),
       expenses: expenses.map((expense) => {
-        return {
-          id: expense.id,
+        const expensePayload = {
           expense: expense.expense,
-          amount: expense.amount || 0,
+          amount: normalizeExpenseAmount(expense.amount),
           currency: "",
           comments: expense.comments,
           modified_by: userId,
         };
+
+        return expense.id === undefined
+          ? expensePayload
+          : { ...expensePayload, id: expense.id };
       }),
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/receiving-reports/${selectedRow?.id}`,
         payload,
       );
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setIsSaving(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
-      console.log(
-        error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail,
-      );
+      setIsSaving(false);
     }
   };
 
@@ -228,91 +272,111 @@ const ReceivingReportForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
-        <Button
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <RRFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        suppliers={suppliers}
-        // Fields
-        selectedSupplier={selectedSupplier}
-        setSelectedSupplier={setSelectedSupplier}
-        selectedSDRs={selectedSDRs}
-        setSelectedSDRs={setSelectedSDRs}
-        status={status}
-        setStatus={setStatus}
-        pesoRate={pesoRate}
-        setPesoRate={setPesoRate}
-        currencyUsed={currencyUsed}
-        setCurrencyUsed={setCurrencyUsed}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        amountDiscount={amountDiscount}
-        setAmountDiscount={setAmountDiscount}
-        // Summary Amounts
-        fobTotal={fobTotal}
-        netAmount={netAmount}
-        landedTotal={landedTotal}
-        totalExpense={totalExpense}
-        percentNetCost={percentNetCost}
-        isEditDisabled={isEditDisabled}
-      />
-      <RRFormTable
-        selectedRow={selectedRow}
-        selectedSDRs={selectedSDRs}
-        setSelectedSDRs={setSelectedSDRs}
-        totalNet={totalNet}
-        servedAmt={servedAmt}
-        setServedAmt={setServedAmt}
-        setTotalNet={setTotalNet}
-        setTotalGross={setTotalGross}
-        openEdit={openEdit}
-        pesoRate={pesoRate}
-        percentNetCost={percentNetCost}
-      />
-      <Divider />
-      <RRFormExpenses
-        selectedSDRs={selectedSDRs}
-        expenses={expenses}
-        setExpenses={setExpenses}
-        setTotalExpense={setTotalExpense}
-        isEditDisabled={isEditDisabled}
-      />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <RRFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            suppliers={suppliers}
+            // Fields
+            selectedSupplier={selectedSupplier}
+            setSelectedSupplier={setSelectedSupplier}
+            selectedSDRs={selectedSDRs}
+            setSelectedSDRs={setSelectedSDRs}
+            status={status}
+            setStatus={setStatus}
+            pesoRate={pesoRate}
+            setPesoRate={setPesoRate}
+            currencyUsed={currencyUsed}
+            setCurrencyUsed={setCurrencyUsed}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            amountDiscount={amountDiscount}
+            setAmountDiscount={setAmountDiscount}
+            // Summary Amounts
+            fobTotal={fobTotal}
+            netAmount={netAmount}
+            landedTotal={landedTotal}
+            totalExpense={totalExpense}
+            percentNetCost={percentNetCost}
+            isEditDisabled={isEditDisabled}
+          />
+          <RRFormTable
+            selectedRow={selectedRow}
+            selectedSDRs={selectedSDRs}
+            setSelectedSDRs={setSelectedSDRs}
+            totalNet={totalNet}
+            servedAmt={servedAmt}
+            setServedAmt={setServedAmt}
+            setTotalNet={setTotalNet}
+            setTotalGross={setTotalGross}
+            openEdit={openEdit}
+            pesoRate={pesoRate}
+            percentNetCost={percentNetCost}
+          />
+          <Divider />
+          <RRFormExpenses
+            selectedSDRs={selectedSDRs}
+            expenses={expenses}
+            setExpenses={setExpenses}
+            setTotalExpense={setTotalExpense}
+            isEditDisabled={isEditDisabled}
+          />
+          <div className="flex justify-end mt-4">
+            <Button
+              sx={{
+                ml: 2,
+                width: "130px",
+              }}
+              className="w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+                resetForm();
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!hasSaved && !isEditDisabled && (
+              <Button
+                type="submit"
+                sx={{
+                  ml: 2,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

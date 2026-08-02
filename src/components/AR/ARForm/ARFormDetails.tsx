@@ -9,13 +9,15 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Typography,
 } from "@mui/joy";
 import type { ARFormDetailsProps } from "../interface";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
+  addTwoPlaces,
 } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const ARFormDetails = ({
   openEdit,
@@ -52,19 +54,72 @@ const ARFormDetails = ({
   refNo,
   setRefNo,
   paymentStatus,
+  selectedCDR,
+  setSelectedCDR,
+  cdrNumbers,
+  outstandingTrans,
+  setOutstandingTrans,
 }: ARFormDetailsProps): JSX.Element => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleDRFilter = (
+    event: React.SyntheticEvent,
+    newValue: string | null,
+  ): void => {
+    setSelectedCDR(newValue);
+    // Make sure complete payment
+    if (newValue !== null) {
+      // SIDE LOGIC: For edit, if its empty, need to fetch all AR again (cause only posted items are displayed)
+      if (
+        selectedCustomer !== null &&
+        outstandingTrans.filter((trans) =>
+          [trans.transaction_number, trans.reference].includes(
+            String(newValue),
+          ),
+        ).length === 0
+      ) {
+        fetchARByCustomer(selectedCustomer?.customer_id, {}, [], true);
+      }
+
+      // Normal case: when DR choice is changed, select only relevant DRs
+      setOutstandingTrans(
+        outstandingTrans.map((t) => {
+          if ([t.transaction_number, t.reference].includes(String(newValue))) {
+            return {
+              ...t,
+              payment: addTwoPlaces(Number(t.transaction_amount)),
+            };
+          }
+
+          return {
+            ...t,
+            payment: "",
+          };
+        }),
+      );
+    } else {
+      setOutstandingTrans(
+        outstandingTrans.map((t) => {
+          return {
+            ...t,
+            payment: "",
+          };
+        }),
+      );
+    }
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="mb-2">
             {openEdit && (
               <div className="flex justify-between items-center w-full">
-                <h4>
+                <Typography level="title-lg">
                   Receipt No. {selectedRow?.id} -{" "}
                   {paymentStatus.charAt(0).toUpperCase() +
                     paymentStatus.slice(1)}
-                </h4>
+                </Typography>
               </div>
             )}
           </div>
@@ -74,12 +129,14 @@ const ARFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
                   onChange={(event, newValue) => {
                     setSelectedCustomer(newValue);
+                    setSelectedCDR(null);
+
                     if (newValue !== undefined && newValue !== null)
                       fetchARByCustomer(newValue?.customer_id);
                   }}
@@ -121,7 +178,6 @@ const ARFormDetails = ({
                 onChange={(event, value) => {
                   if (value !== null) setPaymentMode(value);
                   setCheckDate("");
-                  setCheckNumber("");
                 }}
                 size="sm"
                 value={paymentMode}
@@ -144,6 +200,7 @@ const ARFormDetails = ({
                 slotProps={{
                   input: {
                     min: 0,
+                    step: 0.01,
                   },
                 }}
                 onChange={(e) => setAmountPaid(String(e.target.value))}
@@ -151,22 +208,16 @@ const ARFormDetails = ({
                 required
               />
             </FormControl>
-            {paymentMode === "check" && (
-              <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
-                <FormLabel>Check Number</FormLabel>
-                <div className="flex">
-                  <Input
-                    name="checkNumber"
-                    size="sm"
-                    placeholder="Check Number"
-                    value={checkNumber}
-                    onChange={(e) => setCheckNumber(e.target.value)}
-                    disabled={isEditDisabled || paymentMode !== "check"}
-                  />
-                </div>
-              </FormControl>
-            )}
-
+            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+              <FormLabel>Check No.</FormLabel>
+              <Input
+                type="text"
+                value={refNo}
+                placeholder="0"
+                onChange={(e) => setRefNo(e.target.value)}
+                disabled={isEditDisabled}
+              />
+            </FormControl>
             {paymentMode === "check" && (
               <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
                 <FormLabel>Check Date</FormLabel>
@@ -179,29 +230,34 @@ const ARFormDetails = ({
               </FormControl>
             )}
 
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
-              <FormLabel>Ref No.</FormLabel>
-              <Input
-                type="text"
-                value={refNo}
-                placeholder="0"
-                onChange={(e) => setRefNo(e.target.value)}
-                disabled={isEditDisabled}
-              />
-            </FormControl>
+            {/* <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+              <FormLabel>DR No. Filter</FormLabel>
+              <div className="flex">
+                <Autocomplete
+                  options={cdrNumbers}
+                  getOptionLabel={(option) => option}
+                  value={selectedCDR}
+                  onChange={handleDRFilter}
+                  size="sm"
+                  className="w-[100%]"
+                  placeholder="Select DR"
+                  disabled={isEditDisabled}
+                />
+              </div>
+            </FormControl> */}
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Payment Amount</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(paymentAmount)}</h5>{" "}
+              <h5>{addCommaToNumberWithTwoPlaces(paymentAmount)}</h5>{" "}
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Applied</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(totalApplied)}</h5>
+              <h5>{addCommaToNumberWithTwoPlaces(totalApplied)}</h5>
             </FormControl>
           </div>
           <Divider />
@@ -217,6 +273,7 @@ const ARFormDetails = ({
                 slotProps={{
                   input: {
                     min: 0,
+                    step: 0.01,
                   },
                 }}
                 onChange={(e) => setLessAmount(String(e.target.value))}
@@ -235,6 +292,7 @@ const ARFormDetails = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 0.01,
                     },
                   }}
                   onChange={(e) => setAddAmount1(String(e.target.value))}

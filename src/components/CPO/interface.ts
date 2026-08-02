@@ -1,12 +1,4 @@
-import type {
-  PurchaseOrder,
-  Supplier,
-  PaginatedSuppliers,
-  Item,
-  Customer,
-  PaginatedCustomers,
-  CPO,
-} from "../../interface";
+import type { Item, Customer, PaginatedCustomers, CPO } from "../../interface";
 import type { Dispatch, SetStateAction } from "react";
 
 export interface CPOFormProps {
@@ -33,8 +25,6 @@ export interface CPOFormProps {
   setReferenceNumber: Dispatch<SetStateAction<string>>;
   netTotal: number;
   grossTotal: number;
-  priceLevel: string;
-  setPriceLevel: Dispatch<SetStateAction<string>>;
 }
 
 export interface CPOFormTableProps {
@@ -53,7 +43,6 @@ export interface CPOFormTableProps {
 export interface CPOPayload {
   customer_id: number;
   status: string;
-  price_level: string;
   transaction_date: string;
   customer_discount_1: string;
   transaction_discount_1: string;
@@ -63,14 +52,13 @@ export interface CPOPayload {
   transaction_discount_3: string;
   net_total: number;
   gross_total: number;
-  reference_number: string;
+  reference_number?: string;
   remarks: string;
   items: CPOItemValues[];
 }
 
 export interface CPOItemValues {
   item_id: number;
-  p_type: string;
   volume: number;
   unserved_spo: number;
   price: number;

@@ -1,19 +1,21 @@
 import SDRFormDetails from "./SDRForm/SDRFormDetails";
 import SDRFormTable from "./SDRForm/SDRFormTable";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
-import type { User } from "../../pages/Login";
+import CircularProgress from "@mui/joy/CircularProgress";
 import type {
   SDRFormProps,
   Supplier,
   PaginatedSuppliers,
   PurchaseOrder,
+  DeliveryReceipt,
+  User,
 } from "../../interface";
+import { getErrorMessage } from "../../helper";
 
 const DeliveryReceiptForm = ({
   setOpen,
@@ -41,6 +43,11 @@ const DeliveryReceiptForm = ({
   const [totalNet, setTotalNet] = useState(0);
   const [amountDiscount, setAmountDiscount] = useState(0);
   const [servedAmt, setServedAmt] = useState<Record<string, number>>({});
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
+
   const pesoRate = selectedPOs.length > 0 ? selectedPOs[0].peso_rate : 0;
   const currencyUsed =
     selectedPOs.length > 0 ? selectedPOs[0].currency_used : "USD";
@@ -54,36 +61,53 @@ const DeliveryReceiptForm = ({
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/")
+      .get<PaginatedSuppliers>(
+        "/api/suppliers/?with_active_po=True&sort_by=name",
+      )
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 
     // Fetch user ID
     axiosInstance
-      .get<User>("/users/me/")
+      .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
   }, []);
 
   useEffect(() => {
     // Set fields for Edit
-    const supplierID = selectedRow?.purchase_orders[0].supplier_id;
+    const supplierID = selectedRow?.purchase_orders[0]?.supplier_id;
 
-    if (selectedRow !== null && selectedRow !== undefined) {
+    const fetchValues = (selectedRow: DeliveryReceipt): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
       setAmountDiscount(selectedRow?.discount_amount ?? 0);
       setSelectedPOs(selectedRow?.purchase_orders);
+    };
 
+    if (
+      selectedRow !== null &&
+      selectedRow !== undefined &&
+      supplierID !== undefined
+    ) {
       // Get Supplier for Edit
+      setIsFetching(true);
       axiosInstance
         .get<Supplier>(`/api/suppliers/${supplierID}`)
         .then((response) => {
           setSelectedSupplier(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -98,6 +122,11 @@ const DeliveryReceiptForm = ({
   };
 
   const handleCreateDeliveryReceipt = async (): Promise<void> => {
+    if (selectedPOs.length === 0) {
+      toast.error("Please choose POs to plan.");
+      return;
+    }
+
     const payload = {
       sdr_data: {
         status,
@@ -130,19 +159,27 @@ const DeliveryReceiptForm = ({
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/supplier-delivery-receipts/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
   const handleEditDeliveryReceipt = async (): Promise<void> => {
+    if (selectedPOs.length === 0) {
+      toast.error("Please choose POs to plan.");
+      return;
+    }
+
     const payload = {
       sdr_data: {
         status,
@@ -175,18 +212,21 @@ const DeliveryReceiptForm = ({
     };
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/supplier-delivery-receipts/${selectedRow?.id}`,
         payload,
       );
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setIsSaving(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -199,79 +239,99 @@ const DeliveryReceiptForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
-        <Button
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <SDRFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        suppliers={suppliers}
-        // Fields
-        selectedSupplier={selectedSupplier}
-        setSelectedSupplier={setSelectedSupplier}
-        selectedPOs={selectedPOs}
-        setSelectedPOs={setSelectedPOs}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        pesoRate={pesoRate}
-        currencyUsed={currencyUsed}
-        // Summary Amounts
-        fobTotal={fobTotal}
-        netAmount={netAmount}
-        landedTotal={landedTotal}
-        amountDiscount={amountDiscount}
-        setAmountDiscount={setAmountDiscount}
-        isEditDisabled={isEditDisabled}
-      />
-      <SDRFormTable
-        selectedRow={selectedRow}
-        selectedPOs={selectedPOs}
-        setSelectedPOs={setSelectedPOs}
-        totalNet={totalNet}
-        servedAmt={servedAmt}
-        setServedAmt={setServedAmt}
-        setTotalNet={setTotalNet}
-        setTotalGross={setTotalGross}
-        openEdit={openEdit}
-        isEditDisabled={isEditDisabled}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <SDRFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            suppliers={suppliers}
+            // Fields
+            selectedSupplier={selectedSupplier}
+            setSelectedSupplier={setSelectedSupplier}
+            selectedPOs={selectedPOs}
+            setSelectedPOs={setSelectedPOs}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            pesoRate={pesoRate}
+            currencyUsed={currencyUsed}
+            // Summary Amounts
+            fobTotal={fobTotal}
+            netAmount={netAmount}
+            landedTotal={landedTotal}
+            amountDiscount={amountDiscount}
+            setAmountDiscount={setAmountDiscount}
+            isEditDisabled={isEditDisabled}
+          />
+          <SDRFormTable
+            selectedRow={selectedRow}
+            selectedPOs={selectedPOs}
+            setSelectedPOs={setSelectedPOs}
+            totalNet={totalNet}
+            servedAmt={servedAmt}
+            setServedAmt={setServedAmt}
+            setTotalNet={setTotalNet}
+            setTotalGross={setTotalGross}
+            openEdit={openEdit}
+            isEditDisabled={isEditDisabled}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              sx={{
+                ml: 2,
+                width: "130px",
+              }}
+              className="w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+                resetForm();
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!hasSaved && !isEditDisabled && (
+              <Button
+                type="submit"
+                sx={{
+                  ml: 2,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

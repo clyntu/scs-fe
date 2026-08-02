@@ -10,18 +10,20 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Typography,
 } from "@mui/joy";
 import type { RRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
-import type { PaginatedSDR } from "../../../interface";
+import type { PaginatedSDR, Currency } from "../../../interface";
 import SelectPOModal from "./SelectRRModal";
-import { AVAILABLE_CURRENCIES } from "../../../constants";
 import {
   formatToDateTime,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import { toast } from "react-toastify";
 
 const RRFormDetails = ({
   openEdit,
@@ -49,15 +51,14 @@ const RRFormDetails = ({
   setAmountDiscount,
 
   // Summary Amounts
-  fobTotal,
   netAmount,
-  landedTotal,
   totalExpense,
   percentNetCost,
   isEditDisabled,
 }: RRFormDetailsProps): JSX.Element => {
   const [unservedSDRs, setUnservedSDRs] = useState<PaginatedSDR | undefined>();
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
 
   useEffect(() => {
     if (selectedSupplier !== null && selectedSupplier !== undefined) {
@@ -70,6 +71,13 @@ const RRFormDetails = ({
     }
   }, [selectedSupplier]);
 
+  useEffect(() => {
+    axiosInstance
+      .get<Currency[]>("/api/currencies")
+      .then((response) => setCurrencies(response.data))
+      .catch((error) => console.error("Error fetching currencies:", error));
+  }, []);
+
   const getFixedAmtDiscounts = (): void => {
     let total = 0;
     selectedSDRs.forEach((SDR) => {
@@ -80,13 +88,46 @@ const RRFormDetails = ({
   };
 
   useEffect(() => {
-    if (!openEdit) getFixedAmtDiscounts();
+    getFixedAmtDiscounts();
 
     if (selectedSDRs.length > 0) {
+      // Get reference number from first SDR
       const firstSDR = selectedSDRs[0];
       setReferenceNumber(firstSDR.reference_number);
+
+      // Only auto-set currency and rate when creating a new RR, not when editing
+      // In edit mode, the rate should come from the saved RR data
+      if (!openEdit) {
+        // Check if all SDRs have the same currency
+        let commonCurrency: string | null = null;
+        let commonRate: number | null = null;
+
+        for (const sdr of selectedSDRs) {
+          if (sdr.purchase_orders?.length > 0) {
+            const sdrCurrency = sdr.purchase_orders[0].currency_used;
+            const sdrRate = sdr.purchase_orders[0].peso_rate;
+
+            if (commonCurrency === null) {
+              // First SDR sets the currency
+              commonCurrency = sdrCurrency;
+              commonRate = sdrRate;
+            } else if (commonCurrency !== sdrCurrency) {
+              // Found different currency - this shouldn't happen but handle it
+              toast.warning(
+                `Warning: SDR ${sdr.id} has different currency (${sdrCurrency}) from others (${commonCurrency})`,
+              );
+            }
+          }
+        }
+
+        // Set the common currency and rate
+        if (commonCurrency !== null && commonRate !== null) {
+          setCurrencyUsed(commonCurrency);
+          setPesoRate(commonRate);
+        }
+      }
     }
-  }, [selectedSDRs]);
+  }, [selectedSDRs, openEdit]);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -96,12 +137,14 @@ const RRFormDetails = ({
         unservedSDRs={unservedSDRs}
         setSelectedSDRs={setSelectedSDRs}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>RR No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  RR No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -111,7 +154,7 @@ const RRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={suppliers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedSupplier}
@@ -155,7 +198,7 @@ const RRFormDetails = ({
               <Textarea value={amountDiscount} disabled />
             </FormControl>
           </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Currency Used</FormLabel>
               <Select
@@ -165,10 +208,11 @@ const RRFormDetails = ({
                 size="sm"
                 placeholder="USD"
                 value={currencyUsed}
+                disabled={isEditDisabled}
               >
-                {AVAILABLE_CURRENCIES.map((currency) => (
-                  <Option key={currency} value={currency}>
-                    {currency}
+                {currencies.map((currency) => (
+                  <Option key={currency.id} value={currency.code}>
+                    {currency.code}
                   </Option>
                 ))}
               </Select>
@@ -214,7 +258,7 @@ const RRFormDetails = ({
               />
             </FormControl>
           </Stack>
-          {!openEdit && (
+          {(!openEdit || status === "unposted") && (
             <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 3 }}>
               <Button
                 className="ml-4 bg-button-primary"
@@ -228,12 +272,12 @@ const RRFormDetails = ({
           )}
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
-          <div className="ml-5 grid grid-cols-2">
+          <div className="grid grid-cols-2 place-items-center">
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Invoice Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
+              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Landed Total</FormLabel>
@@ -243,12 +287,12 @@ const RRFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>% NET Cost</FormLabel>
-              <h5>{addCommaToNumberWithFourPlaces(percentNetCost)}</h5>
+              <h5>{addCommaToNumberWithTwoPlaces(percentNetCost)}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Expense</FormLabel>
               <h5>
-                ₱{addCommaToNumberWithFourPlaces(Number(totalExpense))}
+                ₱{addCommaToNumberWithTwoPlaces(Number(totalExpense))}
               </h5>{" "}
             </FormControl>
           </div>

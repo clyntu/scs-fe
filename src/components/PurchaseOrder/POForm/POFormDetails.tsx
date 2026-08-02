@@ -1,32 +1,34 @@
 import {
   FormControl,
   FormLabel,
+  FormHelperText,
   Input,
   Textarea,
   Card,
   Stack,
-  Button,
   Select,
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Button,
+  Typography,
 } from "@mui/joy";
+import { useEffect, useState } from "react";
 
-import { AVAILABLE_CURRENCIES } from "../../../constants";
+import type { POFormProps } from "../interface";
+import type { Currency } from "../../../interface";
+import axiosInstance from "../../../utils/axiosConfig";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
+  addCommaToNumberWithTwoPlaces,
   addCommaToNumberWithFourPlaces,
 } from "../../../helper";
-import type { POFormProps } from "../interface";
-
-const INITIAL_SELECTED_ITEMS = [{ id: null }];
 
 const POFormDetails = ({
   openEdit,
   selectedRow,
   suppliers,
-  setSelectedItems,
 
   // Fields
   selectedSupplier,
@@ -45,7 +47,9 @@ const POFormDetails = ({
   setCurrencyUsed,
   pesoRate,
   setPesoRate,
-
+  // Toggle for showing/hiding totals
+  showTotals,
+  setShowTotals,
   // Summary Amounts
   fobTotal,
   netAmount,
@@ -53,6 +57,15 @@ const POFormDetails = ({
 }: POFormProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
+
+  const [currencies, setCurrencies] = useState<Currency[]>(() => {
+    const code = selectedSupplier?.currency;
+    if (typeof code === "string" && code.trim() !== "") {
+      const placeholder: Currency = { id: -1, code };
+      return [placeholder];
+    }
+    return [];
+  });
 
   const handleDiscountChange = (
     type: "supplier" | "transaction",
@@ -64,14 +77,34 @@ const POFormDetails = ({
     setDiscounts(newDiscounts);
   };
 
+  useEffect(() => {
+    if (selectedRow?.currency_used !== undefined) {
+      setCurrencyUsed(selectedRow.currency_used);
+    } else {
+      const code = selectedSupplier?.currency;
+      if (typeof code === "string" && code.trim() !== "") {
+        setCurrencyUsed(code); // Update currencyUsed to match supplier's currency
+      }
+    }
+  }, [selectedSupplier]);
+
+  useEffect(() => {
+    axiosInstance
+      .get<Currency[]>("/api/currencies")
+      .then((response) => setCurrencies(response.data))
+      .catch((error) => console.error("Error fetching currencies:", error));
+  }, []);
+
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>PO No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  PO No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -81,14 +114,12 @@ const POFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Supplier</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={suppliers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedSupplier}
                   onChange={(event, newValue) => {
                     setSelectedSupplier(newValue);
-                    // @ts-expect-error (Item object, unless its using the empty object)
-                    setSelectedItems(INITIAL_SELECTED_ITEMS);
                   }}
                   size="sm"
                   className="w-[100%]"
@@ -102,7 +133,13 @@ const POFormDetails = ({
               <FormLabel>Status</FormLabel>
               <Select
                 onChange={(event, value) => {
-                  if (value !== null) setStatus(value);
+                  if (value !== null) {
+                    setStatus(value);
+                    // Automatically show totals when status is changed to posted
+                    if (value === "posted" && setShowTotals !== undefined) {
+                      setShowTotals(true);
+                    }
+                  }
                 }}
                 size="sm"
                 value={status}
@@ -110,7 +147,6 @@ const POFormDetails = ({
               >
                 <Option value="unposted">Unposted</Option>
                 <Option value="posted">Posted</Option>
-                <Option value="completed">Completed</Option>
               </Select>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
@@ -134,9 +170,9 @@ const POFormDetails = ({
                 value={currencyUsed}
                 disabled={isEditDisabled}
               >
-                {AVAILABLE_CURRENCIES.map((currency) => (
-                  <Option key={currency} value={currency}>
-                    {currency}
+                {currencies.map((currency) => (
+                  <Option key={currency.id} value={currency.code}>
+                    {currency.code}
                   </Option>
                 ))}
               </Select>
@@ -183,9 +219,12 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 0, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add &quot;%&quot; if percent disc.
+                </FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Trans Disc. 1</FormLabel>
@@ -194,9 +233,12 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 0, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add &quot;%&quot; if percent disc.
+                </FormHelperText>
               </FormControl>
             </Stack>
             <Stack direction="row" spacing={2}>
@@ -207,9 +249,12 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("supplier", 1, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add &quot;%&quot; if percent disc.
+                </FormHelperText>
               </FormControl>
               <FormControl size="sm" sx={{ width: "22%" }}>
                 <FormLabel>Trans Disc. 2</FormLabel>
@@ -218,70 +263,71 @@ const POFormDetails = ({
                   onChange={(e) =>
                     handleDiscountChange("transaction", 1, e.target.value)
                   }
-                  placeholder="% or Fixed Amt"
+                  placeholder="0"
                   disabled={isEditDisabled}
                 />
-              </FormControl>
-              <FormControl size="sm" sx={{ width: "22%" }}>
-                <FormLabel>Supp Disc. 3</FormLabel>
-                <Input
-                  value={discounts.supplier[2]}
-                  onChange={(e) =>
-                    handleDiscountChange("supplier", 2, e.target.value)
-                  }
-                  placeholder="% or Fixed Amt"
-                  disabled={isEditDisabled}
-                />
-              </FormControl>
-              <FormControl size="sm" sx={{ width: "22%" }}>
-                <FormLabel>Trans Disc. 3</FormLabel>
-                <Input
-                  value={discounts.transaction[2]}
-                  onChange={(e) =>
-                    handleDiscountChange("transaction", 2, e.target.value)
-                  }
-                  placeholder="% or Fixed Amt"
-                  disabled={isEditDisabled}
-                />
+                <FormHelperText sx={{ fontSize: "11px" }}>
+                  Add &quot;%&quot; if percent disc.
+                </FormHelperText>
               </FormControl>
             </Stack>
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>FOB Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(fobTotal)}`}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(netAmount)}`}</h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>LANDED Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithFourPlaces(landedTotal / Number(pesoRate))}`}</h5>
-            </FormControl>
+          <div className="flex justify-between mb-2">
+            <Typography level="title-lg">Order Summary</Typography>
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() =>
+                setShowTotals !== undefined && setShowTotals((prev) => !prev)
+              }
+            >
+              {showTotals === true ? "Hide Totals" : "Show Totals"}
+            </Button>
           </div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>FOB Total</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithFourPlaces(fobTotal * Number(pesoRate))}
-              </h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithFourPlaces(netAmount * Number(pesoRate))}
-              </h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>LANDED Total</FormLabel>
-              <h5>₱{addCommaToNumberWithFourPlaces(landedTotal)}</h5>
-            </FormControl>
-          </div>
+          {showTotals === true && (
+            <>
+              <div className="flex justify-around">
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>FOB Total</FormLabel>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(fobTotal)}`}</h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>NET Amount</FormLabel>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>LANDED Total</FormLabel>
+                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(landedTotal / Number(pesoRate))}`}</h5>
+                </FormControl>
+              </div>
+              <div className="flex justify-around">
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>FOB Total</FormLabel>
+                  <h5>
+                    ₱
+                    {addCommaToNumberWithTwoPlaces(fobTotal * Number(pesoRate))}
+                  </h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>NET Amount</FormLabel>
+                  <h5>
+                    ₱
+                    {addCommaToNumberWithTwoPlaces(
+                      netAmount * Number(pesoRate),
+                    )}
+                  </h5>
+                </FormControl>
+                <FormControl size="sm" sx={{ mb: 1 }}>
+                  <FormLabel>LANDED Total</FormLabel>
+                  <h5>₱{addCommaToNumberWithFourPlaces(landedTotal)}</h5>
+                </FormControl>
+              </div>
+            </>
+          )}
           <Divider />
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>

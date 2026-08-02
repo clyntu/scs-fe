@@ -1,5 +1,20 @@
 import type { Expense } from "./components/ReceivingReport/interface";
-import type { User } from "./pages/Login";
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  full_name: string;
+  role?: string;
+  is_admin?: boolean;
+  disabled?: boolean;
+}
+
+export interface Currency {
+  id: number;
+  code: string;
+}
+
 export interface Item {
   id: number;
   stock_code: string;
@@ -9,16 +24,17 @@ export interface Item {
   status: string;
   category: string;
   brand: string;
-  acquisition_cost?: number;
-  net_cost_before_tax?: number;
-  currency: string;
-  last_sale_price?: number;
-  srp?: number;
+  acquisition_cost?: number | string;
+  net_cost_before_tax?: number | string;
+  currency: Currency;
+  currency_id: number;
+  last_sale_price?: number | string;
+  srp?: number | string;
   rate?: number;
   total_on_stock: number;
-  total_in_transit: number;
   total_allocated: number;
   total_purchased: number;
+  total_sold: number;
   created_by: number;
   modified_by: number;
   date_created: string;
@@ -45,14 +61,26 @@ export interface Item {
   p_type?: string;
 }
 
+export interface Category {
+  normalized_name: string;
+  count: number;
+}
+
+export interface Brand {
+  normalized_name: string;
+  count: number;
+}
+
 export interface ViewStockHistory {
   open: boolean;
   setOpen: (isOpen: boolean) => void;
   row?: Item;
+  refetchTrigger?: number;
 }
 
-export interface StockHistory {
+export interface IStockHistory {
   transaction_type: string;
+  reference_number: string;
   stock_code: string;
   stock_description: string;
   transaction_date: string;
@@ -60,14 +88,34 @@ export interface StockHistory {
   quantity_in: number;
   quantity_out: number;
   price: number;
-  amount: number;
+  net_cost: number;
+  net_price: number;
+  discount_amount: number;
+  supplier_discount_1?: string;
+  supplier_discount_2?: string;
+  supplier_discount_3?: string;
+  transaction_discount_1?: string;
+  transaction_discount_2?: string;
+  transaction_discount_3?: string;
+  supplier_name: string | null;
+  customer_name: string | null;
+  last_purchase_price?: number;
+  gross_amount?: number;
 }
 
 export interface DeleteModalProps {
   open: boolean;
   title: string;
+  entityLabel: string;
   setOpen: (isOpen: boolean) => void;
   onDelete: () => Promise<void>;
+}
+
+export interface ArchiveModalProps {
+  open: boolean;
+  setOpen: (isOpen: boolean) => void;
+  transactionType: string;
+  onArchive: () => Promise<void>;
 }
 
 export interface ItemsModalProps {
@@ -76,78 +124,74 @@ export interface ItemsModalProps {
   setOpen: (isOpen: boolean) => void;
   row?: Item;
   onSave: (newItem: Item) => Promise<void>;
+  currencies?: Currency[];
 }
 
 export interface Supplier {
   supplier_id: number;
-  code: string;
   name: string;
-  building_address: string;
-  street_address: string;
-  city: string;
-  province: string;
-  country: string;
-  zip_code: string;
+  address: string;
   contact_person: string;
   contact_number: string;
-  email: string;
-  fax_number: string;
+  email?: string; // Optional
   currency: string;
-  discount_rate?: number;
   supplier_balance?: number;
-  created_by: number;
-  modified_by: number;
-  date_created: string;
-  date_modified: string;
   notes: string;
+  created_by?: number;
+  modified_by?: number;
   creator?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
   };
   modifier?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
-  };
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
+  } | null;
+  date_created: string;
+  date_modified: string | null;
 }
 
 export interface Customer {
   customer_id: number;
-  code: string;
   name: string;
-  building_address: string;
-  street_address: string;
-  city: string;
-  province: string;
-  country: string;
-  zip_code: string;
+  address: string;
   contact_person: string;
   contact_number: string;
-  email: string;
-  fax_number: string;
-  currency: string;
-  discount_rate?: number;
+  email?: string; // Optional
   customer_balance?: number;
-  created_by: number;
-  modified_by: number;
-  date_created: string;
-  date_modified: string;
   notes: string;
+  created_by?: number;
+  modified_by?: number;
   creator?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
   };
   modifier?: {
-    full_name: string;
+    id: number;
     username: string;
     email: string;
-    id: number;
-  };
+    full_name: string;
+    disabled: boolean;
+    supabase_uid?: string;
+    is_admin?: boolean;
+  } | null;
+  date_created: string;
+  date_modified: string | null;
 }
 
 export interface SuppliersModalProps {
@@ -251,6 +295,11 @@ export interface PaginatedAR {
   items: AR[];
 }
 
+export interface PaginatedUsers {
+  total: number;
+  items: User[];
+}
+
 export interface PaginationQueryParams {
   page?: number;
   limit?: number;
@@ -260,6 +309,9 @@ export interface PaginationQueryParams {
   status?: string;
   unassigned_to_rr?: boolean;
   payment_status?: string;
+  adjustment_type?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface Warehouse {
@@ -298,6 +350,7 @@ export interface ViewWHModalProps {
   setOpen: (isOpen: boolean) => void;
   row?: any;
   type: string;
+  onStockAdjustmentSuccess?: () => void;
 }
 
 export interface FetchedWarehouseItems {
@@ -333,17 +386,50 @@ export interface WarehouseItem {
 
 export interface AggregatedWarehouseItem {
   warehouse_id: number;
+  warehouse_code: string;
   warehouse_name: string;
+  item_id: number;
   stock_code: string;
   item_name: string;
   total_on_stock: number;
-  total_in_transit: number;
   total_allocated: number;
   total_purchased: number;
   total_sold: number;
-  total_reorder_level: number;
-  total_unserved_cpo: number;
-  total_unserved_spo: number;
+}
+
+export interface StockAdjustmentRequest {
+  adjustment_type: "surplus" | "deficit";
+  adjustment_amount: number;
+  net_cost: number;
+}
+
+export interface StockAdjustmentResponse {
+  id: number;
+  warehouse_id: number;
+  warehouse_name: string;
+  item_id: number;
+  stock_code: string;
+  item_name: string;
+  adjustment_type: "surplus" | "deficit";
+  adjustment_amount: number;
+  net_cost: number;
+  previous_on_stock: number;
+  new_on_stock: number;
+  created_by_name: string;
+  date_created: string;
+  company_id: number;
+}
+
+export interface PaginatedStockAdjustments {
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  items: StockAdjustmentResponse[];
+}
+
+export interface ViewStockAdjustmentProps {
+  setOpenCreate: (isOpen: boolean) => void;
 }
 
 export interface PurchaseOrder {
@@ -506,6 +592,7 @@ export interface ARFormProps {
   openEdit: boolean;
   selectedRow?: AR;
   title: string;
+  isAdmin?: boolean;
 }
 
 export interface ViewPurchaseOrderProps {
@@ -513,6 +600,7 @@ export interface ViewPurchaseOrderProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: PurchaseOrder | undefined;
   setSelectedRow: (purchaseOrder: PurchaseOrder) => void;
+  refetchTrigger?: number;
 }
 
 export interface ViewCPOProps {
@@ -582,6 +670,7 @@ export interface ViewARProps {
   setOpenEdit: (isOpen: boolean) => void;
   selectedRow: AR | undefined;
   setSelectedRow: (ar: AR) => void;
+  isAdmin: boolean;
 }
 
 export interface CPOItems {
@@ -679,6 +768,7 @@ export interface ReceivingReport {
   landed_total: number;
   sdrs: DeliveryReceipt[];
   expenses: Expense[];
+  supplier: Supplier;
   creator: {
     full_name: string;
     username: string;
@@ -805,6 +895,7 @@ export interface Alloc {
   };
   remarks: string;
   allocation_items: AllocItem[];
+  cpo_number_filter: string;
   creator: User;
   modifier: User;
   date_created: string;
@@ -821,7 +912,7 @@ export interface Dealloc {
   transaction_date: string;
   remarks: string;
   total_qty: number;
-  deallocation_items: any;
+  deallocation_items: DeallocItem[];
   creator: User;
   modifier: User;
   date_created: string;
@@ -972,6 +1063,7 @@ export interface CR {
   id: number;
   total_qty: number;
   total_gross: string;
+  discount_return_amount: number;
   created_by: number;
   modified_by: number | null;
   date_created: string;
@@ -1006,6 +1098,7 @@ export interface AR {
   modified_by: number;
   date_created: string;
   date_modified: string;
+  cdr_number_filter: string;
   customer: Customer;
   creator: User;
   modifier: User;
@@ -1024,4 +1117,23 @@ export interface AR {
     date_created: string;
     date_modified: string;
   }>;
+}
+
+export interface PrintInventoryItem {
+  alloc_qty: number;
+  avail_qty: number;
+  brand: string;
+  category: string;
+  location: string;
+  name: string;
+  selling_price: number;
+  stock_code: string;
+  unit: string;
+}
+
+export interface PrintInventoryResponse {
+  total: number;
+  items: PrintInventoryItem[];
+  next_page: string;
+  previous_page: string;
 }

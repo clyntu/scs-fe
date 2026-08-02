@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import jsPDF from "jspdf";
+import JsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CR } from "../../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { calculatePercentageDiscountedAmount } from "../../utils/discountCalculations";
 
 const formatDate = (date: Date): string => {
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -20,50 +21,8 @@ const formatDate = (date: Date): string => {
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
 };
 
-const calculateNetForRow = (
-  newValue: number,
-  price: number,
-  DRItem: any,
-): number => {
-  let result = newValue * price;
-
-  if (DRItem.customer_discount_1.includes("%")) {
-    const cd1 = DRItem.customer_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(cd1) / 100);
-  }
-
-  if (DRItem.customer_discount_2.includes("%")) {
-    const cd2 = DRItem.customer_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(cd2) / 100);
-  }
-
-  if (DRItem.customer_discount_3.includes("%")) {
-    const cd3 = DRItem.customer_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(cd3) / 100);
-  }
-
-  if (DRItem.transaction_discount_1.includes("%")) {
-    const td1 = DRItem.transaction_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(td1) / 100);
-  }
-
-  if (DRItem.transaction_discount_2.includes("%")) {
-    const td2 = DRItem.transaction_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(td2) / 100);
-  }
-
-  if (DRItem.transaction_discount_3.includes("%")) {
-    const td3 = DRItem.transaction_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(td3) / 100);
-  }
-
-  if (isNaN(result)) return 0;
-
-  return result;
-};
-
-export const generateCRPDF = (selectedRow: CR): void => {
-  const doc = new jsPDF({
+export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
+  const doc = new JsPDF({
     orientation: "portrait",
     unit: "pt",
     format: "A4",
@@ -74,30 +33,34 @@ export const generateCRPDF = (selectedRow: CR): void => {
   // Company Name (bold)
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text("Peterson Parts Trading Inc.", 40, 40);
+  const title = companyId === "company-a" ? "P.P.T." : "MA Inc.";
+  doc.text(title, 40, 40);
 
-  // Address and contact info (normal)
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("174 G. ARANETA AVE., QUEZON CITY,", 40, 50);
-  doc.text("TEL#: 725-4481, 725-4489, 726-1315", 40, 60);
-  doc.text("FAX#: 724-8680", 40, 70);
-  doc.text("E-MAIL: peterson_174@yahoo.com", 40, 80);
-
-  // "PRICELIST" aligned to the right
+  // Customer Return No. aligned to the right (same Y position as company title)
+  const text = `Customer Return No.: ${selectedRow.id}`;
+  const rightMargin = pageWidth - 40;
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text(`Customer Return No.: ${selectedRow.id}`, pageWidth - 200, 80); // Adjust x-position as needed
 
-  // Bottom border line
+  // Get text width
+  const textWidth = doc.getTextWidth(text);
+
+  // Calculate aligned X position
+  const xPos = rightMargin - textWidth;
+
+  // Add text at the right-aligned position
+  doc.text(text, xPos, 40);
+
+  // Bottom border line - just below the title
   doc.setLineWidth(0.5);
-  doc.line(40, 90, pageWidth - 40, 90); // Draw horizontal line
+  doc.line(40, 50, pageWidth - 40, 50); // Draw horizontal line
 
   // 3. Customer and Date
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Customer: ${selectedRow.customer.name}`, 40, 110);
-  doc.text(`Address: ${selectedRow.customer?.building_address ?? ""}`, 40, 130);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Customer: ${selectedRow.customer.name}`, 40, 70);
+  doc.text(`Ref No.: ${selectedRow.reference_number}`, 40, 85);
+  doc.text(`Address: ${selectedRow.customer?.address ?? ""}`, 40, 100);
   doc.text(
     `Date: ${new Date(selectedRow.transaction_date).toLocaleDateString(
       "en-US",
@@ -107,34 +70,40 @@ export const generateCRPDF = (selectedRow: CR): void => {
         day: "2-digit",
       },
     )}`,
-    pageWidth - 140,
-    110,
+    pageWidth - 125,
+    70,
   ); // top-right area
 
   // 4. Draw a horizontal line below header if you like (optional)
   doc.setLineWidth(0.5);
-  doc.line(40, 140, pageWidth - 40, 140);
+  doc.line(40, 115, pageWidth - 40, 115);
 
   // 5. Table columns and data
   const columns = ["QTY", "Stock", "Description", "Unit Cost", "Amount"];
-  const bodyData = selectedRow.items.map((item) => [
-    item.return_qty,
-    item.item.stock_code,
-    item.item.name,
-    addCommaToNumberWithTwoPlaces(Number(item.price)),
-    addCommaToNumberWithTwoPlaces(
-      calculateNetForRow(
-        Number(item.return_qty),
-        Number(item.price),
-        item.delivery_receipt_item.delivery_plan_item.allocation_item
-          .customer_purchase_order,
+  const bodyData = selectedRow.items.map((item) => {
+    const costPerUnit =
+      item.delivery_receipt_item.delivery_plan_item.allocation_item.customer_purchase_order.items.find(
+        (cpoItem) => cpoItem.item_id === item.item_id,
+      )?.price;
+    return [
+      item.return_qty,
+      item.item.stock_code,
+      item.item.name,
+      addCommaToNumberWithTwoPlaces(Number(costPerUnit)),
+      addCommaToNumberWithTwoPlaces(
+        calculatePercentageDiscountedAmount(
+          Number(item.return_qty),
+          Number(item.price),
+          item.delivery_receipt_item.delivery_plan_item.allocation_item
+            .customer_purchase_order,
+        ),
       ),
-    ),
-  ]);
+    ];
+  });
 
   // 6. Render the table
   autoTable(doc, {
-    startY: 150,
+    startY: 125,
     head: [columns],
     body: bodyData,
     theme: "plain",
@@ -163,7 +132,7 @@ export const generateCRPDF = (selectedRow: CR): void => {
 
       // Current page and total pages
       const currentPage = data.pageNumber; // provided by jspdf-autotable
-      const totalPages = doc.getNumberOfPages(); // provided by jsPDF
+      const totalPages = doc.getNumberOfPages(); // provided by JsPDF
 
       doc.setFontSize(footerFontSize);
       doc.setFont("helvetica", "normal");
@@ -202,10 +171,17 @@ export const generateCRPDF = (selectedRow: CR): void => {
   doc.setFont("helvetica", "bold");
   doc.text("AMOUNT:", pageWidth - 190, finalY + 50);
   doc.setFont("helvetica", "normal");
-  doc.text(String(selectedRow.total_gross), pageWidth - 55, finalY + 50, {
-    align: "right",
-  });
+  doc.text(
+    String(addCommaToNumberWithTwoPlaces(Number(selectedRow.total_gross))),
+    pageWidth - 55,
+    finalY + 50,
+    {
+      align: "right",
+    },
+  );
 
-  // 9. Save or download
-  doc.save("customer-return.pdf");
+  // 9. Open PDF in new tab for preview
+  const pdfBlob = doc.output("blob");
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  window.open(blobUrl, "_blank");
 };

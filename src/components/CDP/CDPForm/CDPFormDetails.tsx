@@ -10,18 +10,16 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Typography,
 } from "@mui/joy";
-import type {
-  AllocItemsFE,
-  CDPFormDetailsProps,
-  UnplannedAlloc,
-} from "../interface";
+import type { CDPFormDetailsProps, UnplannedAlloc } from "../interface";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import TooltipInput from "../../shared/TooltipInput";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../../helper";
 import SelectAllocModal from "./SelectAllocModal";
 
@@ -29,7 +27,6 @@ const CDPFormDetails = ({
   openEdit,
   selectedRow,
   customers,
-  formattedAllocs,
   setFormattedAllocs,
   selectedCustomer,
   setSelectedCustomer,
@@ -45,73 +42,32 @@ const CDPFormDetails = ({
   totalNet,
   totalGross,
   totalItems,
-  amountDiscount,
-  setAmountDiscount,
 }: CDPFormDetailsProps): JSX.Element => {
+  const [isLoadingUnserved, setIsLoadingUnserved] = useState(false);
   const [unservedAllocs, setUnservedAllocs] = useState<UnplannedAlloc[]>([]);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedCustomer !== null && selectedCustomer !== undefined) {
+      setIsLoadingUnserved(true);
       axiosInstance
         .get<UnplannedAlloc[]>(
           `/api/allocations/unplanned/${selectedCustomer.customer_id}`,
         )
-        .then((response) =>
+        .then((response) => {
           setUnservedAllocs(
             response.data
               .filter((alloc) => alloc.status === "posted")
               .sort((a, b) => b.id - a.id),
-          ),
-        )
-        .catch((error) => console.error("Error:", error));
+          );
+          setIsLoadingUnserved(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsLoadingUnserved(false);
+        });
     }
   }, [selectedCustomer]);
-
-  useEffect(() => {
-    if (!openEdit) getFixedAmtDiscounts();
-  }, [formattedAllocs]);
-
-  const isAmtDiscountAlreadyApplied = (allocItem: AllocItemsFE): boolean => {
-    // If the total of allocated + unserved is less than the volume, that means some allocated items are planned already
-    // Meaning, the discount has already been applied
-    if (
-      allocItem.alloc_qty + allocItem.cpo_item_unserved <
-      allocItem.cpo_item_volume
-    ) {
-      return true;
-    }
-    return false;
-  };
-
-  const getFixedAmtDiscounts = (): void => {
-    let total = 0;
-    for (const allocItem of formattedAllocs) {
-      console.log(allocItem);
-      if (isAmtDiscountAlreadyApplied(allocItem)) {
-        continue;
-      }
-      if (!allocItem.customer_discount_1.includes("%"))
-        total += Number(allocItem.customer_discount_1);
-
-      if (!allocItem.customer_discount_2.includes("%"))
-        total += Number(allocItem.customer_discount_2);
-
-      if (!allocItem.customer_discount_3.includes("%"))
-        total += Number(allocItem.customer_discount_3);
-
-      if (!allocItem.transaction_discount_1.includes("%"))
-        total += Number(allocItem.transaction_discount_1);
-
-      if (!allocItem.transaction_discount_2.includes("%"))
-        total += Number(allocItem.transaction_discount_2);
-
-      if (!allocItem.transaction_discount_3.includes("%"))
-        total += Number(allocItem.transaction_discount_3);
-    }
-
-    setAmountDiscount(total);
-  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -120,13 +76,16 @@ const CDPFormDetails = ({
         setOpen={setIsSelectModalOpen}
         unservedAllocs={unservedAllocs}
         setFormattedAllocs={setFormattedAllocs}
+        isLoadingUnserved={isLoadingUnserved}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>CDP No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  CDP No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -136,7 +95,7 @@ const CDPFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
@@ -178,7 +137,7 @@ const CDPFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Ref No.</FormLabel>
-              <Input
+              <TooltipInput
                 size="sm"
                 placeholder="Search"
                 onChange={(e) => setReferenceNumber(e.target.value)}
@@ -203,15 +162,6 @@ const CDPFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
-              <FormLabel>Amount Discount</FormLabel>
-              <Textarea
-                minRows={1}
-                placeholder="0"
-                value={amountDiscount}
-                disabled
-              />
-            </FormControl>
             {(!openEdit || status === "unposted") && (
               <Button
                 sx={{ mb: 1, width: "22.5%" }}
@@ -226,7 +176,7 @@ const CDPFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
@@ -235,11 +185,11 @@ const CDPFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Gross</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalGross)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalGross)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total NET</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalNet)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalNet)}`}</h5>
             </FormControl>
           </div>
           <Divider />

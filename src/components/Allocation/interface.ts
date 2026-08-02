@@ -1,20 +1,29 @@
 import type {
-  PaginatedRR,
   PaginatedWarehouse,
-  ReceivingReport,
   Warehouse,
-  WarehouseItem,
-  StockTransfer,
   Customer,
   PaginatedCustomers,
   Alloc,
-  PaginatedCPO,
 } from "../../interface";
 import type { Dispatch, SetStateAction } from "react";
 
+// Stock availability interfaces
+export interface WarehouseStockInfo {
+  warehouse_id: number;
+  warehouse_name: string;
+  warehouse_code: string;
+  available_qty: number;
+  reserved_qty: number;
+  allocatable_qty: number;
+}
+
+export interface StockAvailabilityResponse {
+  item_stock_availability: Record<string, WarehouseStockInfo[]>;
+}
+
 export interface AllocFormDetailsProps {
   openEdit: boolean;
-  selectedRow: any;
+  selectedRow: Alloc | undefined;
   status: string;
   setStatus: (status: string) => void;
   transactionDate: string;
@@ -25,8 +34,12 @@ export interface AllocFormDetailsProps {
   customers: PaginatedCustomers;
   selectedCustomer: Customer | null;
   setSelectedCustomer: Dispatch<SetStateAction<Customer | null>>;
-  getCPOsByCustomer: (customer_id: number | undefined) => void;
+  getCPOsByCustomer: (customer_id: number | undefined, noSet?: boolean) => void;
+  CPOItems: CPOItemFE[];
   setCPOItems: Dispatch<SetStateAction<CPOItemFE[]>>;
+  cpoNumbers: number[];
+  selectedCPO: number | null;
+  setSelectedCPO: Dispatch<SetStateAction<number | null>>;
 }
 
 export interface CPOItemFE {
@@ -53,6 +66,9 @@ export interface AllocFormTableProps {
   CPOItems: CPOItemFE[];
   setCPOItems: Dispatch<SetStateAction<CPOItemFE[]>>;
   openCreate: boolean;
+  isLoadingItems: boolean;
+  warehouseStockAvailability: Record<string, WarehouseStockInfo[]>;
+  selectedCPO: number | null;
 }
 
 interface Destinations {

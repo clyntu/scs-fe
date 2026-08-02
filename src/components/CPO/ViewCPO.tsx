@@ -1,7 +1,22 @@
-import { useEffect, useState } from "react";
-import { Box, Button, Table, Sheet, Input, Select, Option } from "@mui/joy";
+import { useEffect, useState, useRef, useCallback } from "react";
+import {
+  Box,
+  Button,
+  Table,
+  Sheet,
+  Input,
+  Select,
+  Option,
+  FormControl,
+  FormLabel,
+  CircularProgress,
+  Typography,
+} from "@mui/joy";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteCPOModal from "./DeleteCPOModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
+import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
   ViewCPOProps,
@@ -9,12 +24,18 @@ import type {
   PaginationQueryParams,
 } from "../../interface";
 
-import { Pagination } from "@mui/material";
-
-import { convertToQueryParams } from "../../helper";
-import { addCommaToNumberWithFourPlaces } from "../../helper";
-
-const PAGE_LIMIT = 10;
+import {
+  convertToQueryParams,
+  addCommaToNumberWithTwoPlaces,
+  formatToDate,
+  getErrorMessage,
+} from "../../helper";
+import { StatusChip } from "../../utils/statusUtils";
+import { withTooltip } from "../shared/withTooltip";
+import DateRangeFilter, {
+  getDefaultDateFrom,
+  getDefaultDateTo,
+} from "../shared/DateRangeFilter";
 
 const ViewCPO = ({
   setOpenCreate,
@@ -27,17 +48,46 @@ const ViewCPO = ({
     items: [],
   });
   const [openDelete, setOpenDelete] = useState(false);
+  const [openArchive, setOpenArchive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
-  const [page, setPage] = useState(1);
+  const [dateFrom, setDateFrom] = useState(getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
   const getAllPO = (): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current !== null) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setCPOs({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     const payload: PaginationQueryParams = {
       page: 1,
-      limit: PAGE_LIMIT,
-      sort_by: "id",
+      limit,
+      sort_by: "transaction_date",
       sort_order: "desc",
       search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
     };
 
     if (status !== "all") {
@@ -50,50 +100,147 @@ const ViewCPO = ({
       )
       .then((response) => {
         setCPOs(response.data);
-        setPage(1);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
       })
-      .catch((error) => console.error("Error:", error));
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    const payload: PaginationQueryParams = {
+      page: nextPage,
+      limit,
+      sort_by: "transaction_date",
+      sort_order: "desc",
+      search_term: searchTerm,
+      date_from: dateFrom,
+      date_to: dateTo,
+    };
+
+    if (status !== "all") {
+      payload.status = status;
+    }
+
     axiosInstance
       .get<PaginatedCPO>(
-        `/api/customer_purchase_orders/?${convertToQueryParams({
-          page: value,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term: searchTerm,
-        })}`,
+        `/api/customer_purchase_orders/?${convertToQueryParams(payload)}`,
       )
-      .then((response) => setCPOs(response.data))
-      .catch((error) => console.error("Error:", error));
-  };
+      .then((response) => {
+        const newItems = response.data.items;
+        setCPOs((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (container === null) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current !== null) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container === null) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current !== null) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
-    // Fetch purchase orders
-    getAllPO();
-  }, []);
+    const timeout = setTimeout(() => {
+      getAllPO();
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // cancel if any dep changes
+  }, [searchTerm, status, dateFrom, dateTo]);
 
   const handleDeleteCPO = async (): Promise<void> => {
     if (selectedRow !== undefined) {
       const url = `/api/customer_purchase_orders/${selectedRow.id}`;
       try {
         await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("CPO deleted successfully!");
+        setCPOs((prevCPO) => ({
+          ...prevCPO,
+          items: prevCPO.items.filter((CPO) => CPO.id !== selectedRow.id),
+          total: prevCPO.total - 1,
+        }));
+      } catch (error: any) {
+        toast.error(
+          `Error message: ${getErrorMessage(error, "Delete unsuccessful")}`,
+        );
+      }
+    }
+  };
+
+  const handleArchiveCPO = async (): Promise<void> => {
+    if (selectedRow !== undefined) {
+      const url = `/api/customer_purchase_orders/${selectedRow.id}`;
+      try {
+        const response = await axiosInstance.delete(url);
+        toast.success("CPO archived successfully!");
+        const archivedCPO = response.data;
         setCPOs((prevCPO) => ({
           ...prevCPO,
           items: prevCPO.items.map((CPO) =>
-            CPO.id === selectedRow.id ? { ...CPO, status: "archived" } : CPO,
+            CPO.id === selectedRow.id ? { ...CPO, ...archivedCPO } : CPO,
           ),
-          total: prevCPO.total,
         }));
       } catch (error: any) {
-        toast.error(`Error message: ${error.response.data.detail}`);
+        toast.error(
+          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
+        );
       }
     }
   };
@@ -101,11 +248,24 @@ const ViewCPO = ({
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
-          <h2>Customer Purchase Order</h2>
+        <Box
+          sx={{
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography level="h2" component="h1">
+            Customer Purchase Order
+          </Typography>
           <Button
-            className="mt-2 mb-4 bg-button-primary"
+            className="bg-button-primary"
             color="primary"
+            startDecorator={<AddRoundedIcon />}
             onClick={() => {
               setOpenCreate(true);
             }}
@@ -113,48 +273,76 @@ const ViewCPO = ({
             Add Customer Purchase Order
           </Button>
         </Box>
-        <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Ref No."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              sx={{ width: 300 }}
+              placeholder="Ref No., Customer, or Remarks"
+              startDecorator={<SearchRoundedIcon fontSize="small" />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
+            <Select
+              sx={{ width: 130 }}
+              onChange={(event, value) => {
+                if (value !== null) setStatus(value);
+              }}
+              size="sm"
+              value={status}
+            >
+              <Option value="all">Active</Option>
+              <Option value="posted">Posted</Option>
+              <Option value="unposted">Unposted</Option>
+              <Option value="archived">Archived</Option>
+            </Select>
+          </FormControl>
+          <DateRangeFilter
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
           />
-          <Select
-            className="ml-4 w-[130px]"
-            onChange={(event, value) => {
-              if (value !== null) setStatus(value);
-            }}
-            size="sm"
-            value={status}
-          >
-            <Option value="all">All</Option>
-            <Option value="completed">Completed</Option>
-            <Option value="posted">Posted</Option>
-            <Option value="unposted">Unposted</Option>
-            <Option value="archived">Archived</Option>
-          </Select>
-          <Button
+          {/* <Button
             onClick={getAllPO}
-            className="ml-4 w-[80px] bg-button-primary"
+            sx={{
+              ml: 2,
+              width: "80px",
+            }}
+            className="bg-button-primary"
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-            "--Table-firstColumnWidth": "150px",
+            "--Table-firstColumnWidth": "100px",
             "--Table-lastColumnWidth": "160px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -177,124 +365,250 @@ const ViewCPO = ({
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "600px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
+            stickyHeader
+            hoverRow
             sx={{
-              "& tr > *:first-child": {
+              fontSize: "13px",
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
-              "& tr > *:last-child": {
+              "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
+                zIndex: 10,
+              },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "background.level1",
+                zIndex: 11,
+              },
+              "& thead tr > *:last-child": {
+                position: "sticky",
+                right: 0,
+                top: 0,
+                bgcolor: "background.level1",
+                zIndex: 11,
+              },
+              "& thead th": {
+                backgroundColor: "background.level1",
               },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                  PO No.
-                </th>
-                <th style={{ width: 200 }}>Ref No.</th>
-                <th style={{ width: 150 }}>Status</th>
-                <th style={{ width: 300 }}>Customer</th>
-                <th style={{ width: 250 }}>Transaction Date</th>
-                <th style={{ width: 150 }}>Price Level</th>
-                <th style={{ width: 150 }}>Gross Total</th>
-                <th style={{ width: 150 }}>Net Total</th>
-                <th style={{ width: 300 }}>Remarks</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 250 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
-              {CPOs.items.map((CPO) => (
-                <tr
-                  key={CPO.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(CPO);
-                  }}
-                >
-                  <td>{CPO.id}</td>
-                  <td>{CPO.reference_number}</td>
-                  <td className="capitalize">{CPO.status}</td>
-                  <td>{CPO?.customer?.name}</td>
-                  <td>{CPO.transaction_date}</td>
-                  <td>{CPO.price_level}</td>
-                  <td>{addCommaToNumberWithFourPlaces(CPO.gross_total)}</td>
-                  <td>{addCommaToNumberWithFourPlaces(CPO.net_total)}</td>
-                  <td>{CPO.remarks}</td>
-                  <td>{CPO?.creator?.username}</td>
-                  <td>{CPO?.modifier?.username}</td>
-                  <td>{CPO.date_created}</td>
-                  <td>{CPO.date_modified}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        className="w-[80px]"
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(CPO);
-                        }}
-                      >
-                        {CPO.status !== "unposted" ? "View" : "Edit"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(CPO);
-                        }}
-                        disabled={CPO.status !== "unposted"}
-                      >
-                        Archive
-                      </Button>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td
+                    colSpan={13}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">
+                        Loading customer purchase orders...
+                      </Typography>
                     </Box>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      PO No.
+                    </th>
+                    <th style={{ width: 120 }}>Tx. Date</th>
+                    <th style={{ width: 250 }}>Customer</th>
+                    <th style={{ width: 220 }}>Ref No.</th>
+                    <th style={{ width: 110 }}>Status</th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Net Amount
+                    </th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Gross Amount
+                    </th>
+                    <th style={{ width: 200 }}>Remarks</th>
+                    <th style={{ width: 150 }}>Created By</th>
+                    <th style={{ width: 150 }}>Modified By</th>
+                    <th style={{ width: 120 }}>Date Created</th>
+                    <th style={{ width: 120 }}>Date Modified</th>
+                    <th
+                      aria-label="actions"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {CPOs.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={13}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No customer purchase orders found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
+                  {CPOs.items.map((CPO) => (
+                    <tr
+                      key={CPO.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(CPO);
+                      }}
+                    >
+                      <td>{CPO.id}</td>
+                      <td>{CPO.transaction_date}</td>
+                      <td>{withTooltip(CPO?.customer?.name, "280px")}</td>
+                      <td>{withTooltip(CPO.reference_number, "200px")}</td>
+                      <td>
+                        <StatusChip status={CPO.status} />
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(CPO.net_total)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(CPO.gross_total)}
+                      </td>
+                      <td>{withTooltip(CPO.remarks, "180px")}</td>
+                      <td>{withTooltip(CPO?.creator?.username, "130px")}</td>
+                      <td>{withTooltip(CPO?.modifier?.username, "130px")}</td>
+                      <td>{formatToDate(CPO.date_created)}</td>
+                      <td>{formatToDate(CPO.date_modified)}</td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Button
+                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(CPO);
+                            }}
+                          >
+                            {CPO.status !== "unposted" ? "View" : "Edit"}
+                          </Button>
+                          {(CPO.status === "posted" ||
+                            CPO.status === "archived") && (
+                            <Button
+                              sx={{ fontSize: "13px" }}
+                              size="sm"
+                              variant="soft"
+                              color="warning"
+                              onClick={() => {
+                                setOpenArchive(true);
+                                setSelectedRow(CPO);
+                              }}
+                              disabled={CPO.status === "archived"}
+                            >
+                              Archive
+                            </Button>
+                          )}
+                          {CPO.status === "unposted" && (
+                            <Button
+                              sx={{ fontSize: "13px" }}
+                              size="sm"
+                              variant="soft"
+                              color="danger"
+                              className="bg-delete-red"
+                              onClick={() => {
+                                setOpenDelete(true);
+                                setSelectedRow(CPO);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
+
+        {/* Infinite Scroll Status */}
+        {CPOs.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {CPOs.items.length} of {CPOs.total} items • Scroll for
+                more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {CPOs.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.ceil(CPOs.total / PAGE_LIMIT)}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
-      </Box>
-      <DeleteCPOModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
-        title="Archive Customer Purchase Order"
+        title="Delete Customer Purchase Order"
+        entityLabel="Customer Purchase Order"
         onDelete={handleDeleteCPO}
+      />
+      <ArchiveConfirmModal
+        open={openArchive}
+        setOpen={setOpenArchive}
+        transactionType="Customer Purchase Order"
+        onArchive={handleArchiveCPO}
       />
     </>
   );

@@ -1,26 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import ItemsModal from "../../components/Items/ItemsModal";
-import ViewWHModal from "../../components/Items/ViewWHModal";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { Input } from "@mui/joy";
-import DeleteItemsModal from "../../components/Items/DeleteItemsModal";
-import axiosInstance from "../../utils/axiosConfig";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import {
+  Input,
+  Autocomplete,
+  FormControl,
+  FormLabel,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
+  CircularProgress,
+  Typography,
+} from "@mui/joy";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
+import CurrencyModal from "../../components/Items/CurrencyModal";
+import PrintStocksModal from "../../components/Items/PrintStocksModal";
+import PrintTotalCostDetailModal from "../../components/Items/PrintTotalCostDetailModal";
+import { generateTotalCostPDF } from "../../components/Items/generateTotalCostPDF";
+import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import type { User } from "../Login";
 import type { AxiosError } from "axios";
-import type { Item, PaginatedItems } from "../../interface";
+import type {
+  Brand,
+  Category,
+  Item,
+  PaginatedItems,
+  Currency,
+  PaginatedWarehouse,
+} from "../../interface";
 import {
   convertToQueryParams,
-  addCommaToNumberWithFourPlaces,
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
-import { Pagination } from "@mui/material";
-import { generatePDF } from "../../components/Items/generatePDF";
-
-const PAGE_LIMIT = 10;
+import TooltipTableCell from "../../components/shared/TooltipTableCell";
 
 const ItemForm = (): JSX.Element => {
   const [items, setItems] = useState<PaginatedItems>({
@@ -30,37 +48,210 @@ const ItemForm = (): JSX.Element => {
   const [openAdd, setOpenAdd] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCurrencyModal, setOpenCurrencyModal] = useState(false);
+  const [openPrintStocksModal, setOpenPrintStocksModal] = useState(false);
+  const [openPrintTotalCostModal, setOpenPrintTotalCostModal] = useState(false);
   const [selectedRow, setSelectedRow] = useState<Item>();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
+  const [warehouses, setWarehouses] = useState<PaginatedWarehouse>({
+    total: 0,
+    items: [],
+  });
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
 
-  const getAllStocks = (page: number, search_term: string) => {
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("active");
+
+  // Infinite scroll states
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 50;
+
+  // Refs for infinite scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initial load function - resets everything and loads first page
+  const getAllStocks = (searchTerm: string): void => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current !== null) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Reset state for new search
+    setPage(1);
+    setItems({ total: 0, items: [] });
+    setHasMore(true);
+    setIsLoading(true);
+    isLoadingRef.current = false;
+
     axiosInstance
       .get<PaginatedItems>(
         `/api/items/?${convertToQueryParams({
-          page,
-          limit: PAGE_LIMIT,
-          sort_by: "id",
-          sort_order: "desc",
-          search_term,
+          page: 1,
+          limit,
+          sort_by: "stock_code",
+          sort_order: "asc",
+          search_term: searchTerm,
+          brand: selectedBrand,
+          category: selectedCategory,
+          status: selectedStatus,
         })}`,
       )
-      .then((response) => setItems(response.data))
-      .catch((error) => console.error("Error:", error));
+      .then((response) => {
+        setItems(response.data);
+        setHasMore(response.data.items.length < response.data.total);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoading(false);
+      });
   };
 
-  const changePage = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ): void => {
-    setPage(value);
-    getAllStocks(value, searchTerm);
-  };
+  // Load more data for infinite scroll
+  const loadMore = useCallback(() => {
+    // Prevent duplicate requests using ref (synchronous check)
+    if (isLoadingRef.current || isLoadingMore || !hasMore) {
+      return;
+    }
+
+    // Mark as loading immediately (synchronous)
+    isLoadingRef.current = true;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+
+    axiosInstance
+      .get<PaginatedItems>(
+        `/api/items/?${convertToQueryParams({
+          page: nextPage,
+          limit,
+          sort_by: "stock_code",
+          sort_order: "asc",
+          search_term: searchTerm,
+          brand: selectedBrand,
+          category: selectedCategory,
+          status: selectedStatus,
+        })}`,
+      )
+      .then((response) => {
+        const newItems = response.data.items;
+        setItems((prev) => {
+          const updated = {
+            total: response.data.total,
+            items: [...prev.items, ...newItems],
+          };
+          setHasMore(updated.items.length < response.data.total);
+          return updated;
+        });
+        setPage(nextPage);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setIsLoadingMore(false);
+        isLoadingRef.current = false;
+      });
+  }, [
+    isLoadingMore,
+    hasMore,
+    page,
+    searchTerm,
+    selectedBrand,
+    selectedCategory,
+    selectedStatus,
+  ]);
+
+  // Handle scroll event for infinite scroll with debouncing
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (container === null) return;
+
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current !== null) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Debounce scroll events by 100ms
+    scrollTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Trigger load more when scrolled to within 200px of bottom
+      if (distanceFromBottom < 200 && hasMore && !isLoadingRef.current) {
+        loadMore();
+      }
+    }, 100);
+  }, [loadMore, hasMore]);
+
+  // Attach scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container === null) return;
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      // Clear timeout on cleanup
+      if (scrollTimeoutRef.current !== null) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      getAllStocks(searchTerm);
+    }, 300); // wait 300 ms after the last key-press
+
+    return () => clearTimeout(timeout); // 💨 cancel if any dep changes
+  }, [searchTerm, selectedBrand, selectedCategory, selectedStatus]);
 
   useEffect(() => {
     // Fetch items
-    getAllStocks(page, searchTerm);
+    // getAllStocks(page, searchTerm);
+
+    // Fetch categories
+    axiosInstance
+      .get<Category[]>(`/api/categories`)
+      .then((response) => {
+        setCategories(
+          response.data.map((category) => category.normalized_name),
+        );
+      })
+      .catch((error) => console.error("Error:", error));
+
+    // Fetch brands
+    axiosInstance
+      .get<Brand[]>(`/api/brands`)
+      .then((response) => {
+        setBrands(response.data.map((brand) => brand.normalized_name));
+      })
+      .catch((error) => console.error("Error:", error));
+
+    // Fetch warehouses
+    axiosInstance
+      .get<PaginatedWarehouse>("/api/warehouses/")
+      .then((response) => {
+        setWarehouses(response.data);
+      })
+      .catch((error) => console.error("Error:", error));
+
+    // Fetch currencies
+    axiosInstance
+      .get<Currency[]>(`/api/currencies`)
+      .then((response) => {
+        setCurrencies(response.data);
+      })
+      .catch((error) => console.error("Error fetching currencies:", error));
   }, []);
 
   const handleSaveItem = async (newItem: Item): Promise<void> => {
@@ -74,7 +265,7 @@ const ItemForm = (): JSX.Element => {
       brand: newItem.brand,
       acquisition_cost: newItem.acquisition_cost,
       net_cost_before_tax: newItem.net_cost_before_tax,
-      currency: newItem.currency,
+      currency_id: newItem.currency_id,
       rate: newItem.rate,
       last_sale_price: newItem.last_sale_price,
       srp: newItem.srp,
@@ -100,7 +291,7 @@ const ItemForm = (): JSX.Element => {
       brand: newItem.brand,
       acquisition_cost: newItem.acquisition_cost,
       net_cost_before_tax: newItem.net_cost_before_tax,
-      currency: newItem.currency,
+      currency_id: newItem.currency_id,
       rate: newItem.rate,
       last_sale_price: newItem.last_sale_price,
       srp: newItem.srp,
@@ -150,49 +341,129 @@ const ItemForm = (): JSX.Element => {
     return error.isAxiosError !== undefined;
   }
 
-  const handlePDFCreate = (): void => {
-    // Fetch data
-    axiosInstance
-      .get<PaginatedItems>(
-        `/api/items/?${convertToQueryParams({
-          sort_by: "stock_code",
-          sort_order: "asc",
-        })}`,
-      )
-      .then((response) => {
-        const items = response.data.items;
-        const data = items.map((item) => {
-          return {
-            availableQty: item.total_on_stock,
-            stockCode: item.stock_code,
-            stock: item.name,
-            netCostTotal: addCommaToNumberWithTwoPlaces(
-              Number(item?.total_on_stock ?? 0) * Number(item.acquisition_cost),
-            ),
-          };
-        });
-        generatePDF(data, "Peterson Parts Trading Inc.");
-      })
-      .catch((error) => console.error("Error:", error));
+  const handlePrintTotalCost = async (): Promise<void> => {
+    try {
+      // Fetch all items to calculate totals
+      const response = await axiosInstance.get<PaginatedItems>("/api/items/");
+
+      const allItems = response.data.items;
+
+      // Calculate totals for items with and without net cost
+      // Items WITH net cost: must have cost > 0 AND stock > 0
+      const withNetCost = allItems.filter(
+        (item) =>
+          Number(item.net_cost_before_tax ?? 0) > 0 &&
+          (item.total_on_stock ?? 0) > 0,
+      );
+      // Items WITHOUT net cost: either no cost OR no stock
+      const withoutNetCost = allItems.filter(
+        (item) =>
+          Number(item.net_cost_before_tax ?? 0) <= 0 ||
+          (item.total_on_stock ?? 0) <= 0,
+      );
+
+      const withNetCostTotal = withNetCost.reduce((sum, item) => {
+        const totalOnStock = item.total_on_stock ?? 0;
+        const netCost = Number(item.net_cost_before_tax ?? 0);
+        return sum + totalOnStock * netCost;
+      }, 0);
+
+      const withoutNetCostTotal = withoutNetCost.reduce((sum, item) => {
+        const totalOnStock = item.total_on_stock ?? 0;
+        const netCost = Number(item.net_cost_before_tax ?? 0);
+        return sum + totalOnStock * netCost;
+      }, 0);
+
+      const totalCostData = {
+        withNetCost: {
+          totalCost: withNetCostTotal,
+          productCount: withNetCost.length,
+        },
+        withoutNetCost: {
+          totalCost: withoutNetCostTotal,
+          productCount: withoutNetCost.length,
+        },
+      };
+
+      // Get company ID
+      const companyId = getCompanyId();
+
+      generateTotalCostPDF(totalCostData, companyId);
+    } catch (error) {
+      console.error("Error generating Total Cost PDF:", error);
+      toast.error("Failed to generate Total Cost PDF");
+    }
   };
 
   return (
     <>
       <Box sx={{ width: "100%" }}>
-        <Box className="flex justify-between mb-6">
-          <h2>Stocks</h2>
+        <Box
+          sx={{
+            display: "flex",
+            mb: 3,
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "start", sm: "center" },
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography level="h2" component="h1">
+            Stocks
+          </Typography>
 
-          <div>
+          <div className="flex items-center gap-3">
+            {/* Print Reports Dropdown */}
+            <Dropdown>
+              <MenuButton
+                variant="soft"
+                sx={{
+                  width: "140px",
+                  height: "36px",
+                }}
+                className="bg-button-soft-primary"
+              >
+                Print Reports
+              </MenuButton>
+              <Menu>
+                <MenuItem
+                  onClick={() => setOpenPrintStocksModal(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Print Stocks
+                </MenuItem>
+                <MenuItem
+                  onClick={() => setOpenPrintTotalCostModal(true)}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Print Total Cost Detail
+                </MenuItem>
+                <MenuItem
+                  onClick={handlePrintTotalCost}
+                  sx={{ fontSize: "14px" }}
+                >
+                  Print Total Cost
+                </MenuItem>
+              </Menu>
+            </Dropdown>
+
+            {/* Manage Currencies Button */}
             <Button
-              variant="soft"
-              className="mt-2 mb-4 w-[140px] bg-button-soft-primary"
-              onClick={handlePDFCreate}
-            >
-              Print Pricelist
-            </Button>
-            <Button
-              className="ml-4 mt-2 mb-4 bg-button-primary"
+              sx={{ width: "140px", height: "36px" }}
+              variant="outlined"
               color="primary"
+              onClick={() => setOpenCurrencyModal(true)}
+            >
+              Currencies
+            </Button>
+
+            {/* Add Stock Button */}
+            <Button
+              sx={{ height: "36px" }}
+              className="bg-button-primary"
+              color="primary"
+              startDecorator={<AddRoundedIcon />}
               onClick={() => {
                 setOpenAdd(true);
               }}
@@ -202,34 +473,115 @@ const ItemForm = (): JSX.Element => {
           </div>
         </Box>
 
-        <Box className="flex items-center mb-6">
-          <Input
-            size="sm"
-            placeholder="Stock Code or Description"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button
-            onClick={() => getAllStocks(1, searchTerm)}
-            className="ml-4 w-[80px] bg-button-primary"
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            gap: 1.5,
+            mb: 3,
+            p: 1.5,
+            borderRadius: "sm",
+            backgroundColor: "background.level1",
+          }}
+        >
+          <FormControl>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Search</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Stock Code or Description"
+              startDecorator={<SearchRoundedIcon fontSize="small" />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </FormControl>
+          <FormControl sx={{ width: 130 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Category</FormLabel>
+            <Autocomplete
+              placeholder="All"
+              options={["", ...categories]}
+              value={selectedCategory}
+              onChange={(event, value) => {
+                setSelectedCategory(value ?? "");
+              }}
+              getOptionLabel={(option) => {
+                if (option === "") return "All";
+                return option.toUpperCase();
+              }}
+              size="sm"
+            />
+          </FormControl>
+          <FormControl sx={{ width: 130 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Brand</FormLabel>
+            <Autocomplete
+              placeholder="All"
+              options={["", ...brands]}
+              value={selectedBrand}
+              onChange={(event, value) => {
+                setSelectedBrand(value ?? "");
+              }}
+              getOptionLabel={(option) => {
+                if (option === "") return "All";
+                return option.toUpperCase();
+              }}
+              size="sm"
+            />
+          </FormControl>
+          <FormControl sx={{ width: 130 }}>
+            <FormLabel sx={{ fontSize: "12px", mb: 0.5 }}>Status</FormLabel>
+            <Autocomplete
+              placeholder="All"
+              options={[
+                { value: "", label: "All" },
+                { value: "active", label: "ACTIVE" },
+                { value: "inactive", label: "INACTIVE" },
+              ]}
+              value={
+                selectedStatus !== ""
+                  ? {
+                      value: selectedStatus,
+                      label:
+                        selectedStatus === "active" ? "ACTIVE" : "INACTIVE",
+                    }
+                  : { value: "", label: "All" }
+              }
+              onChange={(event, value) => {
+                setSelectedStatus(value?.value ?? "");
+              }}
+              getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, value) =>
+                option.value === value.value
+              }
+              size="sm"
+            />
+          </FormControl>
+          {/* <Button
+            onClick={() => {
+              getAllStocks(1, searchTerm);
+            }}
+            sx={{
+              ml: 2,
+              width: "80px",
+            }}
+            className="bg-button-primary"
             size="sm"
           >
             Search
-          </Button>
+          </Button> */}
         </Box>
 
         <Sheet
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
           sx={{
             "--TableCell-height": "40px",
             // the number is the amount of the header rows.
             "--TableHeader-height": "calc(1 * var(--TableCell-height))",
             "--Table-firstColumnWidth": "150px",
-            "--Table-lastColumnWidth": "150px",
-            // background needs to have transparency to show the scrolling shadows
-            "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+            "--Table-lastColumnWidth": "140px",
+            "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
             overflow: "auto",
-            borderRadius: 8,
+            borderRadius: "sm",
             background: (
               theme,
             ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -252,140 +604,269 @@ const ItemForm = (): JSX.Element => {
             backgroundPosition:
               "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
             backgroundColor: "background.surface",
-            maxHeight: "600px",
+            maxHeight: "calc(100dvh - 280px)",
           }}
         >
           <Table
             className="h-5"
+            size="sm"
+            stickyHeader
+            hoverRow
             sx={{
-              "& tr > *:first-child": {
+              fontSize: "13px",
+              "& tbody tr > *:first-child": {
                 position: "sticky",
                 left: 0,
                 boxShadow: "1px 0 var(--TableCell-borderColor)",
                 bgcolor: "background.surface",
+                zIndex: 10,
               },
-              "& tr > *:last-child": {
+              "& tbody tr > *:last-child": {
                 position: "sticky",
                 right: 0,
-                bgcolor: "var(--TableCell-headBackground)",
+                bgcolor: "background.surface",
+                zIndex: 10,
+              },
+              "& thead tr > *:first-child": {
+                position: "sticky",
+                left: 0,
+                top: 0,
+                boxShadow: "1px 0 var(--TableCell-borderColor)",
+                bgcolor: "background.level1",
+                zIndex: 11,
+              },
+              "& thead tr > *:last-child": {
+                position: "sticky",
+                right: 0,
+                top: 0,
+                bgcolor: "background.level1",
+                zIndex: 11,
+              },
+              "& thead th": {
+                backgroundColor: "background.level1",
               },
               "& tbody tr:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.015)", // Add hover effect
-                cursor: "pointer", // Change cursor on hover
+                cursor: "pointer",
               },
             }}
             borderAxis="both"
           >
-            <thead>
-              <tr>
-                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                  Stock Code
-                </th>
-                <th style={{ width: 100 }}>Status</th>
-                <th style={{ width: 300 }}>Description</th>
-                <th style={{ width: 100 }}>Category</th>
-                <th style={{ width: 100 }}>Brand</th>
-                <th style={{ width: 150 }}>Acquisition Cost (₱)</th>
-                <th style={{ width: 200 }}>Net Cost B/F Tax (₱)</th>
-                <th style={{ width: 150 }}>Last Sale Price (₱)</th>
-                <th style={{ width: 200 }}>SRP (₱)</th>
-                <th style={{ width: 100 }}>Currency</th>
-                <th style={{ width: 150 }}>Peso Rate (₱)</th>
-                <th style={{ width: 100 }}>On Stock</th>
-                <th style={{ width: 100 }}>In Transit</th>
-                <th style={{ width: 100 }}>Allocated</th>
-                <th style={{ width: 100 }}>Purchased</th>
-                <th style={{ width: 200 }}>Created By</th>
-                <th style={{ width: 250 }}>Date Created</th>
-                <th style={{ width: 200 }}>Modified By</th>
-                <th style={{ width: 250 }}>Date Modified</th>
-                <th
-                  aria-label="last"
-                  style={{ width: "var(--Table-lastColumnWidth)" }}
-                />
-              </tr>
-            </thead>
-            <tbody>
-              {items.items.map((item) => (
-                <tr
-                  key={item.id}
-                  onDoubleClick={() => {
-                    setOpenEdit(true);
-                    setSelectedRow(item);
-                  }}
-                >
-                  <td>{item.stock_code}</td>
-                  <td>{item.status}</td>
-                  <td>{item.name}</td>
-                  <td>{item.category}</td>
-                  <td>{item.brand}</td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.acquisition_cost)}
-                  </td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.net_cost_before_tax)}
-                  </td>
-                  <td>{addCommaToNumberWithFourPlaces(item.srp)}</td>
-                  <td>
-                    {addCommaToNumberWithFourPlaces(item.last_sale_price)}
-                  </td>
-                  <td>{item.currency}</td>
-                  <td>{item.rate}</td>
-                  <td>{item.total_on_stock}</td>
-                  <td>{item.total_in_transit}</td>
-                  <td>{item.total_allocated}</td>
-                  <td>{item.total_purchased}</td>
-                  <td>{item?.creator?.username}</td>
-                  <td>{item.date_created}</td>
-                  <td>{item?.modifier?.username}</td>
-                  <td>{item.date_modified}</td>
-                  <td>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        size="sm"
-                        variant="plain"
-                        color="neutral"
-                        onClick={() => {
-                          setOpenEdit(true);
-                          setSelectedRow(item);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="soft"
-                        color="danger"
-                        className="bg-delete-red"
-                        onClick={() => {
-                          setOpenDelete(true);
-                          setSelectedRow(item);
-                        }}
-                      >
-                        Delete
-                      </Button>
+            {isLoading ? (
+              <tbody>
+                <tr>
+                  <td
+                    colSpan={15}
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: 2,
+                      }}
+                    >
+                      <CircularProgress size="sm" />
+                      <Typography level="body-sm">Loading items...</Typography>
                     </Box>
                   </td>
                 </tr>
-              ))}
-            </tbody>
+              </tbody>
+            ) : (
+              <>
+                <thead>
+                  <tr>
+                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                      Stock Code
+                    </th>
+                    <th style={{ width: 300 }}>Description</th>
+                    <th style={{ width: 100, textAlign: "right" }}>On Stock</th>
+                    <th style={{ width: 100, textAlign: "right" }}>
+                      Available
+                    </th>
+                    <th style={{ width: 100, textAlign: "right" }}>
+                      Allocated
+                    </th>
+
+                    <th style={{ width: 100, textAlign: "right" }}>
+                      Purchased
+                    </th>
+                    <th style={{ width: 100, textAlign: "right" }}>Sold</th>
+                    <th style={{ width: 150, textAlign: "right" }}>SRP (₱)</th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Last Sale Price (₱)
+                    </th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Acqui. Cost (₱)
+                    </th>
+                    <th style={{ width: 150, textAlign: "right" }}>
+                      Net B/F Tax (₱)
+                    </th>
+                    <th style={{ width: 100 }}>Category</th>
+                    <th style={{ width: 100 }}>Brand</th>
+                    <th style={{ width: 110 }}>Status</th>
+                    <th
+                      aria-label="actions"
+                      style={{ width: "var(--Table-lastColumnWidth)" }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.items.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={15}
+                        style={{ textAlign: "center", padding: "24px" }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{ color: "text.tertiary" }}
+                        >
+                          No stocks found.
+                        </Typography>
+                      </td>
+                    </tr>
+                  )}
+                  {items.items.map((item) => (
+                    <tr
+                      key={item.id}
+                      onDoubleClick={() => {
+                        setOpenEdit(true);
+                        setSelectedRow(item);
+                      }}
+                    >
+                      <td>
+                        <TooltipTableCell maxWidth="150px">
+                          {item.stock_code}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="300px">
+                          {item.name}
+                        </TooltipTableCell>
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {(
+                          item.total_on_stock + item.total_allocated
+                        ).toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {item.total_on_stock.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {item.total_allocated.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {item.total_purchased.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {item.total_sold.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(item.srp)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(item.last_sale_price)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(item.acquisition_cost)}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {addCommaToNumberWithTwoPlaces(
+                          item.net_cost_before_tax,
+                        )}
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="100px">
+                          {item.category}
+                        </TooltipTableCell>
+                      </td>
+                      <td>
+                        <TooltipTableCell maxWidth="100px">
+                          {item.brand}
+                        </TooltipTableCell>
+                      </td>
+                      <td>{item.status}</td>
+                      <td>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 0.5,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="plain"
+                            color="neutral"
+                            onClick={() => {
+                              setOpenEdit(true);
+                              setSelectedRow(item);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
+                              setSelectedRow(item);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </>
+            )}
           </Table>
         </Sheet>
-      </Box>
-      <Box className="flex align-center justify-end">
-        <Pagination
-          count={Math.floor(items.total / PAGE_LIMIT) + 1}
-          page={page}
-          onChange={changePage}
-          shape="rounded"
-          className="mt-7 ml-auto"
-        />
+
+        {/* Infinite Scroll Status */}
+        {items.items.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
+            {isLoadingMore ? (
+              <>
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading more...</Typography>
+              </>
+            ) : hasMore ? (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing {items.items.length} of {items.total} items • Scroll for
+                more
+              </Typography>
+            ) : (
+              <Typography level="body-sm" sx={{ color: "text.tertiary" }}>
+                Showing all {items.total} items
+              </Typography>
+            )}
+          </Box>
+        )}
       </Box>
       <ItemsModal
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Stocks"
         onSave={handleCreateItem}
+        currencies={currencies}
       />
       <ItemsModal
         open={openEdit}
@@ -393,12 +874,36 @@ const ItemForm = (): JSX.Element => {
         title="Edit Stock"
         row={selectedRow}
         onSave={handleSaveItem}
+        currencies={currencies}
       />
-      <DeleteItemsModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Stock"
+        entityLabel="Stock"
         onDelete={handleDeleteItem}
+      />
+      <CurrencyModal
+        open={openCurrencyModal}
+        setOpen={setOpenCurrencyModal}
+        onChange={() => {
+          void axiosInstance
+            .get<Currency[]>("/api/currencies")
+            .then((res) => setCurrencies(res.data));
+        }}
+      />
+      <PrintStocksModal
+        open={openPrintStocksModal}
+        setOpen={setOpenPrintStocksModal}
+        categories={categories}
+        brands={brands}
+        warehouses={warehouses}
+      />
+      <PrintTotalCostDetailModal
+        open={openPrintTotalCostModal}
+        setOpen={setOpenPrintTotalCostModal}
+        categories={categories}
+        brands={brands}
       />
     </>
   );

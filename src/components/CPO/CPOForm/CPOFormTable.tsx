@@ -1,18 +1,28 @@
-import { Input, Button, Sheet, Autocomplete, Select, Option } from "@mui/joy";
+import { Input, Button, Sheet } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { Item } from "../../../interface";
 import type { CPOFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
 
 const CPOFormTable = ({
   items,
   selectedRow,
   selectedItems,
   setSelectedItems,
-  setIndexOfModal,
-  setIsConfirmOpen,
-  selectedCustomer,
 }: CPOFormTableProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";
@@ -38,7 +48,6 @@ const CPOFormTable = ({
         ...foundItem,
         price: foundItem?.srp ?? 0,
         volume: 1,
-        p_type: "regular",
       };
 
       // We need to add the new item before the null item
@@ -46,11 +55,6 @@ const CPOFormTable = ({
         (selectedItem: Item) => selectedItem.id !== null,
       );
       newSelectedItems[index] = item;
-
-      // Sort by Stock Code
-      newSelectedItems.sort((a, b) => {
-        return a.stock_code.localeCompare(b.stock_code);
-      });
 
       // @ts-expect-error (Used null instead of undefined.)
       newSelectedItems.push({ id: null });
@@ -63,18 +67,6 @@ const CPOFormTable = ({
     const newSelectedItems = selectedItems.map((item: Item, i: number) => {
       if (i === index) {
         return { ...item, volume: value };
-      }
-
-      return item;
-    });
-
-    setSelectedItems(newSelectedItems);
-  };
-
-  const addPType = (value: string, index: number): void => {
-    const newSelectedItems = selectedItems.map((item: Item, i: number) => {
-      if (i === index) {
-        return { ...item, p_type: value };
       }
 
       return item;
@@ -101,14 +93,15 @@ const CPOFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "200px",
-        "--Table-lastColumnWidth": "86px",
+        "--Table-firstColumnWidth": "150px",
+        "--Table-lastColumnWidth": "80px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -131,17 +124,46 @@ const CPOFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          fontSize: "13px",
+          tableLayout: "fixed",
+          "& tr > *:not(:first-child):not(:last-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& tbody tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
           },
-          "& tr > *:last-child": {
+          "& tbody tr > *:last-child": {
+            position: "sticky",
+            zIndex: 2,
+            right: 0,
+            bgcolor: "background.surface",
+          },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            left: 0,
+            top: 0,
+            zIndex: 3,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& thead tr > *:last-child": {
             position: "sticky",
             right: 0,
-            bgcolor: "var(--TableCell-headBackground)",
+            top: 0,
+            zIndex: 3,
+            bgcolor: "background.level1",
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -153,13 +175,12 @@ const CPOFormTable = ({
                 width: "var(--Table-firstColumnWidth)",
               }}
             >
-              Name
+              Stock Code
             </th>
-            <th style={{ width: 200 }}>Stock Code</th>
-            <th style={{ width: 200 }}>P-Type</th>
-            <th style={{ width: 150 }}>Order Qty</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Gross</th>
+            <th style={{ width: 300 }}>Name</th>
+            <th style={{ width: 100, textAlign: "right" }}>Order Qty</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross</th>
             {/* <th style={{ width: 150 }}>On Stock</th> */}
             <th
               aria-label="last"
@@ -169,36 +190,10 @@ const CPOFormTable = ({
         </thead>
         <tbody>
           {selectedItems.map((selectedItem: Item, index: number) => {
-            const price = isEditDisabled
-              ? selectedItem.price
-              : selectedItem.acquisition_cost;
             return (
               <tr key={`${selectedItem.id}-${index}`}>
-                <td style={{ zIndex: 1 }}>
-                  <Autocomplete
-                    placeholder="Select Stock"
-                    options={items}
-                    getOptionLabel={(item) => item.name ?? ""}
-                    onChange={(event, value) => {
-                      if (value !== null) {
-                        fetchSelectedItem(event, value.id, index);
-                      }
-                    }}
-                    value={selectedItem}
-                    disabled={isEditDisabled}
-                    size="sm"
-                    slotProps={{
-                      listbox: {
-                        sx: {
-                          width: 300, // Increase the width
-                          fontSize: "13px",
-                        },
-                      },
-                    }}
-                  />
-                </td>
                 <td>
-                  <Autocomplete
+                  <TooltipAutocomplete
                     placeholder="Select Stock"
                     options={items}
                     getOptionLabel={(item) => item.stock_code ?? ""}
@@ -210,6 +205,7 @@ const CPOFormTable = ({
                     value={selectedItem}
                     disabled={isEditDisabled}
                     size="sm"
+                    sx={{ fontSize: "13px" }}
                     slotProps={{
                       listbox: {
                         sx: {
@@ -221,62 +217,89 @@ const CPOFormTable = ({
                   />
                 </td>
                 <td>
-                  {selectedItem.id && (
-                    <Select
-                      onChange={(event, value) => {
-                        if (value !== null) addPType(value, index);
-                      }}
-                      size="sm"
-                      value={selectedItem.p_type}
-                      disabled={isEditDisabled}
-                      placeholder="Select P-Type"
-                    >
-                      <Option value="regular">Regular</Option>
-                    </Select>
-                  )}
+                  <TooltipAutocomplete
+                    placeholder="Select Stock"
+                    options={items}
+                    getOptionLabel={(item) => item.name ?? ""}
+                    onChange={(event, value) => {
+                      if (value !== null) {
+                        fetchSelectedItem(event, value.id, index);
+                      }
+                    }}
+                    value={selectedItem}
+                    disabled={isEditDisabled}
+                    size="sm"
+                    sx={{ fontSize: "13px" }}
+                    slotProps={{
+                      listbox: {
+                        sx: {
+                          width: 300, // Increase the width
+                          fontSize: "13px",
+                        },
+                      },
+                    }}
+                  />
                 </td>
-                <td style={{ zIndex: 2 }}>
+
+                <td>
                   {selectedItem?.id !== null && (
                     <Input
                       type="number"
-                      onChange={(e) => addItemVolume(e.target.value, index)}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === "" || /^\d+$/.test(raw)) {
+                          addItemVolume(raw, index);
+                        }
+                      }}
                       slotProps={{
                         input: {
                           min: 0,
-                          max: selectedItem.total_on_stock,
+                          step: 1,
                         },
                       }}
                       value={selectedItem.volume}
                       disabled={isEditDisabled}
                       required
+                      sx={{
+                        fontSize: "13px",
+                        width: "100%",
+                        minWidth: 0,
+                        input: { minWidth: 0 },
+                      }}
                     />
                   )}
                 </td>
                 <td>
                   {selectedItem?.id !== null && (
                     <Input
-                      type="number"
-                      onChange={(e) => changePrice(e.target.value, index)}
-                      slotProps={{
-                        input: {
-                          min: 0.0,
-                          step: ".0001",
-                        },
+                      sx={{
+                        fontSize: "13px",
+                        width: "100%",
+                        minWidth: 0,
+                        input: { textAlign: "right", minWidth: 0 },
                       }}
-                      value={selectedItem.price}
+                      onChange={(e) => {
+                        const raw = stripCommas(e.target.value);
+                        if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                          changePrice(raw, index);
+                        }
+                      }}
+                      value={formatWithCommas(
+                        selectedItem.price as string | number,
+                      )}
                       disabled={isEditDisabled}
                       required
                     />
                   )}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {selectedItem?.id !== null &&
-                    addCommaToNumberWithFourPlaces(
-                      Number(price) * Number(selectedItem?.volume),
+                    addCommaToNumberWithTwoPlaces(
+                      Number(selectedItem.price) * Number(selectedItem?.volume),
                     )}
                 </td>
                 {/* <td>{selectedItem.total_on_stock}</td> */}
-                <td>
+                <td style={{ textAlign: "center" }}>
                   {selectedItem?.id !== null && (
                     <Button
                       size="sm"

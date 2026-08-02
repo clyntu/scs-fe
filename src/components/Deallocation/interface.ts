@@ -1,14 +1,9 @@
 import type {
-  PaginatedRR,
   PaginatedWarehouse,
-  ReceivingReport,
   Warehouse,
-  WarehouseItem,
-  StockTransfer,
   Customer,
   PaginatedCustomers,
   Alloc,
-  PaginatedCPO,
   PaginatedAlloc,
   Dealloc,
 } from "../../interface";
@@ -16,7 +11,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 export interface DeallocFormDetailsProps {
   openEdit: boolean;
-  selectedRow: any;
+  selectedRow: Dealloc | undefined;
   status: string;
   setStatus: (status: string) => void;
   transactionDate: string;

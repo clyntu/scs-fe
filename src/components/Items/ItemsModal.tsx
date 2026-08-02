@@ -9,22 +9,35 @@ import {
   Stack,
   Button,
   Box,
-  Autocomplete,
   Select,
   Option,
+  Divider,
 } from "@mui/joy";
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import { AVAILABLE_CURRENCIES } from "../../constants";
 import { toast } from "react-toastify";
 import ViewWHModal from "../../components/Items/ViewWHModal";
 import type {
   Item,
   PaginatedSuppliers,
   ItemsModalProps,
-  Supplier,
 } from "../../interface";
 import StockHistory from "./StockHistory";
+import { addTwoPlaces, addFourPlaces, getErrorMessage } from "../../helper";
+
+const formatWithCommas = (
+  value: string | number | null | undefined,
+): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
 
 const ItemsModal = ({
   open,
@@ -32,14 +45,30 @@ const ItemsModal = ({
   setOpen,
   row,
   onSave,
+  currencies = [],
 }: ItemsModalProps): JSX.Element => {
-  const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
+  const [, setSuppliers] = useState<PaginatedSuppliers>({
     total: 0,
     items: [],
   });
   const [openStockHistory, setOpenStockHistory] = useState(false);
   const [openWH, setOpenWH] = useState(false);
+  const [stockHistoryRefetchTrigger, setStockHistoryRefetchTrigger] =
+    useState(0);
+
+  const handleStockAdjustmentSuccess = (): void => {
+    // Trigger refetch of stock history by incrementing the trigger
+    setStockHistoryRefetchTrigger((prev) => prev + 1);
+  };
+
   const generateItem = (): Item => {
+    // Use the first currency from the list if none is specified
+    const defaultCurrency =
+      currencies.length > 0 ? currencies[0] : { id: 0, code: "" };
+
+    // Check if this is a new item (no existing row data)
+    const isNewItem = row?.id === undefined;
+
     return {
       id: row?.id ?? 0,
       stock_code: row?.stock_code ?? "",
@@ -47,16 +76,27 @@ const ItemsModal = ({
       status: row?.status ?? "",
       category: row?.category ?? "",
       brand: row?.brand ?? "",
-      acquisition_cost: row?.acquisition_cost,
-      net_cost_before_tax: row?.net_cost_before_tax,
-      currency: row?.currency ?? "",
-      rate: row?.rate,
-      srp: row?.srp,
-      last_sale_price: row?.last_sale_price,
+      // acquisition_cost: required field, empty for new items
+      acquisition_cost: isNewItem
+        ? ""
+        : addTwoPlaces(Number(row?.acquisition_cost) ?? 0),
+      // net_cost_before_tax: not required, defaults to 0
+      net_cost_before_tax: isNewItem
+        ? ""
+        : addFourPlaces(Number(row?.net_cost_before_tax) ?? 0),
+      currency: row?.currency ?? defaultCurrency,
+      currency_id: row?.currency_id ?? defaultCurrency.id,
+      rate: row?.rate ?? undefined,
+      // srp: required field, empty for new items
+      srp: isNewItem ? "" : addTwoPlaces(Number(row?.srp) ?? 0),
+      // last_sale_price: not required, defaults to 0
+      last_sale_price: isNewItem
+        ? ""
+        : addTwoPlaces(Number(row?.last_sale_price) ?? 0),
       total_on_stock: row?.total_on_stock ?? 0,
-      total_in_transit: row?.total_in_transit ?? 0,
       total_allocated: row?.total_allocated ?? 0,
       total_purchased: row?.total_purchased ?? 0,
+      total_sold: row?.total_sold ?? 0,
       created_by: row?.created_by ?? 0,
       modified_by: row?.modified_by ?? 0,
       date_created: row?.date_created ?? "",
@@ -65,6 +105,7 @@ const ItemsModal = ({
   };
 
   const [item, setItem] = useState<Item>(generateItem());
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setItem(generateItem());
@@ -76,7 +117,6 @@ const ItemsModal = ({
       const response =
         await axiosInstance.get<PaginatedSuppliers>("/api/suppliers/");
       setSuppliers(response.data);
-      console.log("Suppliers:", response.data);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
     }
@@ -93,31 +133,73 @@ const ItemsModal = ({
     setItem({ ...item, [name]: value });
   };
 
-  const handleSelectChange = (
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    const raw = stripCommas(value);
+    if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+      setItem({ ...item, [name]: raw });
+    }
+  };
+
+  const handleCurrencyChange = (
     event:
       | React.MouseEvent<Element, MouseEvent>
       | React.KeyboardEvent<Element>
       | React.FocusEvent<Element, Element>
       | null,
-    value: string | null,
+    value: number | null,
   ): void => {
     if (value !== null) {
-      setItem({ ...item, currency: value });
+      // Find the selected currency to get both ID and code
+      const selectedCurrency = currencies.find((curr) => curr.id === value);
+      if (selectedCurrency !== undefined) {
+        setItem({
+          ...item,
+          currency_id: selectedCurrency.id,
+          currency: selectedCurrency,
+        });
+      }
     }
   };
 
   const handleSave = async (
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
+    setIsSaving(true);
     e.preventDefault();
     try {
-      await onSave(item);
+      // Create a copy of the item to process before saving
+      const itemToSave = { ...item };
+
+      // Ensure net_cost_before_tax and last_sale_price default to 0 if empty
+      if (
+        itemToSave.net_cost_before_tax === undefined ||
+        itemToSave.net_cost_before_tax === 0 ||
+        itemToSave.net_cost_before_tax === "" ||
+        (typeof itemToSave.net_cost_before_tax === "number" &&
+          isNaN(itemToSave.net_cost_before_tax))
+      ) {
+        itemToSave.net_cost_before_tax = 0;
+      }
+      if (
+        itemToSave.last_sale_price === undefined ||
+        itemToSave.last_sale_price === 0 ||
+        itemToSave.last_sale_price === "" ||
+        (typeof itemToSave.last_sale_price === "number" &&
+          isNaN(itemToSave.last_sale_price))
+      ) {
+        itemToSave.last_sale_price = 0;
+      }
+
+      await onSave(itemToSave);
       setItem(generateItem());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -220,71 +302,47 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>Acquisition Cost</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="acquisition_cost"
-                        type="number"
                         size="sm"
-                        placeholder="0"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.acquisition_cost}
-                        onChange={handleChange}
+                        placeholder="Enter acquisition cost"
+                        value={formatWithCommas(item?.acquisition_cost)}
+                        onChange={handlePriceChange}
                         required
                       />
                     </FormControl>
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>Net Cost B/F Tax (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="net_cost_before_tax"
-                        type="number"
                         size="sm"
-                        placeholder="0"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.net_cost_before_tax}
-                        onChange={handleChange}
+                        placeholder="0 (default)"
+                        value={formatWithCommas(item?.net_cost_before_tax)}
+                        onChange={handlePriceChange}
                       />
                     </FormControl>
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>SRP (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="srp"
-                        type="number"
                         size="sm"
-                        placeholder="0"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.srp}
-                        onChange={handleChange}
+                        placeholder="Enter SRP"
+                        value={formatWithCommas(item?.srp)}
+                        onChange={handlePriceChange}
                         required
                       />
                     </FormControl>
                     <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
                       <FormLabel>Last Sale Price (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="last_sale_price"
-                        type="number"
                         size="sm"
-                        placeholder="0"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.last_sale_price}
-                        onChange={handleChange}
+                        placeholder="0 (default)"
+                        value={formatWithCommas(item?.last_sale_price)}
+                        onChange={handlePriceChange}
                       />
                     </FormControl>
                   </Stack>
@@ -293,15 +351,15 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                       <FormLabel>Currency Used</FormLabel>
                       <Select
-                        name="currency"
+                        name="currency_id"
                         size="sm"
-                        value={item?.currency}
-                        onChange={handleSelectChange}
+                        value={item?.currency_id}
+                        onChange={handleCurrencyChange}
                         required
                       >
-                        {AVAILABLE_CURRENCIES.map((currency) => (
-                          <Option key={currency} value={currency}>
-                            {currency}
+                        {currencies.map((currency) => (
+                          <Option key={currency.id} value={currency.id}>
+                            {currency.code}
                           </Option>
                         ))}
                       </Select>
@@ -309,89 +367,89 @@ const ItemsModal = ({
                     <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                       <FormLabel>Philippine Peso Rate (₱)</FormLabel>
                       <Input
+                        sx={{ input: { textAlign: "right" } }}
                         name="rate"
-                        type="number"
                         size="sm"
                         placeholder="0"
-                        slotProps={{
-                          input: {
-                            min: 0,
-                            step: ".0001",
-                          },
-                        }}
-                        value={item?.rate}
-                        onChange={handleChange}
+                        value={formatWithCommas(item?.rate ?? "")}
+                        onChange={handlePriceChange}
                         required
                       />
                     </FormControl>
                   </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>On Stock</FormLabel>
-                      <Input
-                        name="total_on_stock"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_on_stock}
-                        disabled
-                      />
-                    </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>In Transit</FormLabel>
-                      <Input
-                        name="total_in_transit"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_in_transit}
-                        disabled
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>Allocated</FormLabel>
-                      <Input
-                        name="total_allocated"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_allocated}
-                        disabled
-                      />
-                    </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                      <FormLabel>Purchased</FormLabel>
-                      <Input
-                        name="total_purchased"
-                        type="number"
-                        size="sm"
-                        placeholder="0"
-                        value={item?.total_purchased}
-                        disabled
-                      />
-                    </FormControl>
-                  </Stack>
+                  {title === "Edit Stock" && (
+                    <>
+                      <Divider sx={{ my: 2 }}>Stock Quantities</Divider>
+                      <Stack
+                        direction="row"
+                        spacing={3}
+                        sx={{ flexWrap: "wrap", justifyContent: "center" }}
+                      >
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">On Stock</p>
+                          <p className="text-sm font-semibold">
+                            {formatWithCommas(
+                              item?.total_on_stock + item?.total_allocated,
+                            )}
+                          </p>
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Available</p>
+                          <p className="text-sm font-semibold">
+                            {formatWithCommas(item?.total_on_stock)}
+                          </p>
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Allocated</p>
+                          <p className="text-sm font-semibold">
+                            {formatWithCommas(item?.total_allocated)}
+                          </p>
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Purchased</p>
+                          <p className="text-sm font-semibold">
+                            {formatWithCommas(item?.total_purchased)}
+                          </p>
+                        </Box>
+                        <Box sx={{ textAlign: "center" }}>
+                          <p className="text-xs text-gray-500">Sold</p>
+                          <p className="text-sm font-semibold">
+                            {formatWithCommas(item?.total_sold)}
+                          </p>
+                        </Box>
+                      </Stack>
+                    </>
+                  )}
                 </div>
               </Card>
               <div className="flex justify-end mt-5">
-                <Button
-                  size="sm"
-                  variant="soft"
-                  className="ml-4 w-[100px] bg-button-soft-primary"
-                  onClick={() => {
-                    setOpenWH(true);
-                  }}
-                >
-                  Locations
-                </Button>
+                {title === "Edit Stock" && (
+                  <Button
+                    size="sm"
+                    variant="soft"
+                    className="bg-button-soft-primary"
+                    sx={{
+                      ml: 2,
+                      width: "100px",
+                    }}
+                    onClick={() => {
+                      setOpenWH(true);
+                    }}
+                  >
+                    Locations
+                  </Button>
+                )}
+
                 {title === "Edit Stock" && (
                   <Button
                     onClick={() => setOpenStockHistory(true)}
-                    className="ml-4 w-[130px] bg-button-soft-primary"
+                    className="bg-button-soft-primary"
                     size="sm"
                     variant="soft"
+                    sx={{
+                      ml: 2,
+                      width: "130px",
+                    }}
                   >
                     Stock History
                   </Button>
@@ -399,8 +457,13 @@ const ItemsModal = ({
 
                 <Button
                   type="submit"
-                  className="ml-4 w-[130px] bg-button-primary"
+                  className="bg-button-primary"
                   size="sm"
+                  loading={isSaving}
+                  sx={{
+                    ml: 2,
+                    width: "130px",
+                  }}
                 >
                   Save
                 </Button>
@@ -413,8 +476,15 @@ const ItemsModal = ({
         open={openStockHistory}
         setOpen={setOpenStockHistory}
         row={row}
+        refetchTrigger={stockHistoryRefetchTrigger}
       />
-      <ViewWHModal open={openWH} setOpen={setOpenWH} row={row} type="item" />
+      <ViewWHModal
+        open={openWH}
+        setOpen={setOpenWH}
+        row={row}
+        type="item"
+        onStockAdjustmentSuccess={handleStockAdjustmentSuccess}
+      />
     </>
   );
 };

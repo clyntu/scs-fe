@@ -13,7 +13,12 @@ export interface ARFormDetailsProps {
 
   // Fields
   selectedCustomer: Customer | null;
-  fetchARByCustomer: (customerId: number | null) => void;
+  fetchARByCustomer: (
+    customerId: number | null,
+    savedPayments?: Record<string, string>,
+    currentItems?: OutstandingTrans[],
+    completePayment?: boolean,
+  ) => void;
   setSelectedCustomer: Dispatch<SetStateAction<Customer | null>>;
   status: string;
   setStatus: Dispatch<SetStateAction<string>>;
@@ -43,6 +48,11 @@ export interface ARFormDetailsProps {
   refNo: string;
   setRefNo: Dispatch<SetStateAction<string>>;
   paymentStatus: string;
+  selectedCDR: string | null;
+  setSelectedCDR: Dispatch<SetStateAction<string | null>>;
+  cdrNumbers: string[];
+  outstandingTrans: OutstandingTrans[];
+  setOutstandingTrans: Dispatch<SetStateAction<OutstandingTrans[]>>;
 }
 
 export interface ARFormTableProps {
@@ -51,6 +61,8 @@ export interface ARFormTableProps {
   selectedRow: AR | undefined;
   openEdit: boolean;
   isEditDisabled: boolean;
+  isLoadingItems: boolean;
+  selectedCDR: string | null;
 }
 
 export interface DRItemsFE {
@@ -85,4 +97,22 @@ export interface OutstandingTrans {
   balance: string; // Consider changing to number
   aging_bucket?: string;
   payment?: string;
+}
+
+export interface CustomerReceivableResponse {
+  total: number;
+  items: CustomerReceivable[];
+  next_page: string | null;
+  previous_page: string | null;
+  total_receivable: string;
+  total_uncleared: string;
+  total_bounced: string;
+}
+
+interface CustomerReceivable {
+  customer_id: number;
+  customer_name: string;
+  amount_receivable: string;
+  uncleared_payment: string;
+  bounced_payment: string;
 }

@@ -32,6 +32,9 @@ export interface POFormProps {
   setCurrencyUsed: Dispatch<SetStateAction<string>>;
   pesoRate: number | string;
   setPesoRate: Dispatch<SetStateAction<number | string>>;
+  // Toggle for showing/hiding totals - optional with ? marks to ensure backward compatibility
+  showTotals?: boolean;
+  setShowTotals?: Dispatch<SetStateAction<boolean>>;
 
   fobTotal: number;
   netAmount: number;
@@ -55,7 +58,7 @@ export interface POFormTableProps {
   setNewPrices: Dispatch<SetStateAction<NewPriceInstance[]>>;
   isConfirmOpen: boolean;
   setIsConfirmOpen: Dispatch<SetStateAction<boolean>>;
-  selectedSupplier: Supplier | null
+  selectedSupplier: Supplier | null;
 }
 
 export interface POPayload {

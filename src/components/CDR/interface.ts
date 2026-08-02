@@ -5,9 +5,9 @@ import type {
   CPO,
   CDR,
   AllocItem,
+  User,
 } from "../../interface";
 import type { Dispatch, SetStateAction } from "react";
-import { type User } from "../../pages/Login";
 
 export interface CDRFormDetailsProps {
   openEdit: boolean;

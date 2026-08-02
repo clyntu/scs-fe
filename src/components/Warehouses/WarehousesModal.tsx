@@ -15,6 +15,7 @@ import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import { toast } from "react-toastify";
 import type { Warehouse, WarehousesModalProps } from "../../interface";
+import { getErrorMessage } from "../../helper";
 
 const WarehousesModal = ({
   open,
@@ -23,6 +24,7 @@ const WarehousesModal = ({
   row,
   onSave,
 }: WarehousesModalProps): JSX.Element => {
+  const [isSaving, setIsSaving] = useState(false);
   const generateWarehouse = (): Warehouse => {
     return {
       id: row?.id ?? 0,
@@ -66,15 +68,17 @@ const WarehousesModal = ({
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-
+    setIsSaving(true);
     try {
       await onSave(warehouse);
       setWarehouse(generateWarehouse());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -150,8 +154,10 @@ const WarehousesModal = ({
             <div className="flex justify-end mt-5">
               <Button
                 type="submit"
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{ ml: 2, width: 130 }}
+                className="bg-button-primary"
                 size="sm"
+                loading={isSaving}
               >
                 Save
               </Button>

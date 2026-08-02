@@ -1,0 +1,442 @@
+import Modal from "@mui/joy/Modal";
+import ModalClose from "@mui/joy/ModalClose";
+import ModalDialog from "@mui/joy/ModalDialog";
+import DialogTitle from "@mui/joy/DialogTitle";
+import DialogContent from "@mui/joy/DialogContent";
+import Stack from "@mui/joy/Stack";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import FormHelperText from "@mui/joy/FormHelperText";
+import Input from "@mui/joy/Input";
+import Radio from "@mui/joy/Radio";
+import RadioGroup from "@mui/joy/RadioGroup";
+import Button from "@mui/joy/Button";
+import Alert from "@mui/joy/Alert";
+import Typography from "@mui/joy/Typography";
+import CircularProgress from "@mui/joy/CircularProgress";
+import React, { useState, useEffect, useMemo } from "react";
+import axiosInstance from "../../utils/axiosConfig";
+import type {
+  StockAdjustmentRequest,
+  StockAdjustmentResponse,
+  PaginatedItems,
+} from "../../interface";
+import { addFourPlaces, getErrorMessage } from "../../helper";
+
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
+
+interface StockAdjustmentModalProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  warehouseId: number;
+  warehouseName: string;
+  itemId: number;
+  itemName: string;
+  stockCode: string;
+  currentStock: number;
+  onSuccess: () => void;
+}
+
+const StockAdjustmentModal = ({
+  open,
+  setOpen,
+  warehouseId,
+  warehouseName,
+  itemId,
+  itemName,
+  stockCode,
+  currentStock,
+  onSuccess,
+}: StockAdjustmentModalProps): JSX.Element => {
+  const [adjustmentType, setAdjustmentType] = useState<"surplus" | "deficit">(
+    "surplus",
+  );
+  const [adjustmentAmount, setAdjustmentAmount] = useState<string>("");
+  const [netCost, setNetCost] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingItem, setIsLoadingItem] = useState(false);
+  const [touched, setTouched] = useState({
+    amount: false,
+    netCost: false,
+  });
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+
+  // Fetch item details when modal opens to get default net cost
+  useEffect(() => {
+    if (open && itemId !== 0) {
+      setIsLoadingItem(true);
+      axiosInstance
+        .get<PaginatedItems>(`/api/items/?item_id=${itemId}`)
+        .then((response) => {
+          console.log(itemId);
+          console.log(response.data);
+          const rawDefaultNetCost = Number(
+            response.data.items[0]?.net_cost_before_tax,
+          );
+          const defaultNetCost = Number.isNaN(rawDefaultNetCost)
+            ? 0
+            : rawDefaultNetCost;
+          setNetCost(addFourPlaces(defaultNetCost).toString());
+          setIsLoadingItem(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching item details:", err);
+          setNetCost("0");
+          setIsLoadingItem(false);
+        });
+    }
+  }, [open, itemId]);
+
+  // Reset form state when modal opens
+  useEffect(() => {
+    if (open) {
+      setAdjustmentAmount("");
+      setAdjustmentType("surplus");
+      setTouched({ amount: false, netCost: false });
+      setError("");
+      setSuccess("");
+    }
+  }, [open]);
+
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Validation
+    const amount = parseInt(adjustmentAmount, 10);
+    if (isNaN(amount) || amount <= 0) {
+      setError("Amount must be a positive number");
+      return;
+    }
+
+    const rawNetCost = stripCommas(netCost);
+    const cost = parseFloat(rawNetCost);
+    if (isNaN(cost) || cost <= 0) {
+      setError("Net Cost must be a positive number");
+      return;
+    }
+
+    // Check for max 4 decimal places
+    const decimalPart = rawNetCost.split(".")[1];
+    if (decimalPart !== undefined && decimalPart.length > 4) {
+      setError("Net Cost can have a maximum of 4 decimal places");
+      return;
+    }
+
+    if (adjustmentType === "deficit" && amount > currentStock) {
+      setError(
+        `Insufficient stock. Current stock: ${currentStock}, attempting to remove: ${amount}`,
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const request: StockAdjustmentRequest = {
+        adjustment_type: adjustmentType,
+        adjustment_amount: amount,
+        net_cost: cost,
+      };
+
+      const response = await axiosInstance.post<StockAdjustmentResponse>(
+        `/api/warehouse_items/${warehouseId}/items/${itemId}/adjust-stock`,
+        request,
+      );
+
+      setSuccess(
+        `Stock adjusted successfully. New quantity: ${response.data.new_on_stock} units`,
+      );
+
+      // Wait a moment to show success message, then close and refresh
+      setTimeout(() => {
+        setOpen(false);
+        onSuccess();
+      }, 1500);
+    } catch (err: unknown) {
+      setError(
+        getErrorMessage(err, "Failed to adjust stock. Please try again.") ??
+          "Failed to adjust stock. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = (): void => {
+    if (!isSubmitting) {
+      setOpen(false);
+      setAdjustmentAmount("");
+      setNetCost("");
+      setAdjustmentType("surplus");
+      setError("");
+      setSuccess("");
+    }
+  };
+
+  const predictedStock = (): number => {
+    const amount = parseInt(adjustmentAmount, 10);
+    if (isNaN(amount)) return currentStock;
+    return adjustmentType === "surplus"
+      ? currentStock + amount
+      : currentStock - amount;
+  };
+
+  // Validation helpers with error messages
+  const getAmountError = useMemo(() => {
+    // Don't show errors during submission or after success
+    if (!touched.amount || isSubmitting || success !== "") return null;
+    const amount = parseFloat(adjustmentAmount);
+    if (adjustmentAmount === "") return "Amount is required";
+    if (isNaN(amount)) return "Please enter a valid number";
+    if (amount <= 0) return "Amount must be greater than 0";
+    return null;
+  }, [adjustmentAmount, touched.amount, isSubmitting, success]);
+
+  const getNetCostError = useMemo(() => {
+    // Don't show errors during submission or after success
+    if (!touched.netCost || isSubmitting || success !== "") return null;
+    const rawNetCost = stripCommas(netCost);
+    const cost = parseFloat(rawNetCost);
+    if (rawNetCost === "") return "Net Cost is required";
+    if (isNaN(cost)) return "Please enter a valid number";
+    if (cost <= 0) return "Net Cost must be greater than 0";
+
+    // Check for max 4 decimal places
+    const decimalPart = rawNetCost.split(".")[1];
+    if (decimalPart !== undefined && decimalPart.length > 4) {
+      return "Net Cost can have a maximum of 4 decimal places";
+    }
+
+    return null;
+  }, [netCost, touched.netCost, isSubmitting, success]);
+
+  const isFormValid = useMemo(() => {
+    const amount = parseFloat(adjustmentAmount);
+    const rawNetCost = stripCommas(netCost);
+    const cost = parseFloat(rawNetCost);
+
+    // Check for max 4 decimal places
+    const decimalPart = rawNetCost.split(".")[1];
+    const hasValidDecimals =
+      decimalPart === undefined || decimalPart.length <= 4;
+
+    return (
+      !isNaN(amount) &&
+      amount > 0 &&
+      !isNaN(cost) &&
+      cost > 0 &&
+      hasValidDecimals
+    );
+  }, [adjustmentAmount, netCost]);
+
+  return (
+    <Modal open={open} onClose={handleClose}>
+      <ModalDialog variant="outlined" role="alertdialog" size="md">
+        <ModalClose disabled={isSubmitting} />
+        <DialogTitle>Adjust Stock</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            {/* Item Info */}
+            <Alert color="neutral" variant="soft" size="sm">
+              <Stack spacing={0.5}>
+                <Typography level="body-sm">
+                  <strong>Warehouse:</strong> {warehouseName}
+                </Typography>
+                <Typography level="body-sm">
+                  <strong>Item:</strong> {itemName} ({stockCode})
+                </Typography>
+                <Typography level="body-sm">
+                  <strong>Current Stock:</strong> {currentStock} units
+                </Typography>
+              </Stack>
+            </Alert>
+
+            {error !== "" && (
+              <Alert color="danger" variant="soft" size="sm">
+                <Typography level="body-sm">{error}</Typography>
+              </Alert>
+            )}
+
+            {success !== "" && (
+              <Alert color="success" variant="soft" size="sm">
+                <Typography level="body-sm">{success}</Typography>
+              </Alert>
+            )}
+
+            {isLoadingItem ? (
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ py: 3 }}
+              >
+                <CircularProgress size="sm" />
+                <Typography level="body-sm">Loading item details...</Typography>
+              </Stack>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={2}>
+                  {/* Adjustment Type */}
+                  <FormControl required size="sm">
+                    <FormLabel sx={{ fontSize: "0.875rem" }}>
+                      Adjustment Type
+                    </FormLabel>
+                    <RadioGroup
+                      value={adjustmentType}
+                      onChange={(e) =>
+                        setAdjustmentType(
+                          e.target.value as "surplus" | "deficit",
+                        )
+                      }
+                      size="sm"
+                    >
+                      <Radio
+                        value="surplus"
+                        label="Surplus (Add Stock)"
+                        color="success"
+                        size="sm"
+                      />
+                      <Radio
+                        value="deficit"
+                        label="Deficit (Subtract Stock)"
+                        color="danger"
+                        size="sm"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+
+                  {/* Amount */}
+                  <FormControl
+                    required
+                    error={getAmountError !== null}
+                    size="sm"
+                  >
+                    <FormLabel sx={{ fontSize: "0.875rem" }}>Amount</FormLabel>
+                    <Input
+                      type="number"
+                      size="sm"
+                      value={adjustmentAmount}
+                      onChange={(e) => setAdjustmentAmount(e.target.value)}
+                      onBlur={() =>
+                        setTouched((prev) => ({ ...prev, amount: true }))
+                      }
+                      placeholder="Enter stock adjustment amount"
+                      disabled={isSubmitting}
+                      slotProps={{
+                        input: {
+                          min: 1,
+                          step: 1,
+                        },
+                      }}
+                    />
+                    {getAmountError !== null && (
+                      <FormHelperText sx={{ fontSize: "0.75rem" }}>
+                        {getAmountError}
+                      </FormHelperText>
+                    )}
+                    {adjustmentAmount !== "" &&
+                      !isNaN(parseFloat(adjustmentAmount)) &&
+                      parseFloat(adjustmentAmount) > 0 && (
+                        <Typography level="body-sm" sx={{ mt: 0.5 }}>
+                          New stock level will be:{" "}
+                          <strong
+                            style={{
+                              color:
+                                adjustmentType === "surplus"
+                                  ? "green"
+                                  : predictedStock() < 0
+                                    ? "red"
+                                    : "inherit",
+                            }}
+                          >
+                            {predictedStock()} units
+                          </strong>
+                        </Typography>
+                      )}
+                  </FormControl>
+
+                  {/* Net Cost */}
+                  <FormControl
+                    required
+                    error={getNetCostError !== null}
+                    size="sm"
+                  >
+                    <FormLabel sx={{ fontSize: "0.875rem" }}>
+                      Net Cost
+                    </FormLabel>
+                    <Input
+                      size="sm"
+                      value={formatWithCommas(netCost)}
+                      onChange={(e) => {
+                        const raw = stripCommas(e.target.value);
+                        if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                          setNetCost(raw);
+                        }
+                      }}
+                      onBlur={() =>
+                        setTouched((prev) => ({ ...prev, netCost: true }))
+                      }
+                      placeholder="Enter net cost before tax"
+                      disabled={isSubmitting}
+                    />
+                    {getNetCostError !== null ? (
+                      <FormHelperText sx={{ fontSize: "0.75rem" }}>
+                        {getNetCostError}
+                      </FormHelperText>
+                    ) : (
+                      <FormHelperText sx={{ fontSize: "0.75rem" }}>
+                        Cost per unit before tax (max 4 decimal places)
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+
+                  {/* Action Buttons */}
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button
+                      size="sm"
+                      variant="outlined"
+                      color="neutral"
+                      onClick={handleClose}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      type="submit"
+                      color={
+                        adjustmentType === "surplus" ? "success" : "danger"
+                      }
+                      loading={isSubmitting}
+                      disabled={isSubmitting || !isFormValid}
+                    >
+                      {adjustmentType === "surplus"
+                        ? "Add Stock"
+                        : "Subtract Stock"}
+                    </Button>
+                  </Stack>
+                </Stack>
+              </form>
+            )}
+          </Stack>
+        </DialogContent>
+      </ModalDialog>
+    </Modal>
+  );
+};
+
+export default StockAdjustmentModal;

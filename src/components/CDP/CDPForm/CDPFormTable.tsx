@@ -2,10 +2,10 @@ import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { AllocItemsFE, CDPFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const CDPFormTable = ({
-  selectedRow,
   formattedAllocs,
   setFormattedAllocs,
   isEditDisabled,
@@ -57,14 +57,15 @@ const CDPFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "150px",
+        "--Table-firstColumnWidth": "80px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -87,12 +88,33 @@ const CDPFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          fontSize: "13px",
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
+          },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -106,38 +128,54 @@ const CDPFormTable = ({
             >
               Alloc No.
             </th>
-            <th style={{ width: 200 }}>Stock Code</th>
+            <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Name</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Alloc Qty.</th>
-            <th style={{ width: 150 }}>DR Plan Qty.</th>
-            <th style={{ width: 150 }}>Gross Amount</th>
-            <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>NET Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>Alloc Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>DR Plan Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Cust. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Cust. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Cust. Disc. 3 (%)</th> */}
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
+            <th style={{ width: 100, textAlign: "right" }}>NET Amount</th>
           </tr>
         </thead>
         <tbody>
           {formattedAllocs.map((item, index) => {
             const key = `${item.id}-${item.cpo_id}-${item.stock_code}`;
-            const price = item?.price ?? 0;
+            const price = addCommaToNumberWithTwoPlaces(item?.price ?? 0);
 
             return (
               <tr key={key}>
-                <td style={{ zIndex: 1 }}>{item.id}</td>
-                <td>{item?.stock_code}</td>
-                <td>{item?.name}</td>
-                <td>{price}</td>
-                <td>{item.alloc_qty}</td>
-                <td>
+                <td>{item.id}</td>
+                <td>{withTooltip(item?.stock_code, "120px")}</td>
+                <td>{withTooltip(item?.name, "180px")}</td>
+                <td style={{ textAlign: "right" }}>{price}</td>
+                <td style={{ textAlign: "right" }}>{item.alloc_qty}</td>
+                <td style={{ textAlign: "right" }}>
                   <Input
                     type="number"
                     value={item.dp_qty}
+                    sx={{
+                      fontSize: "13px",
+                      width: "100%",
+                      minWidth: 0,
+                      input: { textAlign: "right", minWidth: 0 },
+                    }}
                     onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw !== "" && !/^\d+$/.test(raw)) return;
                       setFormattedAllocs((prevAllocItems) =>
                         prevAllocItems.map((allocItem) =>
                           allocItem.id === item.id &&
@@ -145,10 +183,10 @@ const CDPFormTable = ({
                           allocItem.cpo_id === item.cpo_id
                             ? {
                                 ...allocItem,
-                                dp_qty: e.target.value,
-                                gross_amount: price * Number(e.target.value),
+                                dp_qty: raw,
+                                gross_amount: Number(item.price) * Number(raw),
                                 net_amount: calculateNetForRow(
-                                  Number(e.target.value),
+                                  Number(raw),
                                   allocItem,
                                 ),
                               } // Update the matching item
@@ -159,44 +197,49 @@ const CDPFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
+                        step: 1,
                       },
                     }}
                     placeholder="0"
                     disabled={isEditDisabled}
                   />
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.gross_amount)}</td>
-                <td>
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.gross_amount)}
+                </td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_1.includes("%")
                     ? item.customer_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.customer_discount_2.includes("%")
                     ? item.customer_discount_2
                     : 0}
                 </td>
-                <td>
+                {/* <td style={{ textAlign: "right" }}>
                   {item.customer_discount_3.includes("%")
                     ? item.customer_discount_3
                     : 0}
-                </td>
-                <td>
+                </td> */}
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_1.includes("%")
                     ? item.transaction_discount_1
                     : 0}
                 </td>
-                <td>
+                <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_2.includes("%")
                     ? item.transaction_discount_2
                     : 0}
                 </td>
-                <td>
+                {/* <td style={{ textAlign: "right" }}>
                   {item.transaction_discount_3.includes("%")
                     ? item.transaction_discount_3
                     : 0}
+                </td> */}
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.net_amount)}
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.net_amount)}</td>
               </tr>
             );
           })}

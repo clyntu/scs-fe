@@ -1,25 +1,27 @@
 import CPOFormDetails from "./CPOForm/CPOFormDetails";
 import CPOFormTable from "./CPOForm/CPOFormTable";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { CPOPayload, CPOItemValues } from "./interface";
-import type { User } from "../../pages/Login";
 import {
   areCustomerDiscountsValid as areDiscountsValid,
   calculateTotalWithDiscounts,
 } from "./CPOForm/helpers";
 import type {
+  CPO,
   CPOFormProps,
   Customer,
   Item,
   PaginatedCustomers,
   PaginatedItems,
+  User,
 } from "../../interface";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
+import CircularProgress from "@mui/joy/CircularProgress";
+import { addFourPlaces, getErrorMessage } from "../../helper";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -50,26 +52,28 @@ const CPOForm = ({
     transaction: ["", "", ""],
   });
 
-  const [priceLevel, setPriceLevel] = useState("1");
-
   const [status, setStatus] = useState("unposted");
   const [transactionDate, setTransactionDate] = useState(currentDate);
   const [referenceNumber, setReferenceNumber] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [userId, setUserId] = useState<number | null>(null);
+  const [, setUserId] = useState<number | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [indexOfModal, setIndexOfModal] = useState(0);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>("/api/customers/?sort_by=name")
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
 
     // Fetch user ID
     axiosInstance
-      .get<User>("/users/me/")
+      .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
 
@@ -84,7 +88,7 @@ const CPOForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    if (selectedRow !== null && selectedRow?.customer_id !== undefined) {
+    const fetchValues = (selectedRow: CPO): void => {
       setDiscounts({
         customer: [
           selectedRow?.customer_discount_1 ?? 0,
@@ -98,18 +102,27 @@ const CPOForm = ({
         ],
       });
       setStatus(selectedRow?.status ?? "pending");
-      setPriceLevel(selectedRow?.price_level ?? "1");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
+    };
 
+    if (selectedRow !== null && selectedRow?.customer_id !== undefined) {
       // Get Customer for Edit
       axiosInstance
         .get<Customer>(`/api/customers/${selectedRow?.customer_id}`)
         .then((response) => {
           setSelectedCustomer(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
         })
-        .catch((error) => console.error("Error:", error));
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -120,22 +133,36 @@ const CPOForm = ({
     }
   }, [items]);
 
-  const createPayload = (
-    itemPayload: CPOItemValues[],
-    isEdit: boolean,
-  ): CPOPayload => {
+  const createPayload = (itemPayload: CPOItemValues[]): CPOPayload => {
     const payload: CPOPayload = {
       status,
       transaction_date: transactionDate,
       customer_id: selectedCustomer?.customer_id ?? 0,
-      price_level: priceLevel,
       gross_total: grossTotal,
-      customer_discount_1: discounts.customer[0],
-      customer_discount_2: discounts.customer[1],
-      customer_discount_3: discounts.customer[2],
-      transaction_discount_1: discounts.transaction[0],
-      transaction_discount_2: discounts.transaction[1],
-      transaction_discount_3: discounts.transaction[2],
+      customer_discount_1:
+        discounts.customer[0] !== ""
+          ? `${discounts.customer[0].replaceAll("%", "")}%`
+          : "",
+      customer_discount_2:
+        discounts.customer[1] !== ""
+          ? `${discounts.customer[1].replaceAll("%", "")}%`
+          : "",
+      customer_discount_3:
+        discounts.customer[2] !== ""
+          ? `${discounts.customer[2].replaceAll("%", "")}%`
+          : "",
+      transaction_discount_1:
+        discounts.transaction[0] !== ""
+          ? `${discounts.transaction[0].replaceAll("%", "")}%`
+          : "",
+      transaction_discount_2:
+        discounts.transaction[1] !== ""
+          ? `${discounts.transaction[1].replaceAll("%", "")}%`
+          : "",
+      transaction_discount_3:
+        discounts.transaction[2] !== ""
+          ? `${discounts.transaction[2].replaceAll("%", "")}%`
+          : "",
       net_total: netTotal,
       reference_number: referenceNumber,
       remarks,
@@ -150,10 +177,10 @@ const CPOForm = ({
     if (
       typeof item.id === "number" && // Check that id is a number.
       item?.price !== undefined &&
-      !isNaN(item.price) &&
+      !isNaN(Number(item.price)) &&
       item.price > 0 &&
       item?.volume !== undefined &&
-      !isNaN(item.volume) &&
+      !isNaN(Number(item.volume)) &&
       item.volume > 0
     ) {
       return acc + item.price * item.volume;
@@ -180,20 +207,12 @@ const CPOForm = ({
 
       const modifiedItem = {
         ...foundItem,
-        price: item.price,
+        price: addFourPlaces(item.price),
         volume: item.volume,
         allocated: item.allocated,
-        p_type: item.p_type,
       };
 
       return modifiedItem;
-    });
-
-    // Sort items
-    selectedItems.sort((a, b) => {
-      const stockCodeA = a.stock_code ?? ""; // Default to empty string if undefined
-      const stockCodeB = b.stock_code ?? ""; // Default to empty string if undefined
-      return stockCodeA.localeCompare(stockCodeB);
     });
 
     // @ts-expect-error (Used null instead of undefined.)
@@ -209,7 +228,7 @@ const CPOForm = ({
 
     if (!areDiscountsValid(discounts)) {
       toast.error(
-        "Error: Discounts must be a positive number with or without %",
+        "Error: Discounts must be in percentage format (e.g., 10%, 5.5%)",
       );
       return;
     }
@@ -218,24 +237,26 @@ const CPOForm = ({
       .filter((item: Item) => item.id !== null)
       .map((item: Item) => ({
         item_id: item.id,
-        p_type: item.p_type,
         volume: item.volume,
         unserved_spo: item.volume,
         price: item.price,
         total_price: Number(item.volume) * Number(item.price),
       }));
 
-    const payload = createPayload(itemPayload, false);
+    const payload = createPayload(itemPayload);
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/customer_purchase_orders/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -247,7 +268,7 @@ const CPOForm = ({
 
     if (!areDiscountsValid(discounts)) {
       toast.error(
-        "Error: Discounts must be a positive number with or without %",
+        "Error: Discounts must be in percentage format (e.g., 10%, 5.5%)",
       );
       return;
     }
@@ -256,26 +277,29 @@ const CPOForm = ({
       .filter((item: Item) => item.id !== null)
       .map((item: Item) => ({
         item_id: item.id,
-        p_type: item.p_type,
         volume: Number(item.volume),
         price: Number(item.price),
         unserved_spo: Number(item.volume),
         total_price: Number(item.volume) * Number(item.price),
       }));
 
-    const payload = createPayload(itemPayload, true);
+    const payload = createPayload(itemPayload);
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/customer_purchase_orders/${selectedRow?.id}`,
         payload,
       );
-      setOpen(false);
+      setIsSaving(false);
       toast.success("Save successful!");
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -287,7 +311,6 @@ const CPOForm = ({
       customer: ["0", "0", "0"],
       transaction: ["0", "0", "0"],
     });
-    setPriceLevel("1");
     setStatus("unposted");
     setTransactionDate(currentDate);
     setReferenceNumber("");
@@ -308,76 +331,94 @@ const CPOForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
-        <Button
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <CPOFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        customers={customers}
-        // Fields
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        setSelectedItems={setSelectedItems}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        discounts={discounts}
-        setDiscounts={setDiscounts}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        priceLevel={priceLevel}
-        setPriceLevel={setPriceLevel}
-        // Summary Amounts
-        netTotal={netTotal}
-        grossTotal={grossTotal}
-      />
-      <CPOFormTable
-        items={items}
-        status={status}
-        selectedRow={selectedRow}
-        selectedItems={selectedItems}
-        setSelectedItems={setSelectedItems}
-        indexOfModal={indexOfModal}
-        setIndexOfModal={setIndexOfModal}
-        isConfirmOpen={isConfirmOpen}
-        setIsConfirmOpen={setIsConfirmOpen}
-        selectedCustomer={selectedCustomer}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <CPOFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            customers={customers}
+            // Fields
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            setSelectedItems={setSelectedItems}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            discounts={discounts}
+            setDiscounts={setDiscounts}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            // Summary Amounts
+            netTotal={netTotal}
+            grossTotal={grossTotal}
+          />
+          <CPOFormTable
+            items={items}
+            status={status}
+            selectedRow={selectedRow}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            indexOfModal={indexOfModal}
+            setIndexOfModal={setIndexOfModal}
+            isConfirmOpen={isConfirmOpen}
+            setIsConfirmOpen={setIsConfirmOpen}
+            selectedCustomer={selectedCustomer}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              sx={{
+                ml: 2,
+                width: "130px",
+              }}
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+                resetForm();
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!hasSaved && !isEditDisabled && (
+              <Button
+                type="submit"
+                sx={{
+                  ml: 2,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

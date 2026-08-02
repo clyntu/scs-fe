@@ -1,11 +1,25 @@
-import { Sheet, Input, Autocomplete } from "@mui/joy";
+import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
 
 import type { DRItemsFE, CRFormTableProps } from "../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import { calculateTotalWithDiscounts } from "./helpers";
+
+const formatWithCommas = (value: string | number): string => {
+  if (value === "" || value === undefined || value === null) return "";
+  const str = String(value);
+  const [whole, decimal] = str.split(".");
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decimal !== undefined ? `${formatted}.${decimal}` : formatted;
+};
+
+const stripCommas = (value: string): string => {
+  return value.replace(/,/g, "");
+};
 
 const CRFormTable = ({
-  selectedRow,
   warehouses,
   formattedDRs,
   setFormattedDRs,
@@ -16,37 +30,22 @@ const CRFormTable = ({
     price: number,
     DRItem: DRItemsFE,
   ): number => {
-    let result = newValue * price;
+    const grossAmount = newValue * price;
 
-    if (DRItem.customer_discount_1.includes("%")) {
-      const cd1 = DRItem.customer_discount_1.slice(0, -1);
-      result = result - result * (parseFloat(cd1) / 100);
-    }
-
-    if (DRItem.customer_discount_2.includes("%")) {
-      const cd2 = DRItem.customer_discount_2.slice(0, -1);
-      result = result - result * (parseFloat(cd2) / 100);
-    }
-
-    if (DRItem.customer_discount_3.includes("%")) {
-      const cd3 = DRItem.customer_discount_3.slice(0, -1);
-      result = result - result * (parseFloat(cd3) / 100);
-    }
-
-    if (DRItem.transaction_discount_1.includes("%")) {
-      const td1 = DRItem.transaction_discount_1.slice(0, -1);
-      result = result - result * (parseFloat(td1) / 100);
-    }
-
-    if (DRItem.transaction_discount_2.includes("%")) {
-      const td2 = DRItem.transaction_discount_2.slice(0, -1);
-      result = result - result * (parseFloat(td2) / 100);
-    }
-
-    if (DRItem.transaction_discount_3.includes("%")) {
-      const td3 = DRItem.transaction_discount_3.slice(0, -1);
-      result = result - result * (parseFloat(td3) / 100);
-    }
+    // Matches the backend's apply_cpo_discounts exactly: interleaved
+    // customer/transaction order, percentage and flat discounts both applied
+    // sequentially against the running subtotal.
+    const result = calculateTotalWithDiscounts(
+      [
+        DRItem.customer_discount_1,
+        DRItem.transaction_discount_1,
+        DRItem.customer_discount_2,
+        DRItem.transaction_discount_2,
+        DRItem.customer_discount_3,
+        DRItem.transaction_discount_3,
+      ],
+      grossAmount,
+    );
 
     if (isNaN(result)) return 0;
 
@@ -59,14 +58,15 @@ const CRFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "150px",
+        "--Table-firstColumnWidth": "80px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -89,12 +89,33 @@ const CRFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          fontSize: "13px",
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
+          },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -108,19 +129,27 @@ const CRFormTable = ({
             >
               CDR No.
             </th>
-            <th style={{ width: 150 }}>Alloc No.</th>
-            <th style={{ width: 200 }}>Stock Code</th>
+            <th style={{ width: 80 }}>Alloc No.</th>
+            <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Name</th>
             <th style={{ width: 200 }}>Whse</th>
-            <th style={{ width: 150 }}>Return Qty.</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Gross Amount</th>
-            <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
+            <th style={{ width: 100, textAlign: "right" }}>Return Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Supp. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Supp. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
           </tr>
         </thead>
         <tbody>
@@ -129,17 +158,19 @@ const CRFormTable = ({
 
             return (
               <tr key={key}>
-                <td style={{ zIndex: 1 }}>{item.id}</td>
+                <td>{item.id}</td>
                 <td>{item?.alloc_no}</td>
-                <td>{item?.stock_code}</td>
-                <td>{item?.name}</td>
+                <td>{withTooltip(item?.stock_code, "120px")}</td>
+                <td>{withTooltip(item?.name, "180px")}</td>
 
                 <td>
-                  <Autocomplete
+                  <TooltipAutocomplete
                     options={warehouses.items.filter(
                       (warehouse) => warehouse.id,
                     )}
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option) =>
+                      `${option.code} - ${option.name}`
+                    }
                     value={item.return_warehouse}
                     onChange={(e, newValue) => {
                       setFormattedDRs((prevDRItems) =>
@@ -160,13 +191,22 @@ const CRFormTable = ({
                     className="w-[100%]"
                     placeholder="Select Warehouse"
                     disabled={isEditDisabled}
+                    sx={{ fontSize: "13px" }}
                   />
                 </td>
                 <td>
                   <Input
                     type="number"
+                    sx={{
+                      fontSize: "13px",
+                      width: "100%",
+                      minWidth: 0,
+                      input: { textAlign: "right", minWidth: 0 },
+                    }}
                     value={item.return_qty}
                     onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw !== "" && !/^\d+$/.test(raw)) return;
                       setFormattedDRs((prevDRItems) =>
                         prevDRItems.map((DRItem) =>
                           DRItem.id === item.id &&
@@ -175,9 +215,9 @@ const CRFormTable = ({
                           DRItem.alloc_no === item.alloc_no
                             ? {
                                 ...DRItem,
-                                return_qty: e.target.value,
+                                return_qty: raw,
                                 gross_amount: calculateNetForRow(
-                                  Number(e.target.value),
+                                  Number(raw),
                                   Number(item.price),
                                   DRItem,
                                 ),
@@ -189,6 +229,7 @@ const CRFormTable = ({
                     slotProps={{
                       input: {
                         min: 0,
+                        step: 1,
                       },
                     }}
                     placeholder="0"
@@ -197,69 +238,61 @@ const CRFormTable = ({
                 </td>
                 <td>
                   <Input
-                    type="number"
-                    value={item.price}
-                    onChange={(e) => {
-                      setFormattedDRs((prevDRItems) =>
-                        prevDRItems.map((DRItem) =>
-                          DRItem.id === item.id &&
-                          DRItem.stock_code === item.stock_code &&
-                          DRItem.cpo_id === item.cpo_id &&
-                          DRItem.alloc_no === item.alloc_no
-                            ? {
-                                ...DRItem,
-                                price: String(e.target.value),
-                                gross_amount: calculateNetForRow(
-                                  Number(item.return_qty),
-                                  Number(e.target.value),
-                                  DRItem,
-                                ),
-                              } // Update the matching item
-                            : DRItem,
-                        ),
-                      );
+                    sx={{
+                      fontSize: "13px",
+                      width: "100%",
+                      minWidth: 0,
+                      input: { textAlign: "right", minWidth: 0 },
                     }}
-                    slotProps={{
-                      input: {
-                        min: 0,
-                        step: ".0001",
-                      },
+                    value={formatWithCommas(item.price)}
+                    onChange={(e) => {
+                      const raw = stripCommas(e.target.value);
+                      if (raw === "" || /^\d*\.?\d*$/.test(raw)) {
+                        setFormattedDRs((prevDRItems) =>
+                          prevDRItems.map((DRItem) =>
+                            DRItem.id === item.id &&
+                            DRItem.stock_code === item.stock_code &&
+                            DRItem.cpo_id === item.cpo_id &&
+                            DRItem.alloc_no === item.alloc_no
+                              ? {
+                                  ...DRItem,
+                                  price: raw,
+                                  gross_amount: calculateNetForRow(
+                                    Number(item.return_qty),
+                                    Number(raw),
+                                    DRItem,
+                                  ),
+                                }
+                              : DRItem,
+                          ),
+                        );
+                      }
                     }}
                     placeholder="0"
                     disabled={isEditDisabled}
                   />
                 </td>
-                <td>{addCommaToNumberWithFourPlaces(item.gross_amount)}</td>
-                <td>
-                  {item.customer_discount_1.includes("%")
-                    ? item.customer_discount_1
-                    : 0}
+                <td style={{ textAlign: "right" }}>
+                  {addCommaToNumberWithTwoPlaces(item.gross_amount)}
                 </td>
-                <td>
-                  {item.customer_discount_2.includes("%")
-                    ? item.customer_discount_2
-                    : 0}
+                <td style={{ textAlign: "right" }}>
+                  {item.customer_discount_1}
                 </td>
-                <td>
-                  {item.customer_discount_3.includes("%")
-                    ? item.customer_discount_3
-                    : 0}
+                <td style={{ textAlign: "right" }}>
+                  {item.customer_discount_2}
                 </td>
-                <td>
-                  {item.transaction_discount_1.includes("%")
-                    ? item.transaction_discount_1
-                    : 0}
+                {/* <td style={{ textAlign: "right" }}>
+                  {item.customer_discount_3}
+                </td> */}
+                <td style={{ textAlign: "right" }}>
+                  {item.transaction_discount_1}
                 </td>
-                <td>
-                  {item.transaction_discount_2.includes("%")
-                    ? item.transaction_discount_2
-                    : 0}
+                <td style={{ textAlign: "right" }}>
+                  {item.transaction_discount_2}
                 </td>
-                <td>
-                  {item.transaction_discount_3.includes("%")
-                    ? item.transaction_discount_3
-                    : 0}
-                </td>
+                {/* <td style={{ textAlign: "right" }}>
+                  {item.transaction_discount_3}
+                </td> */}
               </tr>
             );
           })}

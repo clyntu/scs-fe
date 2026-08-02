@@ -9,15 +9,16 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
   Button,
+  Typography,
 } from "@mui/joy";
 import type { CRFormDetailsProps } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
   convertToQueryParams,
 } from "../../../helper";
 import SelectCDRModal from "./SelectCDRModal";
@@ -27,7 +28,6 @@ const CRFormDetails = ({
   openEdit,
   selectedRow,
   customers,
-  formattedDRs,
   setFormattedDRs,
   selectedCustomer,
   setSelectedCustomer,
@@ -43,22 +43,31 @@ const CRFormDetails = ({
   totalGross,
   totalItems,
 }: CRFormDetailsProps): JSX.Element => {
+  const [isFetchingCDRs, setIsFetchingCDRs] = useState(false);
   const [CDRs, setCDRs] = useState<CDR[]>([]);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedCustomer !== null && selectedCustomer !== undefined) {
+      setIsFetchingCDRs(true);
       const params = {
         customer_id: selectedCustomer.customer_id,
         status: "posted",
+        raw_items: true,
       };
 
       axiosInstance
         .get<PaginatedCDR>(
           `/api/delivery-receipts/?${convertToQueryParams(params)}`,
         )
-        .then((response) => setCDRs(response.data.items))
-        .catch((error) => console.error("Error:", error));
+        .then((response) => {
+          setCDRs(response.data.items);
+          setIsFetchingCDRs(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          setIsFetchingCDRs(false);
+        });
     }
   }, [selectedCustomer]);
 
@@ -69,13 +78,16 @@ const CRFormDetails = ({
         setOpen={setIsSelectModalOpen}
         CDRs={CDRs}
         setFormattedDRs={setFormattedDRs}
+        isFetchingCDRs={isFetchingCDRs}
       />
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>Return No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  Return No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -85,7 +97,7 @@ const CRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
@@ -142,7 +154,7 @@ const CRFormDetails = ({
             spacing={2}
             sx={{ mb: 1, alignItems: "flex-end" }}
           >
-            <FormControl size="sm" sx={{ mb: 1, width: "46%" }}>
+            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}
@@ -166,7 +178,7 @@ const CRFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
@@ -175,7 +187,7 @@ const CRFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Gross</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalGross)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalGross)}`}</h5>
             </FormControl>
           </div>
           <Divider />

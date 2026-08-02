@@ -1,14 +1,14 @@
 import POFormDetails from "./POForm/POFormDetails";
 import POFormTable from "./POForm/POFormTable";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import type { POPayload, POItemValues, NewPriceInstance } from "./interface";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
-import type { User } from "../../pages/Login";
+import CircularProgress from "@mui/joy/CircularProgress";
+
 import {
   areDiscountsValid,
   calculateTotalWithDiscounts,
@@ -19,7 +19,11 @@ import type {
   Item,
   PaginatedSuppliers,
   PaginatedItems,
+  PurchaseOrder,
+  User,
 } from "../../interface";
+
+import { addFourPlaces, getErrorMessage } from "../../helper";
 
 //  Initialize state of selectedItems outside of component to avoid creating new object on each render
 const INITIAL_SELECTED_ITEMS = [{ id: null }];
@@ -59,17 +63,30 @@ const PurchaseOrderForm = ({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [indexOfModal, setIndexOfModal] = useState(0);
   const [newPrices, setNewPrices] = useState<NewPriceInstance[]>([]);
+  // Initialize showTotals state to false by default - totals will be hidden until toggle is clicked
+  const [showTotals, setShowTotals] = useState(false);
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
+
+  // Show totals by default if status is posted
+  useEffect(() => {
+    if (status === "posted") {
+      setShowTotals(true);
+    }
+  }, [status]);
 
   useEffect(() => {
     // Fetch suppliers
     axiosInstance
-      .get<PaginatedSuppliers>("/api/suppliers/")
+      .get<PaginatedSuppliers>("/api/suppliers/?sort_by=name")
       .then((response) => setSuppliers(response.data))
       .catch((error) => console.error("Error:", error));
 
     // Fetch user ID
     axiosInstance
-      .get<User>("/users/me/")
+      .get<User>("/api/users/me/")
       .then((response) => setUserId(response.data.id))
       .catch((error) => console.error("Error fetching user ID:", error));
 
@@ -84,7 +101,7 @@ const PurchaseOrderForm = ({
 
   useEffect(() => {
     // Set fields for Edit
-    if (selectedRow !== null && selectedRow?.supplier_id !== undefined) {
+    const fetchValues = (selectedRow: PurchaseOrder): void => {
       setCurrencyUsed(selectedRow?.currency_used ?? "USD");
       setDiscounts({
         supplier: [
@@ -99,27 +116,39 @@ const PurchaseOrderForm = ({
         ],
       });
       setPesoRate(selectedRow?.peso_rate ?? 56);
-      setStatus(selectedRow?.status ?? "pending");
+      const rowStatus = selectedRow?.status ?? "pending";
+      setStatus(rowStatus);
+      // Set showTotals to true if status is posted when loading an existing PO
+      if (rowStatus === "posted") {
+        setShowTotals(true);
+      }
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
+    };
 
-      // Get Supplier for Edit
-      axiosInstance
-        .get<Supplier>(`/api/suppliers/${selectedRow?.supplier_id}`)
-        .then((response) => {
-          setSelectedSupplier(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
-    }
-  }, [selectedRow]);
+    if (selectedRow !== null && selectedRow?.supplier_id !== undefined) {
+      if (items.length > 0) {
+        getAllPOItems();
 
-  useEffect(() => {
-    // Set POItems only after items exist for edit
-    if (selectedRow !== undefined && items.length > 0) {
-      getAllPOItems();
+        // Run Fetch values for edit
+        axiosInstance
+          .get<Supplier>(`/api/suppliers/${selectedRow?.supplier_id}`)
+          .then((response) => {
+            setSelectedSupplier(response.data);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            fetchValues(selectedRow);
+            setIsFetching(false);
+          });
+      }
+    } else {
+      setIsFetching(false);
     }
-  }, [items]);
+  }, [selectedRow, items]);
 
   const createPayload = (
     itemPayload: POItemValues[],
@@ -159,10 +188,10 @@ const PurchaseOrderForm = ({
     if (
       typeof item.id === "number" && // Check that id is a number.
       item?.price !== undefined &&
-      !isNaN(item.price) &&
+      !isNaN(Number(item.price)) &&
       item.price > 0 &&
       item?.volume !== undefined &&
-      !isNaN(item.volume) &&
+      !isNaN(Number(item.volume)) &&
       item.volume > 0
     ) {
       return acc + item.price * item.volume;
@@ -184,7 +213,7 @@ const PurchaseOrderForm = ({
 
       const modifiedItem = {
         ...foundItem,
-        price: item.price,
+        price: addFourPlaces(item.price),
         volume: item.volume,
         on_stock: item.on_stock,
         allocated: item.allocated,
@@ -192,13 +221,6 @@ const PurchaseOrderForm = ({
       };
 
       return modifiedItem;
-    });
-
-    // Sort items
-    selectedItems.sort((a, b) => {
-      const stockCodeA = a.stock_code ?? ""; // Default to empty string if undefined
-      const stockCodeB = b.stock_code ?? ""; // Default to empty string if undefined
-      return stockCodeA.localeCompare(stockCodeB);
     });
 
     // @ts-expect-error (Used null instead of undefined.)
@@ -243,7 +265,7 @@ const PurchaseOrderForm = ({
       await Promise.all(requests);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
     }
   };
@@ -253,6 +275,18 @@ const PurchaseOrderForm = ({
 
     // Get the biggest value if there is a duplicate
     newPrices.forEach((item: NewPriceInstance) => {
+      // Skip items with price = 0, throw error if price < 0
+      if (item.newPrice < 0) {
+        throw new Error(
+          `Invalid price: ${item.newPrice} for item ID: ${item.id}. Price cannot be negative.`,
+        );
+      }
+
+      // Skip items with price = 0
+      if (item.newPrice === 0) {
+        return; // Skip this item
+      }
+
       if (
         uniqueItems[item.id] === undefined ||
         item.newPrice > uniqueItems[item.id].newPrice
@@ -262,7 +296,9 @@ const PurchaseOrderForm = ({
     });
 
     const uniqueNewItemPrices = Object.values(uniqueItems);
-    await sendPriceChangeRequests(uniqueNewItemPrices);
+    if (uniqueNewItemPrices.length > 0) {
+      await sendPriceChangeRequests(uniqueNewItemPrices);
+    }
   };
 
   const handleCreatePurchaseOrder = async (): Promise<void> => {
@@ -277,32 +313,35 @@ const PurchaseOrderForm = ({
       );
       return;
     }
-
-    if (newPrices.length > 0) {
-      await modifyItemCostOnPriceChange();
-    }
-
-    const itemPayload: POItemValues[] = selectedItems
-      .filter((item: Item) => item.id !== null)
-      .map((item: Item) => ({
-        item_id: item.id,
-        volume: item.volume,
-        unserved_spo: item.volume,
-        price: item.price,
-        total_price: Number(item.volume) * Number(item.price),
-      }));
-
-    const payload = createPayload(itemPayload, false);
     try {
+      if (newPrices.length > 0) {
+        await modifyItemCostOnPriceChange();
+      }
+
+      const itemPayload: POItemValues[] = selectedItems
+        .filter((item: Item) => item.id !== null)
+        .map((item: Item) => ({
+          item_id: item.id,
+          volume: item.volume,
+          unserved_spo: item.volume,
+          price: item.price,
+          total_price: Number(item.volume) * Number(item.price),
+        }));
+
+      const payload = createPayload(itemPayload, false);
+
+      setIsSaving(true);
       await axiosInstance.post("/api/purchase_orders/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -318,39 +357,43 @@ const PurchaseOrderForm = ({
       );
       return;
     }
-
-    if (newPrices.length > 0) {
-      await modifyItemCostOnPriceChange();
-    }
-
-    const itemPayload: POItemValues[] = selectedItems
-      .filter((item: Item) => item.id !== null)
-      .map((item: Item) => ({
-        item_id: item.id,
-        volume: Number(item.volume),
-        price: Number(item.price),
-        unserved_spo: Number(item.volume),
-        total_price: Number(item.volume) * Number(item.price),
-
-        // Fields needed only for edit
-        on_stock: item.on_stock,
-        allocated: item.allocated,
-        in_transit: item.in_transit,
-      }));
-
-    const payload = createPayload(itemPayload, true);
     try {
+      if (newPrices.length > 0) {
+        await modifyItemCostOnPriceChange();
+      }
+
+      const itemPayload: POItemValues[] = selectedItems
+        .filter((item: Item) => item.id !== null)
+        .map((item: Item) => ({
+          item_id: item.id,
+          volume: Number(item.volume),
+          price: Number(item.price),
+          unserved_spo: Number(item.volume),
+          total_price: Number(item.volume) * Number(item.price),
+
+          // Fields needed only for edit
+          on_stock: item.on_stock,
+          allocated: item.allocated,
+          in_transit: item.in_transit,
+        }));
+
+      const payload = createPayload(itemPayload, true);
+
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/purchase_orders/${selectedRow?.id}`,
         payload,
       );
-      setOpen(false);
+      setIsSaving(false);
       toast.success("Save successful!");
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -384,81 +427,104 @@ const PurchaseOrderForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
-        <Button
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <POFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        suppliers={suppliers}
-        // Fields
-        selectedSupplier={selectedSupplier}
-        setSelectedSupplier={setSelectedSupplier}
-        setSelectedItems={setSelectedItems}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        discounts={discounts}
-        setDiscounts={setDiscounts}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        currencyUsed={currencyUsed}
-        setCurrencyUsed={setCurrencyUsed}
-        pesoRate={pesoRate}
-        setPesoRate={setPesoRate}
-        // Summary Amounts
-        fobTotal={fobTotal}
-        netAmount={netAmount}
-        landedTotal={landedTotal}
-      />
-      <POFormTable
-        items={items}
-        status={status}
-        selectedRow={selectedRow}
-        selectedItems={selectedItems}
-        setSelectedItems={setSelectedItems}
-        indexOfModal={indexOfModal}
-        setIndexOfModal={setIndexOfModal}
-        newPrices={newPrices}
-        setNewPrices={setNewPrices}
-        isConfirmOpen={isConfirmOpen}
-        setIsConfirmOpen={setIsConfirmOpen}
-        selectedSupplier={selectedSupplier}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <POFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            suppliers={suppliers}
+            // Fields
+            selectedSupplier={selectedSupplier}
+            setSelectedSupplier={setSelectedSupplier}
+            setSelectedItems={setSelectedItems}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            discounts={discounts}
+            setDiscounts={setDiscounts}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            currencyUsed={currencyUsed}
+            setCurrencyUsed={setCurrencyUsed}
+            pesoRate={pesoRate}
+            setPesoRate={setPesoRate}
+            // Toggle for showing/hiding totals
+            showTotals={showTotals}
+            setShowTotals={setShowTotals}
+            // Summary Amounts
+            fobTotal={fobTotal}
+            netAmount={netAmount}
+            landedTotal={landedTotal}
+          />
+          <POFormTable
+            items={items}
+            status={status}
+            selectedRow={selectedRow}
+            selectedItems={selectedItems}
+            setSelectedItems={setSelectedItems}
+            indexOfModal={indexOfModal}
+            setIndexOfModal={setIndexOfModal}
+            newPrices={newPrices}
+            setNewPrices={setNewPrices}
+            isConfirmOpen={isConfirmOpen}
+            setIsConfirmOpen={setIsConfirmOpen}
+            selectedSupplier={selectedSupplier}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              sx={{
+                ml: 2,
+                width: "130px",
+              }}
+              className="w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+                resetForm();
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!hasSaved && !isEditDisabled && (
+              <Button
+                type="submit"
+                sx={{
+                  ml: 2,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

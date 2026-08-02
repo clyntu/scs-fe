@@ -4,7 +4,11 @@ import Table from "@mui/joy/Table";
 import type { RRFormTableProps } from "../interface";
 import { useEffect, useState } from "react";
 import type { POItems, PurchaseOrder } from "../../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import {
+  addCommaToNumberWithTwoPlaces,
+  addCommaToNumberWithFourPlaces,
+} from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const RRFormTable = ({
   selectedRow,
@@ -13,7 +17,6 @@ const RRFormTable = ({
   setTotalNet,
   setTotalGross,
   pesoRate,
-  openEdit,
   percentNetCost,
 }: RRFormTableProps): JSX.Element => {
   const [netPerRow, setNetPerRow] = useState<Record<string, number>>({});
@@ -121,14 +124,15 @@ const RRFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "150px",
+        "--Table-firstColumnWidth": "80px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -151,12 +155,33 @@ const RRFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          fontSize: "13px",
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
+          },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -170,22 +195,30 @@ const RRFormTable = ({
             >
               SDR No.
             </th>
-            <th style={{ width: 100 }}>PO No.</th>
-            <th style={{ width: 200 }}>Stock Code</th>
-            <th style={{ width: 200 }}>Name</th>
-            <th style={{ width: 150 }}>Served Qty.</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Gross Amount</th>
-            <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>NET Amount</th>
+            <th style={{ width: 80 }}>PO No.</th>
+            <th style={{ width: 150 }}>Stock Code</th>
+            <th style={{ width: 300 }}>Name</th>
+            <th style={{ width: 100, textAlign: "right" }}>Served Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>NET Cost</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Supp. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Supp. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
+            <th style={{ width: 100, textAlign: "right" }}>Net Amount</th>
             <th style={{ width: 150 }}>Currency</th>
-            <th style={{ width: 150 }}>Peso Rate</th>
-            <th style={{ width: 200 }}>NET Amount per Item (₱)</th>
+            <th style={{ width: 100, textAlign: "right" }}>Peso Rate</th>
           </tr>
         </thead>
         <tbody>
@@ -206,57 +239,61 @@ const RRFormTable = ({
 
                 return (
                   <tr key={key}>
-                    <td style={{ zIndex: 1 }}>{SDR.id}</td>
+                    <td>{SDR.id}</td>
                     <td>{PO.id}</td>
-                    <td>{POItem?.item.stock_code}</td>
-                    <td>{POItem?.item.name}</td>
-                    <td>
+                    <td>{withTooltip(POItem?.item.stock_code, "120px")}</td>
+                    <td>{withTooltip(POItem?.item.name, "180px")}</td>
+                    <td style={{ textAlign: "right" }}>
                       {status === "posted"
                         ? POItem.on_stock
                         : POItem.in_transit}
                     </td>
-                    <td>{POItem.price}</td>
-                    <td>{addCommaToNumberWithFourPlaces(grossPerRow[key])}</td>
-                    <td>
-                      {PO.supplier_discount_1.includes("%")
-                        ? PO.supplier_discount_1
-                        : 0}
-                    </td>
-                    <td>
-                      {PO.supplier_discount_2.includes("%")
-                        ? PO.supplier_discount_2
-                        : 0}
-                    </td>
-                    <td>
-                      {PO.supplier_discount_3.includes("%")
-                        ? PO.supplier_discount_3
-                        : 0}
-                    </td>
-                    <td>
-                      {PO.transaction_discount_1.includes("%")
-                        ? PO.transaction_discount_1
-                        : 0}
-                    </td>
-                    <td>
-                      {PO.transaction_discount_2.includes("%")
-                        ? PO.transaction_discount_2
-                        : 0}
-                    </td>
-                    <td>
-                      {PO.transaction_discount_3.includes("%")
-                        ? PO.transaction_discount_3
-                        : 0}
-                    </td>
-                    <td>{addCommaToNumberWithFourPlaces(netPerRow[key])}</td>
-                    <td>{PO.currency_used}</td>
-                    <td>{pesoRate}</td>
-                    <td>
+                    <td style={{ textAlign: "right" }}>{POItem.price}</td>
+                    <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithFourPlaces(
                         POItem.price *
                           Number(pesoRate) *
                           (1 + percentNetCost / 100),
                       )}
                     </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(grossPerRow[key])}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {PO.supplier_discount_1.includes("%")
+                        ? PO.supplier_discount_1
+                        : 0}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {PO.supplier_discount_2.includes("%")
+                        ? PO.supplier_discount_2
+                        : 0}
+                    </td>
+                    {/* <td style={{ textAlign: "right" }}>
+                      {PO.supplier_discount_3.includes("%")
+                        ? PO.supplier_discount_3
+                        : 0}
+                    </td> */}
+                    <td style={{ textAlign: "right" }}>
+                      {PO.transaction_discount_1.includes("%")
+                        ? PO.transaction_discount_1
+                        : 0}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {PO.transaction_discount_2.includes("%")
+                        ? PO.transaction_discount_2
+                        : 0}
+                    </td>
+                    {/* <td style={{ textAlign: "right" }}>
+                      {PO.transaction_discount_3.includes("%")
+                        ? PO.transaction_discount_3
+                        : 0}
+                    </td> */}
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(netPerRow[key])}
+                    </td>
+                    <td>{PO.currency_used}</td>
+                    <td style={{ textAlign: "right" }}>{pesoRate}</td>
                   </tr>
                 );
               });

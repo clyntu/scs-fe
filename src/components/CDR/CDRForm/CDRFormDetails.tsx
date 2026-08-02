@@ -9,14 +9,16 @@ import {
   Option,
   Box,
   Divider,
-  Autocomplete,
+  Typography,
 } from "@mui/joy";
 import type { CDRFormDetailsProps, AllocItemsFE } from "../interface";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utils/axiosConfig";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import TooltipInput from "../../shared/TooltipInput";
 import {
   formatToDateTime,
-  addCommaToNumberWithFourPlaces,
+  addCommaToNumberWithTwoPlaces,
 } from "../../../helper";
 import { type CDP } from "../../../interface";
 
@@ -24,7 +26,6 @@ const CDRFormDetails = ({
   openEdit,
   selectedRow,
   customers,
-  formattedAllocs,
   setFormattedAllocs,
   selectedCustomer,
   setSelectedCustomer,
@@ -40,7 +41,6 @@ const CDRFormDetails = ({
   totalNet,
   totalGross,
   totalItems,
-  amountDiscount,
   setAmountDiscount,
   selectedDP,
   setSelectedDP,
@@ -56,7 +56,10 @@ const CDRFormDetails = ({
         .then((response) =>
           setUnservedDPs(
             response.data
-              .filter((dp) => dp.status === "posted")
+              .filter(
+                (dp) =>
+                  dp.status === "posted" && dp.delivery_plan_items.length > 0,
+              )
               .sort((a, b) => b.id - a.id),
           ),
         )
@@ -109,7 +112,11 @@ const CDRFormDetails = ({
     setSelectedDP(newValue);
 
     if (newValue !== null) {
+      setReferenceNumber(String(newValue.reference_number));
       setAmountDiscount(Number(newValue?.discount_amount ?? 0));
+      // Set transaction date from selected CDP
+      setTransactionDate(newValue.transaction_date);
+
       const formattedAllocs = newValue.delivery_plan_items.map((DPItem) => {
         const allocItem = DPItem.allocation_item;
 
@@ -156,17 +163,24 @@ const CDRFormDetails = ({
       });
 
       setFormattedAllocs(formattedAllocsWithNet);
+    } else {
+      setReferenceNumber("");
+      // Clear transaction date when no CDP is selected
+      setTransactionDate("");
+      setFormattedAllocs([]);
     }
   };
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>CDR No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  CDR No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
@@ -176,7 +190,7 @@ const CDRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22.5%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
@@ -184,6 +198,8 @@ const CDRFormDetails = ({
                     setSelectedCustomer(newValue);
                     setFormattedAllocs([]);
                     setSelectedDP(null);
+                    // Clear transaction date when customer changes
+                    setTransactionDate("");
                   }}
                   size="sm"
                   className="w-[100%]"
@@ -196,9 +212,68 @@ const CDRFormDetails = ({
             <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22.5%" }}>
               <FormLabel>CDP No.</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={unservedDPs}
-                  getOptionLabel={(option) => String(option.id)}
+                  getOptionLabel={(option) =>
+                    `${String(option.id)} - Ref: ${option.reference_number}`
+                  }
+                  renderOption={(props, option) => (
+                    <li
+                      {...props}
+                      key={option.id}
+                      style={{
+                        ...props.style,
+                        cursor: "pointer",
+                        borderRadius: "var(--joy-radius-sm, 8px)",
+                        margin:
+                          "var(--ListItem-paddingY, 2px) var(--ListItem-paddingX, 4px)",
+                        padding: 0,
+                        transition:
+                          "background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#F0F4F8";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          width: "100%",
+                          padding:
+                            "var(--ListItem-paddingBlock, 8px) var(--ListItem-paddingInline, 12px)",
+                          minHeight: "var(--ListItem-minHeight, 40px)",
+                          alignItems: "flex-start",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "var(--joy-fontSize-sm, 0.875rem)",
+                            fontWeight: "var(--joy-fontWeight-md, 500)",
+                            lineHeight: "var(--joy-lineHeight-sm, 1.25)",
+                            color: "var(--joy-palette-text-primary, #0B0D0E)",
+                          }}
+                        >
+                          CDP-{String(option.id)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "var(--joy-fontSize-xs, 0.75rem)",
+                            color: "var(--joy-palette-text-secondary, #5A6169)",
+                            marginTop: "2px",
+                            lineHeight: "var(--joy-lineHeight-sm, 1.25)",
+                          }}
+                        >
+                          Ref: {option.reference_number}
+                        </span>
+                      </div>
+                    </li>
+                  )}
                   onChange={(e, newValue) => handleCDPChange(newValue)}
                   value={selectedDP}
                   size="sm"
@@ -229,7 +304,7 @@ const CDRFormDetails = ({
                 type="date"
                 value={transactionDate}
                 onChange={(e) => setTransactionDate(e.target.value)}
-                disabled={isEditDisabled}
+                disabled
                 required
               />
             </FormControl>
@@ -241,13 +316,12 @@ const CDRFormDetails = ({
           >
             <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
               <FormLabel>Ref No.</FormLabel>
-              <Input
+              <TooltipInput
                 size="sm"
-                placeholder="Search"
-                onChange={(e) => setReferenceNumber(e.target.value)}
+                placeholder="Ref No."
+                // onChange={(e) => setReferenceNumber(e.target.value)}
                 value={referenceNumber}
-                disabled={isEditDisabled}
-                required
+                disabled
               />
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
@@ -258,22 +332,12 @@ const CDRFormDetails = ({
                 onChange={(e) => setRemarks(e.target.value)}
                 value={remarks}
                 disabled={isEditDisabled}
-                required
-              />
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22.5%" }}>
-              <FormLabel>Amount Discount</FormLabel>
-              <Textarea
-                minRows={1}
-                placeholder="0"
-                value={selectedDP?.discount_amount ?? 0}
-                disabled
               />
             </FormControl>
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>
@@ -282,11 +346,11 @@ const CDRFormDetails = ({
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total Gross</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalGross)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalGross)}`}</h5>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1 }}>
               <FormLabel>Total NET</FormLabel>
-              <h5>{`${addCommaToNumberWithFourPlaces(totalNet)}`}</h5>
+              <h5>{`${addCommaToNumberWithTwoPlaces(totalNet)}`}</h5>
             </FormControl>
           </div>
           <Divider />

@@ -4,13 +4,12 @@ import Table from "@mui/joy/Table";
 import type { SDRFormTableProps } from "../interface";
 import { useEffect, useState } from "react";
 import type { POItems, PurchaseOrder } from "../../../interface";
-import { addCommaToNumberWithFourPlaces } from "../../../helper";
+import { addCommaToNumberWithTwoPlaces } from "../../../helper";
+import { withTooltip } from "../../shared/withTooltip";
 
 const SDRFormTable = ({
   selectedRow,
   selectedPOs,
-  setSelectedPOs,
-  totalNet,
   servedAmt,
   setServedAmt,
   setTotalNet,
@@ -69,7 +68,6 @@ const SDRFormTable = ({
 
     selectedPOs.forEach((PO, index1) => {
       PO.items.forEach((POItem, index2) => {
-        console.log(POItem);
         const key = `${PO.id}-${POItem.id}-${index1}-${index2}`;
         const inTransit = POItem.in_transit;
 
@@ -142,7 +140,7 @@ const SDRFormTable = ({
     PO: PurchaseOrder,
     POItem: POItems,
   ): void => {
-    const newValue = event.target.value;
+    const newValue = Number(event.target.value);
 
     // Set served amount to get gross
     setServedAmt({
@@ -164,14 +162,15 @@ const SDRFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "150px",
+        "--Table-firstColumnWidth": "80px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -194,12 +193,33 @@ const SDRFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          fontSize: "13px",
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
+          },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -213,25 +233,33 @@ const SDRFormTable = ({
             >
               PO No.
             </th>
-            <th style={{ width: 200 }}>Stock Code</th>
-            <th style={{ width: 200 }}>Name</th>
-            <th style={{ width: 150 }}>Serving Now</th>
-            <th style={{ width: 200 }}>Unserved Qty.</th>
+            <th style={{ width: 150 }}>Stock Code</th>
+            <th style={{ width: 300 }}>Name</th>
+            <th style={{ width: 100, textAlign: "right" }}>Serving Now</th>
+            <th style={{ width: 100, textAlign: "right" }}>Unserved Qty.</th>
             {status === "posted" ? null : (
-              <th style={{ width: 200 }}>Served Qty.</th>
+              <th style={{ width: 100, textAlign: "right" }}>Served Qty.</th>
             )}
-            <th style={{ width: 150 }}>PO Qty.</th>
-            <th style={{ width: 150 }}>Price</th>
-            <th style={{ width: 150 }}>Gross Amount</th>
-            <th style={{ width: 150 }}>Supp. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 1 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 2 (%)</th>
-            <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th>
-            <th style={{ width: 150 }}>NET Amount</th>
+            <th style={{ width: 100, textAlign: "right" }}>PO Qty.</th>
+            <th style={{ width: 100, textAlign: "right" }}>Price</th>
+            <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Supp. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Supp. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Supp. Disc. 3 (%)</th> */}
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 1 (%)
+            </th>
+            <th style={{ width: 130, textAlign: "right" }}>
+              Tran. Disc. 2 (%)
+            </th>
+            {/* <th style={{ width: 150 }}>Tran. Disc. 3 (%)</th> */}
+            <th style={{ width: 100, textAlign: "right" }}>NET Amount</th>
             <th style={{ width: 150 }}>Currency</th>
-            <th style={{ width: 150 }}>Peso Rate</th>
+            <th style={{ width: 100, textAlign: "right" }}>Peso Rate</th>
           </tr>
         </thead>
         <tbody>
@@ -248,11 +276,11 @@ const SDRFormTable = ({
 
               return (
                 <tr key={key}>
-                  <td style={{ zIndex: 1 }}>{PO.id}</td>
-                  <td>{POItem?.item.stock_code}</td>
-                  <td>{POItem?.item.name}</td>
+                  <td>{PO.id}</td>
+                  <td>{withTooltip(POItem?.item.stock_code, "120px")}</td>
+                  <td>{withTooltip(POItem?.item.name, "180px")}</td>
                   {status === "posted" ? (
-                    <td>{servedAmt[key]}</td>
+                    <td style={{ textAlign: "right" }}>{servedAmt[key]}</td>
                   ) : (
                     <td>
                       <Input
@@ -274,55 +302,66 @@ const SDRFormTable = ({
                         value={servedAmt[key]}
                         disabled={isEditDisabled}
                         required
+                        sx={{
+                          fontSize: "13px",
+                          width: "100%",
+                          minWidth: 0,
+                          input: { textAlign: "right", minWidth: 0 },
+                        }}
                       />
                     </td>
                   )}
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {status === "posted"
                       ? POItem.unserved_spo
                       : openEdit
                         ? POItem.unserved_spo + POItem.in_transit
                         : POItem.unserved_spo}
                   </td>
-                  {status === "posted" ? null : <td>{POItem.in_transit}</td>}
-                  <td>{POItem.volume}</td>
-                  <td>{POItem?.price}</td>
+                  {status === "posted" ? null : (
+                    <td style={{ textAlign: "right" }}>{POItem.in_transit}</td>
+                  )}
+                  <td style={{ textAlign: "right" }}>{POItem.volume}</td>
+                  <td style={{ textAlign: "right" }}>{POItem?.price}</td>
 
-                  <td>{grossPerRow[key]}</td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(grossPerRow[key])}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_1.includes("%")
                       ? PO.supplier_discount_1
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_2.includes("%")
                       ? PO.supplier_discount_2
                       : 0}
                   </td>
-                  <td>
+                  {/* <td style={{ textAlign: "right" }}>
                     {PO.supplier_discount_3.includes("%")
                       ? PO.supplier_discount_3
                       : 0}
-                  </td>
-                  <td>
+                  </td> */}
+                  <td style={{ textAlign: "right" }}>
                     {PO.transaction_discount_1.includes("%")
                       ? PO.transaction_discount_1
                       : 0}
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     {PO.transaction_discount_2.includes("%")
                       ? PO.transaction_discount_2
                       : 0}
                   </td>
-                  <td>
+                  {/* <td style={{ textAlign: "right" }}>
                     {PO.transaction_discount_3.includes("%")
                       ? PO.transaction_discount_3
                       : 0}
+                  </td> */}
+                  <td style={{ textAlign: "right" }}>
+                    {addCommaToNumberWithTwoPlaces(netPerRow[key])}
                   </td>
-                  <td>{addCommaToNumberWithFourPlaces(grossPerRow[key])}</td>
-                  <td>{addCommaToNumberWithFourPlaces(netPerRow[key])}</td>
                   <td>{PO.currency_used}</td>
-                  <td>{PO.peso_rate}</td>
+                  <td style={{ textAlign: "right" }}>{PO.peso_rate}</td>
                 </tr>
               );
             });

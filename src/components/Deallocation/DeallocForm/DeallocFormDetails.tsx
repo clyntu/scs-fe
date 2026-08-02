@@ -9,10 +9,11 @@ import {
   Option,
   Box,
   Autocomplete,
+  Typography,
 } from "@mui/joy";
 import type { DeallocFormDetailsProps } from "../interface";
 import { formatToDateTime } from "../../../helper";
-import { ReceivingReport } from "../../../interface";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const DeallocFormDetails = ({
   openEdit,
@@ -42,21 +43,23 @@ const DeallocFormDetails = ({
 
   return (
     <Box sx={{ display: "flex" }}>
-      <Card className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
               <div>
-                <h4>Alloc No. {selectedRow?.id}</h4>
+                <Typography level="title-lg">
+                  Dealloc No. {selectedRow?.id}
+                </Typography>
               </div>
             )}
           </div>
 
-          <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
               <FormLabel>Customer</FormLabel>
               <div className="flex">
-                <Autocomplete
+                <TooltipAutocomplete
                   options={customers.items}
                   getOptionLabel={(option) => option.name}
                   value={selectedCustomer}
@@ -64,7 +67,7 @@ const DeallocFormDetails = ({
                     setSelectedCustomer(newValue);
                     setSelectedAlloc(null);
                     setAllocItems([]);
-                    if (newValue) {
+                    if (newValue !== null) {
                       getAllocsByCustomer(newValue.customer_id);
                     }
                   }}
@@ -75,7 +78,7 @@ const DeallocFormDetails = ({
                   required
                 />
               </div>
-              <FormLabel className="mt-2">Allocation No.</FormLabel>
+              <FormLabel sx={{ mt: 1 }}>Allocation No.</FormLabel>
               <div className="flex">
                 <Autocomplete
                   options={allocs.items}
@@ -86,7 +89,7 @@ const DeallocFormDetails = ({
                     setSelectedAlloc(newValue);
 
                     // Show alloc items
-                    if (newValue) {
+                    if (newValue !== null) {
                       getAllocItemsByAlloc(newValue);
                     } else {
                       setAllocItems([]);
@@ -95,7 +98,7 @@ const DeallocFormDetails = ({
                   size="sm"
                   className="w-[100%]"
                   placeholder="Select Alloc No."
-                  disabled={isEditDisabled || !selectedCustomer}
+                  disabled={isEditDisabled || selectedCustomer === null}
                   required
                 />
               </div>
@@ -137,7 +140,7 @@ const DeallocFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card className="w-[40%]">
+      <Card variant="soft" color="neutral" className="w-[40%]">
         <div>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1.7 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>

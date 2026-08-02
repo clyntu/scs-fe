@@ -1,21 +1,13 @@
-import { Sheet, Select, Option, Autocomplete, Input, Button } from "@mui/joy";
+import { Sheet, Input } from "@mui/joy";
 import Table from "@mui/joy/Table";
-import { useState, useEffect } from "react";
-import type { Item, WarehouseItem, Warehouse } from "../../../interface";
-import {
-  DeallocFormDetailsProps,
-  type DeallocFormTableProps,
-} from "../interface";
-import axiosInstance from "../../../utils/axiosConfig";
-import { toast } from "react-toastify";
-import { convertToQueryParams } from "../../../helper";
+import { type DeallocFormTableProps } from "../interface";
+import { withTooltip } from "../../shared/withTooltip";
+import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
 
 const DeallocFormTable = ({
   selectedRow,
-  selectedAlloc,
   allocItems,
   setAllocItems,
-  openCreate,
   warehouses,
 }: DeallocFormTableProps): JSX.Element => {
   const isEditDisabled =
@@ -27,14 +19,15 @@ const DeallocFormTable = ({
         "--TableCell-height": "40px",
         // the number is the amount of the header rows.
         "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-        "--Table-firstColumnWidth": "150px",
+        "--Table-firstColumnWidth": "80px",
         "--Table-lastColumnWidth": "86px",
         // background needs to have transparency to show the scrolling shadows
-        "--TableRow-stripeBackground": "rgba(0 0 0 / 0.04)",
-        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.08)",
+        "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
         overflow: "auto",
-        borderRadius: 8,
+        borderRadius: "sm",
         marginTop: 3,
+        width: "fit-content",
+        maxWidth: "100%",
         background: (
           theme,
         ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -57,12 +50,33 @@ const DeallocFormTable = ({
     >
       <Table
         className="h-5"
+        size="sm"
+        stickyHeader
+        hoverRow
         sx={{
-          "& tr > *:first-child": {
+          fontSize: "13px",
+          tableLayout: "fixed",
+          "& tbody tr > *:first-child": {
             position: "sticky",
+            zIndex: 2,
             left: 0,
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.surface",
+          },
+          "& thead tr > *:first-child": {
+            position: "sticky",
+            zIndex: 3,
+            left: 0,
+            top: 0,
+            boxShadow: "1px 0 var(--TableCell-borderColor)",
+            bgcolor: "background.level1",
+          },
+          "& tr > *:not(:first-child)": {
+            position: "relative",
+            zIndex: 0,
+          },
+          "& thead th": {
+            backgroundColor: "background.level1",
           },
         }}
         borderAxis="both"
@@ -76,15 +90,15 @@ const DeallocFormTable = ({
             >
               Alloc No.
             </th>
-            <th style={{ width: 150 }}>CPO No.</th>
-            <th style={{ width: 300 }}>Stock Code</th>
+            <th style={{ width: 80 }}>CPO No.</th>
+            <th style={{ width: 150 }}>Stock Code</th>
             <th style={{ width: 300 }}>Stock Description</th>
             <th style={{ width: 200 }}>Warehouse 1</th>
-            <th style={{ width: 150 }}>Whse 1 Qty.</th>
+            <th style={{ width: 100 }}>Whse 1 Qty.</th>
             <th style={{ width: 200 }}>Warehouse 2</th>
-            <th style={{ width: 150 }}>Whse 2 Qty.</th>
+            <th style={{ width: 100 }}>Whse 2 Qty.</th>
             <th style={{ width: 200 }}>Warehouse 3</th>
-            <th style={{ width: 150 }}>Whse 3 Qty.</th>
+            <th style={{ width: 100 }}>Whse 3 Qty.</th>
           </tr>
         </thead>
         <tbody>
@@ -95,18 +109,17 @@ const DeallocFormTable = ({
               <td
                 style={{
                   width: "var(--Table-firstColumnWidth)",
-                  zIndex: 10,
                 }}
               >
                 {item.id}
               </td>
               <td>{item.customer_purchase_order_id}</td>
-              <td>{item.stock_code}</td>
-              <td>{item.stock_description}</td>
+              <td>{withTooltip(item.stock_code, "120px")}</td>
+              <td>{withTooltip(item.stock_description, "180px")}</td>
               <td>
-                <Autocomplete
+                <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   value={item.warehouse_1}
                   onChange={(event, newValue) => {
                     setAllocItems((prevAllocItems) =>
@@ -125,20 +138,24 @@ const DeallocFormTable = ({
                   className="w-[100%]"
                   placeholder="Select Warehouse"
                   disabled={isEditDisabled}
+                  sx={{ fontSize: "13px" }}
                 />
               </td>
-              <td style={{ width: 150 }}>
+              <td style={{ width: 100 }}>
                 <Input
                   type="number"
+                  sx={{ fontSize: "13px", width: "100%", minWidth: 0 }}
                   value={item.warehouse_1_qty}
                   onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw !== "" && !/^\d+$/.test(raw)) return;
                     setAllocItems((prevAllocItems) =>
                       prevAllocItems.map((allocItem) =>
                         allocItem.id === item.id &&
                         allocItem.customer_purchase_order_id ===
                           item.customer_purchase_order_id &&
                         allocItem.stock_code === item.stock_code
-                          ? { ...allocItem, warehouse_1_qty: e.target.value }
+                          ? { ...allocItem, warehouse_1_qty: raw }
                           : allocItem,
                       ),
                     );
@@ -146,6 +163,7 @@ const DeallocFormTable = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 1,
                     },
                   }}
                   placeholder="0"
@@ -153,9 +171,9 @@ const DeallocFormTable = ({
                 />
               </td>
               <td style={{ width: 200 }}>
-                <Autocomplete
+                <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   value={item.warehouse_2}
                   onChange={(event, newValue) => {
                     setAllocItems((prevAllocItems) =>
@@ -174,20 +192,24 @@ const DeallocFormTable = ({
                   className="w-[100%]"
                   placeholder="Select Warehouse"
                   disabled={isEditDisabled}
+                  sx={{ fontSize: "13px" }}
                 />
               </td>
-              <td style={{ width: 150 }}>
+              <td style={{ width: 100 }}>
                 <Input
                   type="number"
+                  sx={{ fontSize: "13px", width: "100%", minWidth: 0 }}
                   value={item.warehouse_2_qty}
                   onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw !== "" && !/^\d+$/.test(raw)) return;
                     setAllocItems((prevAllocItems) =>
                       prevAllocItems.map((allocItem) =>
                         allocItem.id === item.id &&
                         allocItem.customer_purchase_order_id ===
                           item.customer_purchase_order_id &&
                         allocItem.stock_code === item.stock_code
-                          ? { ...allocItem, warehouse_2_qty: e.target.value }
+                          ? { ...allocItem, warehouse_2_qty: raw }
                           : allocItem,
                       ),
                     );
@@ -195,6 +217,7 @@ const DeallocFormTable = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 1,
                     },
                   }}
                   placeholder="0"
@@ -202,9 +225,9 @@ const DeallocFormTable = ({
                 />
               </td>
               <td style={{ width: 200 }}>
-                <Autocomplete
+                <TooltipAutocomplete
                   options={warehouses.items.filter((warehouse) => warehouse.id)}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.code} - ${option.name}`}
                   value={item.warehouse_3}
                   onChange={(event, newValue) => {
                     setAllocItems((prevAllocItems) =>
@@ -223,20 +246,24 @@ const DeallocFormTable = ({
                   className="w-[100%]"
                   placeholder="Select Warehouse"
                   disabled={isEditDisabled}
+                  sx={{ fontSize: "13px" }}
                 />
               </td>
-              <td style={{ width: 150 }}>
+              <td style={{ width: 100 }}>
                 <Input
                   type="number"
+                  sx={{ fontSize: "13px", width: "100%", minWidth: 0 }}
                   value={item.warehouse_3_qty}
                   onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw !== "" && !/^\d+$/.test(raw)) return;
                     setAllocItems((prevAllocItems) =>
                       prevAllocItems.map((allocItem) =>
                         allocItem.id === item.id &&
                         allocItem.customer_purchase_order_id ===
                           item.customer_purchase_order_id &&
                         allocItem.stock_code === item.stock_code
-                          ? { ...allocItem, warehouse_3_qty: e.target.value }
+                          ? { ...allocItem, warehouse_3_qty: raw }
                           : allocItem,
                       ),
                     );
@@ -244,6 +271,7 @@ const DeallocFormTable = ({
                   slotProps={{
                     input: {
                       min: 0,
+                      step: 1,
                     },
                   }}
                   placeholder="0"

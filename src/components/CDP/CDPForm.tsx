@@ -1,21 +1,21 @@
 import CDPFormDetails from "./CDPForm/CDPFormDetails";
 import CDPFormTable from "./CDPForm/CDPFormTable";
-import { Button, Divider } from "@mui/joy";
+import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
-import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
-import { UnplannedAlloc, type AllocItemsFE } from "./interface";
+import { type AllocItemsFE } from "./interface";
+import CircularProgress from "@mui/joy/CircularProgress";
 import type {
   CDPFormProps,
   PaginatedCustomers,
   Customer,
-  Alloc,
-  DeliveryPlanItem,
   CPO,
+  CDP,
 } from "../../interface";
+import { getErrorMessage } from "../../helper";
 
 const CDPForm = ({
   setOpen,
@@ -40,6 +40,10 @@ const CDPForm = ({
   const [amountDiscount, setAmountDiscount] = useState(0);
   const [remarks, setRemarks] = useState("");
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [hasSaved, setHasSaved] = useState(false);
+
   const totalItems = formattedAllocs.reduce(
     (sum, item) => sum + (Number(item.dp_qty) > 0 ? 1 : 0),
     0,
@@ -60,7 +64,9 @@ const CDPForm = ({
   useEffect(() => {
     // Fetch customers
     axiosInstance
-      .get<PaginatedCustomers>("/api/customers/")
+      .get<PaginatedCustomers>(
+        "/api/customers/?with_active_allocation=True&sort_by=name",
+      )
       .then((response) => setCustomers(response.data))
       .catch((error) => console.error("Error:", error));
   }, []);
@@ -68,21 +74,12 @@ const CDPForm = ({
   useEffect(() => {
     // Set fields for Edit
     const customerID = selectedRow?.customer.customer_id;
-
-    if (selectedRow !== null && selectedRow !== undefined) {
+    const fetchValues = (selectedRow: CDP): void => {
       setStatus(selectedRow?.status ?? "unposted");
       setTransactionDate(selectedRow?.transaction_date ?? currentDate);
       setReferenceNumber(selectedRow?.reference_number ?? "");
       setRemarks(selectedRow?.remarks ?? "");
       setAmountDiscount(Number(selectedRow?.discount_amount));
-
-      // Get Customer for Edit
-      axiosInstance
-        .get<Customer>(`/api/customers/${customerID}`)
-        .then((response) => {
-          setSelectedCustomer(response.data);
-        })
-        .catch((error) => console.error("Error:", error));
 
       // Fill in formatted allocs for table
       const formattedAllocs = selectedRow.delivery_plan_items.map((DPItem) => {
@@ -131,6 +128,24 @@ const CDPForm = ({
       });
 
       setFormattedAllocs(formattedAllocs);
+    };
+
+    if (selectedRow !== null && selectedRow !== undefined) {
+      // Get Customer for Edit
+      axiosInstance
+        .get<Customer>(`/api/customers/${customerID}`)
+        .then((response) => {
+          setSelectedCustomer(response.data);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          fetchValues(selectedRow);
+          setIsFetching(false);
+        });
+    } else {
+      setIsFetching(false);
     }
   }, [selectedRow]);
 
@@ -186,7 +201,21 @@ const CDPForm = ({
     setAmountDiscount(0);
   };
 
-  const createPayload = () => {
+  const createPayload = (): {
+    status: string;
+    transaction_date: string;
+    discount_amount: number;
+    reference_number: string;
+    remarks: string;
+    customer_id: number | undefined;
+    total_net: number;
+    total_gross: number;
+    total_items: number;
+    delivery_plan_items: Array<{
+      allocation_item_id: number;
+      planned_qty: string | undefined;
+    }>;
+  } => {
     const payload = {
       status,
       transaction_date: transactionDate,
@@ -198,7 +227,10 @@ const CDPForm = ({
       total_gross: totalGross,
       total_items: totalItems,
       delivery_plan_items: formattedAllocs
-        .filter((allocItem) => allocItem.dp_qty && Number(allocItem.dp_qty) > 0)
+        .filter(
+          (allocItem) =>
+            allocItem.dp_qty !== undefined && Number(allocItem.dp_qty) > 0,
+        )
         .map((allocItem) => {
           return {
             allocation_item_id: allocItem.alloc_item_id,
@@ -211,35 +243,50 @@ const CDPForm = ({
 
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
     const payload = createPayload();
+    if (payload.delivery_plan_items.length === 0) {
+      toast.error("Delivery Plan must contain at least one positive quantity.");
+      return;
+    }
+
     try {
+      setIsSaving(true);
       await axiosInstance.post("/api/delivery-plans/", payload);
+      setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
   const handleEditDeliveryPlanning = async (): Promise<void> => {
     const payload = createPayload();
+    if (payload.delivery_plan_items.length === 0) {
+      toast.error("Delivery Plan must contain at least one positive quantity.");
+      return;
+    }
 
     try {
+      setIsSaving(true);
       await axiosInstance.put(
         `/api/delivery-plans/${selectedRow?.id}`,
         payload,
       );
+      setIsSaving(false);
       toast.success("Save successful!");
-      resetForm();
-      setOpen(false);
+      setHasSaved(true);
+
       // Handle the response, update state, etc.
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -252,73 +299,94 @@ const CDPForm = ({
       }}
     >
       <div className="flex justify-between">
-        <h2 className="mb-6">{title}</h2>
-        <Button
+        <Typography level="h2" component="h1" sx={{ mb: 3 }}>
+          {title}
+        </Typography>
+        {/* <Button
           className="w-[130px] h-[35px] bg-button-neutral"
           size="sm"
           color="neutral"
         >
           <LocalPrintshopIcon className="mr-2" />
           Print
-        </Button>
+        </Button> */}
       </div>
-      <CDPFormDetails
-        openEdit={openEdit}
-        selectedRow={selectedRow}
-        customers={customers}
-        selectedCustomer={selectedCustomer}
-        setSelectedCustomer={setSelectedCustomer}
-        formattedAllocs={formattedAllocs}
-        setFormattedAllocs={setFormattedAllocs}
-        status={status}
-        setStatus={setStatus}
-        transactionDate={transactionDate}
-        setTransactionDate={setTransactionDate}
-        remarks={remarks}
-        setRemarks={setRemarks}
-        referenceNumber={referenceNumber}
-        setReferenceNumber={setReferenceNumber}
-        isEditDisabled={isEditDisabled}
-        totalNet={totalNet}
-        totalGross={totalGross}
-        totalItems={totalItems}
-        amountDiscount={amountDiscount}
-        setAmountDiscount={setAmountDiscount}
-      />
-      <CDPFormTable
-        selectedRow={selectedRow}
-        formattedAllocs={formattedAllocs}
-        setFormattedAllocs={setFormattedAllocs}
-        totalGross={totalGross}
-        totalNet={totalNet}
-        totalItems={totalItems}
-        openEdit={openEdit}
-        isEditDisabled={isEditDisabled}
-      />
-      <Divider />
-      <div className="flex justify-end mt-4">
-        <Button
-          className="ml-4 w-[130px]"
-          size="sm"
-          variant="outlined"
-          onClick={() => {
-            setOpen(false);
-          }}
-        >
-          <DoDisturbIcon className="mr-2" />
-          {isEditDisabled ? "Go Back" : "Cancel"}
-        </Button>
-        {!isEditDisabled && (
-          <Button
-            type="submit"
-            className="ml-4 w-[130px] bg-button-primary"
-            size="sm"
-          >
-            <SaveIcon className="mr-2" />
-            Save
-          </Button>
-        )}
-      </div>
+
+      {isFetching ? (
+        <div className="flex justify-center mt-[20%]">
+          <CircularProgress size="lg" variant="soft" />
+        </div>
+      ) : (
+        <>
+          <CDPFormDetails
+            openEdit={openEdit}
+            selectedRow={selectedRow}
+            customers={customers}
+            selectedCustomer={selectedCustomer}
+            setSelectedCustomer={setSelectedCustomer}
+            formattedAllocs={formattedAllocs}
+            setFormattedAllocs={setFormattedAllocs}
+            status={status}
+            setStatus={setStatus}
+            transactionDate={transactionDate}
+            setTransactionDate={setTransactionDate}
+            remarks={remarks}
+            setRemarks={setRemarks}
+            referenceNumber={referenceNumber}
+            setReferenceNumber={setReferenceNumber}
+            isEditDisabled={isEditDisabled}
+            totalNet={totalNet}
+            totalGross={totalGross}
+            totalItems={totalItems}
+            amountDiscount={amountDiscount}
+            setAmountDiscount={setAmountDiscount}
+          />
+          <CDPFormTable
+            selectedRow={selectedRow}
+            formattedAllocs={formattedAllocs}
+            setFormattedAllocs={setFormattedAllocs}
+            totalGross={totalGross}
+            totalNet={totalNet}
+            totalItems={totalItems}
+            openEdit={openEdit}
+            isEditDisabled={isEditDisabled}
+          />
+          <Divider />
+          <div className="flex justify-end mt-4">
+            <Button
+              sx={{
+                ml: 2,
+                width: "130px",
+              }}
+              className="w-[130px]"
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                setOpen(false);
+                resetForm();
+              }}
+            >
+              <DoDisturbIcon className="mr-2" />
+              {hasSaved || isEditDisabled ? "Go Back" : "Cancel"}
+            </Button>
+            {!hasSaved && !isEditDisabled && (
+              <Button
+                type="submit"
+                sx={{
+                  ml: 2,
+                  width: "130px",
+                }}
+                className="bg-button-primary"
+                size="sm"
+                loading={isSaving}
+              >
+                <SaveIcon className="mr-2" />
+                Save
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 };

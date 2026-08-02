@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Sheet from "@mui/joy/Sheet";
 import Typography from "@mui/joy/Typography";
@@ -7,55 +7,163 @@ import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
 import Button from "@mui/joy/Button";
+import Alert from "@mui/joy/Alert";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import IconButton from "@mui/joy/IconButton";
+import axios from "axios";
 import axiosInstance from "../utils/axiosConfig";
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-}
+import { useSupabase } from "../supabase/SupabaseProvider";
+import { getSupabase } from "../supabase/supabaseClient";
+import type { CompanyId } from "../supabase/supabaseClient";
+import type { User } from "../interface";
 
 export default function Login(): JSX.Element {
-  const [username, setUsername] = useState("");
+  const { setCompany, session, ready } = useSupabase();
+  const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  // Check if already logged in
+  useEffect(() => {
+    if (!ready || session === null) {
+      return;
+    }
+
+    const checkUser = async (): Promise<void> => {
+      try {
+        const response = await axiosInstance.get<User>("/api/users/me/");
+
+        if (response.status === 200) {
+          void router.push("/configuration/item");
+        }
+      } catch (err) {
+        // Not logged in — do nothing, let them stay on login page
+      }
+    };
+
+    // "void" tells TS/ESLint that you purposely are ignoring the Promise
+    void checkUser();
+  }, [ready, session]);
+
+  // Check for registration success message
+  useEffect(() => {
+    if (router.query.registered === "success") {
+      setSuccessMessage(
+        "Registration successful! Please log in with your credentials.",
+      );
+    }
+  }, [router.query]);
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     event.preventDefault();
-    try {
-      const response = await axiosInstance.post(
-        "/token",
-        `username=${username}&password=${password}`,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        },
-      );
-      console.log("Login successful:", response.data);
-      sessionStorage.setItem("token", response.data.access_token as string);
-      axiosInstance.defaults.headers.common.Authorization = `Bearer ${response.data.access_token}`;
+    setIsLoading(true);
+    setError("");
+    setSuccessMessage("");
 
-      await router.push("/configuration/warehouse");
-    } catch (error) {
-      setError("Login failed");
+    try {
+      // Set default company for login - users can switch via sidebar after login
+      const defaultCompany = "company-a";
+      localStorage.setItem("companyId", defaultCompany);
+      localStorage.setItem("currentCompany", defaultCompany); // For new context system
+      setCompany(defaultCompany as CompanyId);
+
+      /* create / fetch the correct client synchronously */
+      const supabase = getSupabase();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error !== null) {
+        setError(error.message);
+        setIsLoading(false);
+        return;
+      }
+      if (data.session !== null) {
+        // Sync user with backend
+        try {
+          await axiosInstance.post(
+            "/api/users/sync",
+            {},
+            {
+              headers: { "X-Company-ID": "company-a" },
+            },
+          );
+        } catch (syncError) {
+          console.error("User sync error:", syncError);
+
+          // Check if user is disabled
+          if (
+            axios.isAxiosError(syncError) &&
+            syncError.response?.status === 400
+          ) {
+            const rawDetail: unknown = syncError.response?.data?.detail;
+            const errorDetail = typeof rawDetail === "string" ? rawDetail : "";
+            if (errorDetail.toLowerCase().includes("disabled")) {
+              // Sign out from Supabase
+              await supabase.auth.signOut();
+
+              // Show error to user
+              setError(
+                "Your account has been disabled. Please contact an administrator.",
+              );
+              setIsLoading(false);
+              return;
+            }
+          }
+
+          // For other sync errors, log but continue (user might not exist in DB yet)
+          console.warn("User sync failed, but continuing login");
+        }
+
+        // Set authentication state
+        localStorage.setItem("companyId", "company-a");
+
+        // Redirect to main page
+        await router.push("/configuration/item");
+      }
+    } catch (error: unknown) {
+      console.error("Login error:", error);
+      setError(
+        typeof error === "object" && error !== null && "message" in error
+          ? String(error.message)
+          : "Login failed. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleRegisterRedirect = async (): Promise<void> => {
-    await router.push("/register");
-  };
+  // Add a check for expired sessions and disabled users on page load
+  useEffect(() => {
+    const checkQueryParams = (): void => {
+      if (router.query.expired === "true") {
+        setError("Your session has expired. Please log in again.");
+      } else if (router.query.error === "disabled") {
+        setError(
+          "Your account has been disabled. Please contact an administrator.",
+        );
+      }
+    };
+
+    checkQueryParams();
+  }, [router.query]);
 
   return (
     <main>
       <Sheet
         sx={{
-          width: 300,
+          width: 350,
           mx: "auto",
-          my: 14,
+          mt: 24,
+          mb: 14,
           py: 4,
           px: 3,
           display: "flex",
@@ -72,42 +180,65 @@ export default function Login(): JSX.Element {
           </Typography>
           <Typography level="body-sm">Sign in to continue.</Typography>
         </div>
+
+        {successMessage !== "" && (
+          <Alert color="success" variant="soft" sx={{ mt: 1, mb: 1 }}>
+            {successMessage}
+          </Alert>
+        )}
+
+        {error !== "" && (
+          <Alert color="danger" variant="soft" sx={{ mt: 1, mb: 1 }}>
+            {error}
+          </Alert>
+        )}
+
         <form onSubmit={handleSubmit}>
           <FormControl>
-            <FormLabel>Username</FormLabel>
+            <FormLabel>Email</FormLabel>
             <Input
-              type="text"
-              id="username"
-              value={username}
-              placeholder="johndoe"
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              id="email"
+              value={email}
+              placeholder="your.email@example.com"
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              required
             />
           </FormControl>
-          <FormControl className="mt-4">
+          <FormControl sx={{ mt: 2 }}>
             <FormLabel>Password</FormLabel>
             <Input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               placeholder="********"
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              required
+              endDecorator={
+                <IconButton
+                  variant="plain"
+                  color="neutral"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  sx={{ ml: "auto" }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              }
             />
           </FormControl>
           <Button
-            className="bg-button-primary mt-5 w-full"
-            sx={{ mt: 4 }}
+            className="bg-button-primary w-full"
+            sx={{ mt: 3 }}
             type="submit"
+            loading={isLoading}
+            disabled={isLoading}
           >
-            Log in
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-        <Button
-          className="bg-button-primary w-full"
-          onClick={handleRegisterRedirect}
-        >
-          Register
-        </Button>
-        {error !== "" && <p>{error}</p>}
       </Sheet>
     </main>
   );

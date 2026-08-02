@@ -1,6 +1,21 @@
-import type { PaginationQueryParams } from "./interface";
+export function getErrorMessage(
+  error: unknown,
+  fallback?: string,
+): string | undefined {
+  const detail = (
+    error as { response?: { data?: { detail?: unknown } } } | undefined
+  )?.response?.data?.detail;
 
-export const convertToQueryParams = (queryParams: any): string => {
+  const firstMsg = Array.isArray(detail)
+    ? (detail[0] as { msg?: unknown } | undefined)?.msg
+    : undefined;
+
+  if (typeof firstMsg === "string" && firstMsg !== "") return firstMsg;
+  if (typeof detail === "string" && detail !== "") return detail;
+  return fallback;
+}
+
+export const convertToQueryParams = (queryParams: object): string => {
   const queryString = Object.entries(queryParams)
     .filter(([_, value]) => value !== undefined)
     .map(([key, value]) => {
@@ -21,7 +36,20 @@ export const convertToQueryParams = (queryParams: any): string => {
   return queryString;
 };
 
-export function formatToDateTime(dateStr: string | undefined) {
+export function formatToDate(dateStr: string | null | undefined): string {
+  if (dateStr === undefined || dateStr === null) return "";
+  const date = new Date(dateStr);
+
+  // Extract year, month, day
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // Return the formatted date as YYYY-MM-DD
+  return `${year}-${month}-${day}`;
+}
+
+export function formatToDateTime(dateStr: string | null | undefined): string {
   if (dateStr === undefined || dateStr === null) return "-";
   const date = new Date(dateStr);
 
@@ -36,20 +64,63 @@ export function formatToDateTime(dateStr: string | undefined) {
   // Determine AM or PM and convert hours to 12-hour format
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours || 12; // Convert hour '0' to '12'
+  hours = hours === 0 ? 12 : hours; // Convert hour '0' to '12'
 
   // Return the formatted date and time as MM/DD/YYYY HH:MM AM/PM
   return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
 }
 
-export function addCommaToNumberWithFourPlaces(num: number | undefined) {
+export function addCommaToNumberWithFourPlaces(
+  num: number | string | undefined,
+): any {
   if (num === undefined || num === null) return num;
 
-  return num.toFixed(4).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  return Number(num)
+    .toFixed(4)
+    .replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-export function addCommaToNumberWithTwoPlaces(num: number | undefined) {
+export function addCommaToNumberWithTwoPlaces(
+  num: number | string | undefined,
+): any {
   if (num === undefined || num === null) return num;
 
-  return num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+  return Number(num)
+    .toFixed(2)
+    .replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
+
+export function addTwoPlaces(num: number | string | undefined): any {
+  if (num === undefined || num === null) return num;
+
+  return Number(num).toFixed(2);
+}
+
+export function addFourPlaces(num: number | string): string;
+export function addFourPlaces(num: undefined): undefined;
+export function addFourPlaces(
+  num: number | string | undefined,
+): string | undefined {
+  if (num === undefined || num === null) return num;
+
+  return Number(num).toFixed(4);
+}
+
+export function removeCommas(numberString: string): string {
+  return numberString.replace(/,/g, "");
+}
+
+export const formatToSP = (number: number): string => {
+  const padded = number.toString().padStart(4, "0");
+  return `SP${padded}`;
+};
+
+export const formatToCP = (number: number): string => {
+  const padded = number.toString().padStart(4, "0");
+  return `CP${padded}`;
+};
+
+export const formatToWH = (number: number): string => {
+  const padded = number.toString().padStart(4, "0");
+  return `WH${padded}`;
+};

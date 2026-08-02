@@ -14,10 +14,10 @@ import {
   Option,
   Textarea,
 } from "@mui/joy";
-import { AVAILABLE_CURRENCIES } from "../../constants";
 import { toast } from "react-toastify";
-
-import type { SuppliersModalProps, Supplier } from "../../interface";
+import type { SuppliersModalProps, Supplier, Currency } from "../../interface";
+import axiosInstance from "../../utils/axiosConfig";
+import { formatToSP, getErrorMessage } from "../../helper";
 
 const SuppliersModal = ({
   open,
@@ -26,26 +26,18 @@ const SuppliersModal = ({
   row,
   onSave,
 }: SuppliersModalProps): JSX.Element => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
   const generateSupplier = (): Supplier => {
     return {
       supplier_id: row?.supplier_id ?? 0,
-      code: row?.code ?? "",
       name: row?.name ?? "",
-      building_address: row?.building_address ?? "",
-      street_address: row?.street_address ?? "",
-      city: row?.city ?? "",
-      province: row?.province ?? "",
-      country: row?.country ?? "",
-      zip_code: row?.zip_code ?? "",
+      address: row?.address ?? "",
       contact_person: row?.contact_person ?? "",
       contact_number: row?.contact_number ?? "",
       email: row?.email ?? "",
-      fax_number: row?.fax_number ?? "",
       currency: row?.currency ?? "",
-      discount_rate: row?.discount_rate,
       supplier_balance: row?.supplier_balance,
-      created_by: row?.created_by ?? 0,
-      modified_by: row?.modified_by ?? 0,
       date_created: row?.date_created ?? "",
       date_modified: row?.date_modified ?? "",
       notes: row?.notes ?? "",
@@ -57,6 +49,13 @@ const SuppliersModal = ({
   useEffect(() => {
     setSupplier(generateSupplier());
   }, [row]);
+
+  useEffect(() => {
+    axiosInstance
+      .get<Currency[]>("/api/currencies")
+      .then((response) => setCurrencies(response.data))
+      .catch((error) => console.error("Error fetching currencies:", error));
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -71,15 +70,17 @@ const SuppliersModal = ({
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-
+    setIsSaving(true);
     try {
       await onSave(supplier);
       setSupplier(generateSupplier());
       setOpen(false);
+      setIsSaving(false);
     } catch (error: any) {
       toast.error(
-        `Error message: ${error?.response?.data?.detail[0]?.msg || error?.response?.data?.detail}`,
+        `Error message: ${getErrorMessage(error, "Save unsuccessful")}`,
       );
+      setIsSaving(false);
     }
   };
 
@@ -128,11 +129,13 @@ const SuppliersModal = ({
                     <FormLabel>Code</FormLabel>
                     <Input
                       size="sm"
-                      placeholder="ABC-123"
                       name="code"
-                      value={supplier.code}
-                      onChange={handleChange}
-                      required
+                      value={
+                        title !== "Add Suppliers"
+                          ? formatToSP(supplier.supplier_id)
+                          : "-"
+                      }
+                      disabled
                     />
                   </FormControl>
                   <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
@@ -148,77 +151,20 @@ const SuppliersModal = ({
                   </FormControl>
                 </Stack>
                 <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                    <FormLabel>Building Address</FormLabel>
+                  <FormControl size="sm" sx={{ mb: 1, width: "100%" }}>
+                    <FormLabel>Address</FormLabel>
                     <Input
                       size="sm"
-                      placeholder="Building Address"
-                      name="building_address"
-                      value={supplier.building_address}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
-                    <FormLabel>Street Address</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="Street Address"
-                      name="street_address"
-                      value={supplier.street_address}
+                      placeholder="Complete Address"
+                      name="address"
+                      value={supplier.address}
                       onChange={handleChange}
                       required
                     />
                   </FormControl>
                 </Stack>
                 <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>City</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="City"
-                      name="city"
-                      value={supplier.city}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>Province</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="Province"
-                      name="province"
-                      value={supplier.province}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>Country</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="Country"
-                      name="country"
-                      value={supplier.country}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>Zip Code</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="Zip Code"
-                      name="zip_code"
-                      value={supplier.zip_code}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
+                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                     <FormLabel>Contact Person</FormLabel>
                     <Input
                       size="sm"
@@ -226,10 +172,10 @@ const SuppliersModal = ({
                       name="contact_person"
                       value={supplier.contact_person}
                       onChange={handleChange}
-                      required
+                      // required
                     />
                   </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
+                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                     <FormLabel>Contact Number</FormLabel>
                     <Input
                       size="sm"
@@ -237,34 +183,22 @@ const SuppliersModal = ({
                       name="contact_number"
                       value={supplier.contact_number}
                       onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>Email</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="Email"
-                      name="email"
-                      value={supplier.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>Fax Number</FormLabel>
-                    <Input
-                      size="sm"
-                      placeholder="Fax Number"
-                      name="fax_number"
-                      value={supplier.fax_number}
-                      onChange={handleChange}
-                      required
+                      // required
                     />
                   </FormControl>
                 </Stack>
                 <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
+                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormLabel>Email (Optional)</FormLabel>
+                    <Input
+                      size="sm"
+                      placeholder="Email"
+                      name="email"
+                      value={supplier.email ?? ""}
+                      onChange={handleChange}
+                    />
+                  </FormControl>
+                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                     <FormLabel>Currency</FormLabel>
                     <Select
                       name="currency"
@@ -273,33 +207,23 @@ const SuppliersModal = ({
                       onChange={handleSelectChange}
                       required
                     >
-                      {AVAILABLE_CURRENCIES.map((currency) => (
-                        <Option key={currency} value={currency}>
-                          {currency}
+                      {currencies.map((currency) => (
+                        <Option key={currency.id} value={currency.code}>
+                          {currency.code}
                         </Option>
                       ))}
                     </Select>
                   </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
-                    <FormLabel>Discount Rate</FormLabel>
-                    <Input
-                      size="sm"
-                      type="number"
-                      placeholder="0"
-                      name="discount_rate"
-                      value={supplier.discount_rate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "23%" }}>
+                </Stack>
+                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
                     <FormLabel>Supplier Balance</FormLabel>
                     <Input
                       size="sm"
                       type="number"
                       placeholder="0"
                       name="supplier_balance"
-                      value={supplier.supplier_balance}
+                      value={supplier.supplier_balance ?? 0}
                       onChange={handleChange}
                       required
                     />
@@ -322,8 +246,10 @@ const SuppliersModal = ({
             <div className="flex justify-end mt-5">
               <Button
                 type="submit"
-                className="ml-4 w-[130px] bg-button-primary"
+                sx={{ ml: 2, width: 130 }}
+                className="bg-button-primary"
                 size="sm"
+                loading={isSaving}
               >
                 Save
               </Button>
