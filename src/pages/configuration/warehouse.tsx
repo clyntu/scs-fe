@@ -22,6 +22,11 @@ import type { PaginatedWarehouse, User, Warehouse } from "../../interface";
 
 import { convertToQueryParams, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../../components/shared/ContentStates";
 
 const WarehouseForm = (): JSX.Element => {
   const [openWH, setOpenWH] = useState(false);
@@ -38,8 +43,9 @@ const WarehouseForm = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -58,6 +64,7 @@ const WarehouseForm = (): JSX.Element => {
     setPage(1);
     setWarehouses({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -79,6 +86,9 @@ const WarehouseForm = (): JSX.Element => {
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load warehouses. Check your connection and try again.",
+        );
       });
   };
 
@@ -120,6 +130,7 @@ const WarehouseForm = (): JSX.Element => {
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [isLoadingMore, hasMore, page, searchTerm]);
 
@@ -384,144 +395,122 @@ const WarehouseForm = (): JSX.Element => {
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                <th style={{ width: 300 }}>Name</th>
+                <th style={{ width: 100 }}>Type</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={8}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading warehouses...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows columns={8} actionColumn={7} actionCount={3} />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Code
-                    </th>
-                    <th style={{ width: 300 }}>Name</th>
-                    <th style={{ width: 100 }}>Type</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {warehouses.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={8}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && warehouses.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={8}
+                    message={loadError}
+                    onRetry={() => getAllWarehouse(searchTerm)}
+                  />
+                )}
+                {warehouses.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={8}
+                    title="No warehouses found"
+                    description={
+                      searchTerm !== ""
+                        ? "Try adjusting your search."
+                        : "Get started by adding your first warehouse."
+                    }
+                  />
+                )}
+                {warehouses.items.map((warehouse) => (
+                  <tr
+                    key={warehouse.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(warehouse);
+                    }}
+                  >
+                    <td>{warehouse.code}</td>
+                    <td>
+                      <TooltipTableCell maxWidth="300px">
+                        {warehouse.name}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{warehouse.type}</td>
+                    <td>
+                      <TooltipTableCell maxWidth="200px">
+                        {warehouse?.creator?.username}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{formatToDate(warehouse.date_created)}</td>
+                    <td>
+                      <TooltipTableCell maxWidth="200px">
+                        {warehouse?.modifier?.username}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{formatToDate(warehouse.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No warehouses found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {warehouses.items.map((warehouse) => (
-                    <tr
-                      key={warehouse.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(warehouse);
-                      }}
-                    >
-                      <td>{warehouse.code}</td>
-                      <td>
-                        <TooltipTableCell maxWidth="300px">
-                          {warehouse.name}
-                        </TooltipTableCell>
-                      </td>
-                      <td>{warehouse.type}</td>
-                      <td>
-                        <TooltipTableCell maxWidth="200px">
-                          {warehouse?.creator?.username}
-                        </TooltipTableCell>
-                      </td>
-                      <td>{formatToDate(warehouse.date_created)}</td>
-                      <td>
-                        <TooltipTableCell maxWidth="200px">
-                          {warehouse?.modifier?.username}
-                        </TooltipTableCell>
-                      </td>
-                      <td>{formatToDate(warehouse.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="primary"
+                          className="bg-primary"
+                          onClick={() => {
+                            setOpenWH(true);
+                            setSelectedRow(warehouse);
                           }}
                         >
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="plain"
-                            color="primary"
-                            className="bg-primary"
-                            onClick={() => {
-                              setOpenWH(true);
-                              setSelectedRow(warehouse);
-                            }}
-                          >
-                            Stocks
-                          </Button>
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="plain"
-                            color="neutral"
-                            onClick={() => {
-                              setOpenEdit(true);
-                              setSelectedRow(warehouse);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(warehouse);
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                          Stocks
+                        </Button>
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(warehouse);
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="soft"
+                          color="danger"
+                          className="bg-delete-red"
+                          onClick={() => {
+                            setOpenDelete(true);
+                            setSelectedRow(warehouse);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

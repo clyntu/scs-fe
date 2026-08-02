@@ -14,8 +14,8 @@ import type {
   AR,
 } from "../../interface";
 import ReverseARModal from "./ReverseARModal";
-import CircularProgress from "@mui/joy/CircularProgress";
 import { addTwoPlaces, getErrorMessage } from "../../helper";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 const ARForm = ({
   setOpen,
@@ -477,9 +477,7 @@ const ARForm = ({
         </div>
       </div>
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <ARFormDetails

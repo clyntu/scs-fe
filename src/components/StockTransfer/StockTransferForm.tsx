@@ -24,7 +24,7 @@ import {
   type WarehouseItemsFE,
   type RRAvailableStockResponse,
 } from "./interface";
-import CircularProgress from "@mui/joy/CircularProgress";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 const StockTransferForm = ({
   setOpen,
@@ -539,9 +539,7 @@ const StockTransferForm = ({
         </Typography>
       </div>
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <STFormDetails

@@ -17,8 +17,8 @@ import type {
   CR,
 } from "../../interface";
 import { generateCRPDF } from "./generatePDF";
-import CircularProgress from "@mui/joy/CircularProgress";
 import { getErrorMessage } from "../../helper";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 const CRForm = ({
   setOpen,
@@ -320,9 +320,7 @@ const CRForm = ({
       </div>
 
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <CRFormDetails

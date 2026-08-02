@@ -15,6 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
+import { toast } from "react-toastify";
 import type {
   PaginatedStockAdjustments,
   PaginationQueryParams,
@@ -29,6 +30,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewStockAdjustment = ({
   setOpenCreate,
@@ -46,8 +52,9 @@ const ViewStockAdjustment = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -74,6 +81,7 @@ const ViewStockAdjustment = ({
       items: [],
     });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -106,6 +114,9 @@ const ViewStockAdjustment = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load stock adjustments. Check your connection and try again.",
+        );
       });
   };
 
@@ -160,6 +171,7 @@ const ViewStockAdjustment = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -347,73 +359,82 @@ const ViewStockAdjustment = ({
                 <th style={{ width: 120, padding: "12px 6px" }}>Created By</th>
               </tr>
             </thead>
-            <tbody>
-              {isLoading && adjustments.items.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={11}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <CircularProgress size="sm" />
-                    <Typography level="body-sm" sx={{ ml: 2 }}>
-                      Loading stock adjustments...
-                    </Typography>
-                  </td>
-                </tr>
-              ) : adjustments.items.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={11}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Typography level="body-sm">
-                      No stock adjustments found
-                    </Typography>
-                  </td>
-                </tr>
-              ) : (
-                adjustments.items.map((adjustment: StockAdjustmentResponse) => (
-                  <tr key={adjustment.id}>
-                    <td>{adjustment.id}</td>
-                    <td>{formatToDate(adjustment.date_created)}</td>
-                    <td>{withTooltip(adjustment.stock_code, 120)}</td>
-                    <td>{withTooltip(adjustment.item_name, 200)}</td>
+            {isLoading ? (
+              <TableLoadingRows
+                columns={10}
+                numericColumns={[5, 6, 7]}
+                statusColumns={[4]}
+              />
+            ) : (
+              <tbody>
+                {loadError !== null && adjustments.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={10}
+                    message={loadError}
+                    onRetry={getAllAdjustments}
+                  />
+                )}
+                {adjustments.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={10}
+                    title="No stock adjustments found"
+                    description={
+                      searchTerm !== "" || adjustmentType !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first stock adjustment."
+                    }
+                  />
+                )}
+                {adjustments.items.map(
+                  (adjustment: StockAdjustmentResponse) => (
+                    <tr key={adjustment.id}>
+                      <td>{adjustment.id}</td>
+                      <td>{formatToDate(adjustment.date_created)}</td>
+                      <td>{withTooltip(adjustment.stock_code, 120)}</td>
+                      <td>{withTooltip(adjustment.item_name, 200)}</td>
 
-                    <td>
-                      <AdjustmentTypeChip
-                        adjustmentType={adjustment.adjustment_type}
-                      />
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <span
-                        style={{
-                          color:
-                            adjustment.adjustment_type === "surplus"
-                              ? "green"
-                              : "red",
-                        }}
-                      >
-                        {adjustment.adjustment_type === "surplus" ? "+" : "-"}
-                        {adjustment.adjustment_amount.toLocaleString()}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      {adjustment.previous_on_stock.toLocaleString()}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      {adjustment.new_on_stock.toLocaleString()}
-                    </td>
-                    <td>{withTooltip(adjustment.warehouse_name, 150)}</td>
-                    <td>{adjustment.created_by_name}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+                      <td>
+                        <AdjustmentTypeChip
+                          adjustmentType={adjustment.adjustment_type}
+                        />
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <span
+                          style={{
+                            color:
+                              adjustment.adjustment_type === "surplus"
+                                ? "green"
+                                : "red",
+                          }}
+                        >
+                          {adjustment.adjustment_type === "surplus" ? "+" : "-"}
+                          {adjustment.adjustment_amount.toLocaleString()}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {adjustment.previous_on_stock.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {adjustment.new_on_stock.toLocaleString()}
+                      </td>
+                      <td>{withTooltip(adjustment.warehouse_name, 150)}</td>
+                      <td>{adjustment.created_by_name}</td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            )}
           </Table>
         </Sheet>
 
         {/* Infinite scroll status */}
-        <Box sx={{ mt: 2, textAlign: "center" }}>
+        <Box
+          sx={{
+            display: adjustments.items.length > 0 ? "block" : "none",
+            mt: 2,
+            textAlign: "center",
+          }}
+        >
           {isLoadingMore && (
             <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
               <CircularProgress size="sm" />
@@ -422,11 +443,9 @@ const ViewStockAdjustment = ({
           )}
           {!isLoading && !isLoadingMore && (
             <Typography level="body-sm">
-              {adjustments.items.length === 0
-                ? "No stock adjustments to display"
-                : hasMore
-                  ? `Showing ${adjustments.items.length} of ${adjustments.total} items • Scroll for more`
-                  : `Showing all ${adjustments.total} items`}
+              {hasMore
+                ? `Showing ${adjustments.items.length} of ${adjustments.total} items • Scroll for more`
+                : `Showing all ${adjustments.total} items`}
             </Typography>
           )}
         </Box>

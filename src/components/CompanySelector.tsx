@@ -1,14 +1,22 @@
 // components/CompanySelector.tsx
 import React from "react";
-import { Select, Option } from "@mui/joy";
+import { Select, Option, Skeleton, Typography } from "@mui/joy";
 import { useCompanyContext } from "../hooks/useCompanyContext";
 
 export const CompanySelector: React.FC = () => {
-  const { currentCompany, companies, setCurrentCompany, isLoading } =
+  const { currentCompany, companies, setCurrentCompany, isLoading, error } =
     useCompanyContext();
 
   if (isLoading) {
-    return <div>Loading companies...</div>;
+    return <Skeleton variant="rectangular" height={32} sx={{ mt: 1 }} />;
+  }
+
+  if (error !== null) {
+    return (
+      <Typography level="body-xs" color="danger" role="alert" sx={{ mt: 1 }}>
+        Companies unavailable
+      </Typography>
+    );
   }
 
   return (
@@ -24,7 +32,15 @@ export const CompanySelector: React.FC = () => {
           }
         }}
         size="sm"
-        sx={{ minWidth: 180, mt: 1 }}
+        aria-label="Current company"
+        sx={{ width: "100%", minWidth: 0, mt: 1 }}
+        slotProps={{
+          listbox: {
+            sx: {
+              zIndex: 1300,
+            },
+          },
+        }}
       >
         {companies.map((company) => (
           <Option key={company.code} value={company.code}>

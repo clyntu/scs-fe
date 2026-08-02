@@ -120,14 +120,14 @@ const SDRFormDetails = ({
   }, [selectedPOs]);
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box className="transaction-details">
       <SelectPOModal
         open={isSelectModalOpen}
         setOpen={setIsSelectModalOpen}
         unservedPOs={unservedPOs}
         setSelectedPOs={setSelectedPOs}
       />
-      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
@@ -229,7 +229,7 @@ const SDRFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card variant="soft" color="neutral" className="w-[40%]">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="flex justify-around">
             <FormControl size="sm" sx={{ mb: 1 }}>

@@ -35,6 +35,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewStockTransfer = ({
   setOpenCreate,
@@ -54,8 +59,9 @@ const ViewStockTransfer = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const limit = 50;
@@ -75,6 +81,7 @@ const ViewStockTransfer = ({
     setPage(1);
     setStockTransfers({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -104,6 +111,9 @@ const ViewStockTransfer = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load stock transfers. Check your connection and try again.",
+        );
       });
   };
 
@@ -155,6 +165,7 @@ const ViewStockTransfer = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -419,155 +430,137 @@ const ViewStockTransfer = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  STR No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130 }}>RR Transfer</th>
+                <th style={{ width: 100 }}>RR No.</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={11}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading stock transfers...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={11}
+                statusColumns={[2]}
+                actionColumn={10}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      STR No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 130 }}>RR Transfer</th>
-                    <th style={{ width: 100 }}>RR No.</th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {stockTransfers.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={11}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && stockTransfers.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={11}
+                    message={loadError}
+                    onRetry={getAllST}
+                  />
+                )}
+                {stockTransfers.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={11}
+                    title="No stock transfers found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first stock transfer."
+                    }
+                  />
+                )}
+                {stockTransfers.items.map((stockTransfer) => (
+                  <tr
+                    key={stockTransfer.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(stockTransfer);
+                    }}
+                  >
+                    <td>{stockTransfer.id}</td>
+                    <td>{stockTransfer.transaction_date}</td>
+                    <td>
+                      <StatusChip status={stockTransfer.status} />
+                    </td>
+                    <td>{stockTransfer.rr_transfer ? "Yes" : "No"}</td>
+                    <td>{stockTransfer?.rr_id ?? "N/A"}</td>
+                    <td>{withTooltip(stockTransfer.remarks, "180px")}</td>
+                    <td>
+                      {withTooltip(stockTransfer?.creator?.username, "130px")}
+                    </td>
+                    <td>
+                      {withTooltip(stockTransfer?.modifier?.username, "130px")}
+                    </td>
+                    <td>{formatToDate(stockTransfer.date_created)}</td>
+                    <td>{formatToDate(stockTransfer.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No stock transfers found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {stockTransfers.items.map((stockTransfer) => (
-                    <tr
-                      key={stockTransfer.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(stockTransfer);
-                      }}
-                    >
-                      <td>{stockTransfer.id}</td>
-                      <td>{stockTransfer.transaction_date}</td>
-                      <td>
-                        <StatusChip status={stockTransfer.status} />
-                      </td>
-                      <td>{stockTransfer.rr_transfer ? "Yes" : "No"}</td>
-                      <td>{stockTransfer?.rr_id ?? "N/A"}</td>
-                      <td>{withTooltip(stockTransfer.remarks, "180px")}</td>
-                      <td>
-                        {withTooltip(stockTransfer?.creator?.username, "130px")}
-                      </td>
-                      <td>
-                        {withTooltip(
-                          stockTransfer?.modifier?.username,
-                          "130px",
-                        )}
-                      </td>
-                      <td>{formatToDate(stockTransfer.date_created)}</td>
-                      <td>{formatToDate(stockTransfer.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(stockTransfer);
                           }}
                         >
+                          {stockTransfer.status !== "unposted"
+                            ? "View"
+                            : "Edit"}
+                        </Button>
+                        {(stockTransfer.status === "posted" ||
+                          stockTransfer.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(stockTransfer);
+                            }}
+                            disabled={stockTransfer.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+
+                        {stockTransfer.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(stockTransfer);
                             }}
                           >
-                            {stockTransfer.status !== "unposted"
-                              ? "View"
-                              : "Edit"}
+                            Delete
                           </Button>
-                          {(stockTransfer.status === "posted" ||
-                            stockTransfer.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(stockTransfer);
-                              }}
-                              disabled={stockTransfer.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-
-                          {stockTransfer.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(stockTransfer);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

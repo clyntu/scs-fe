@@ -18,7 +18,7 @@ import { convertToQueryParams, getErrorMessage } from "../../helper";
 import { type AllocItemFE } from "./interface";
 import DeallocFormDetails from "./DeallocForm/DeallocFormDetails";
 import DeallocFormTable from "./DeallocForm/DeallocFormTable";
-import CircularProgress from "@mui/joy/CircularProgress";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 
 const DeallocForm = ({
   setOpen,
@@ -344,9 +344,7 @@ const DeallocForm = ({
       </div>
 
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <DeallocFormDetails

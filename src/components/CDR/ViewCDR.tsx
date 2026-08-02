@@ -36,6 +36,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewCDR = ({
   setOpenCreate,
@@ -55,8 +60,9 @@ const ViewCDR = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -77,6 +83,7 @@ const ViewCDR = ({
     setPage(1);
     setCDRs({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -106,6 +113,9 @@ const ViewCDR = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load delivery receipts. Check your connection and try again.",
+        );
       });
   };
 
@@ -157,6 +167,7 @@ const ViewCDR = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [isLoadingMore, hasMore, page, searchTerm, status, dateFrom, dateTo]);
 
@@ -412,166 +423,146 @@ const ViewCDR = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  CDR No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 250 }}>Customer</th>
+                <th style={{ width: 220 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 150, textAlign: "right" }}>Net Amount</th>
+                <th style={{ width: 150, textAlign: "right" }}>Gross Amount</th>
+                <th style={{ width: 100, textAlign: "right" }}>Items Total</th>
+                <th style={{ width: 100 }}>CDP No.</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={15}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading delivery receipts...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={15}
+                numericColumns={[5, 6, 7]}
+                statusColumns={[4]}
+                actionColumn={14}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      CDR No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 250 }}>Customer</th>
-                    <th style={{ width: 220 }}>Ref No.</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Net Amount
-                    </th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Gross Amount
-                    </th>
-                    <th style={{ width: 100, textAlign: "right" }}>
-                      Items Total
-                    </th>
-                    <th style={{ width: 100 }}>CDP No.</th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {CDRs.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={15}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && CDRs.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={15}
+                    message={loadError}
+                    onRetry={getAllCDRs}
+                  />
+                )}
+                {CDRs.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={15}
+                    title="No delivery receipts found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first delivery receipt."
+                    }
+                  />
+                )}
+                {CDRs.items.map((CDR) => (
+                  <tr
+                    key={CDR.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(CDR);
+                    }}
+                  >
+                    <td>{CDR.id}</td>
+                    <td>{CDR.transaction_date}</td>
+                    <td>{withTooltip(CDR.customer.name, "280px")}</td>
+                    <td>{withTooltip(CDR.reference_number, "200px")}</td>
+                    <td>
+                      <StatusChip status={CDR.status} />
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(Number(CDR.total_net))}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {CDR.total_items?.toLocaleString()}
+                    </td>
+                    <td>{CDR.delivery_plan_id}</td>
+                    <td>{withTooltip(CDR.remarks, "180px")}</td>
+                    <td>{withTooltip(CDR?.creator?.username, "130px")}</td>
+                    <td>{withTooltip(CDR?.modifier?.username, "130px")}</td>
+                    <td>{formatToDate(CDR.date_created)}</td>
+                    <td>{formatToDate(CDR.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No delivery receipts found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {CDRs.items.map((CDR) => (
-                    <tr
-                      key={CDR.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(CDR);
-                      }}
-                    >
-                      <td>{CDR.id}</td>
-                      <td>{CDR.transaction_date}</td>
-                      <td>{withTooltip(CDR.customer.name, "280px")}</td>
-                      <td>{withTooltip(CDR.reference_number, "200px")}</td>
-                      <td>
-                        <StatusChip status={CDR.status} />
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(Number(CDR.total_net))}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(Number(CDR.total_gross))}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {CDR.total_items?.toLocaleString()}
-                      </td>
-                      <td>{CDR.delivery_plan_id}</td>
-                      <td>{withTooltip(CDR.remarks, "180px")}</td>
-                      <td>{withTooltip(CDR?.creator?.username, "130px")}</td>
-                      <td>{withTooltip(CDR?.modifier?.username, "130px")}</td>
-                      <td>{formatToDate(CDR.date_created)}</td>
-                      <td>{formatToDate(CDR.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(CDR);
                           }}
                         >
+                          {CDR.status !== "unposted" ? "View" : "Edit"}
+                        </Button>
+                        {(CDR.status === "posted" ||
+                          CDR.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(CDR);
+                            }}
+                            disabled={CDR.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+
+                        {CDR.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(CDR);
                             }}
                           >
-                            {CDR.status !== "unposted" ? "View" : "Edit"}
+                            Delete
                           </Button>
-                          {(CDR.status === "posted" ||
-                            CDR.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(CDR);
-                              }}
-                              disabled={CDR.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-
-                          {CDR.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(CDR);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

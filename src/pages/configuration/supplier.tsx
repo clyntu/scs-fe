@@ -21,6 +21,11 @@ import type { PaginatedSuppliers, Supplier, User } from "../../interface";
 
 import { convertToQueryParams, formatToSP, formatToDate } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../../components/shared/ContentStates";
 
 const SupplierForm = (): JSX.Element => {
   const [suppliers, setSuppliers] = useState<PaginatedSuppliers>({
@@ -36,8 +41,9 @@ const SupplierForm = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -58,6 +64,7 @@ const SupplierForm = (): JSX.Element => {
     setPage(1);
     setSuppliers({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -79,6 +86,9 @@ const SupplierForm = (): JSX.Element => {
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load suppliers. Check your connection and try again.",
+        );
       });
   };
 
@@ -122,6 +132,7 @@ const SupplierForm = (): JSX.Element => {
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [isLoadingMore, hasMore, page, searchTerm]);
 
@@ -384,163 +395,144 @@ const SupplierForm = (): JSX.Element => {
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>Code</th>
+                <th style={{ width: 300 }}>Name</th>
+                <th style={{ width: 400 }}>Address</th>
+                <th style={{ width: 150 }}>Contact Person</th>
+                <th style={{ width: 150 }}>Contact Number</th>
+                <th style={{ width: 300 }}>Email</th>
+                <th style={{ width: 100 }}>Currency</th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Supplier Balance
+                </th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={13}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading suppliers...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={13}
+                numericColumns={[7]}
+                actionColumn={12}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Code
-                    </th>
-                    <th style={{ width: 300 }}>Name</th>
-                    <th style={{ width: 400 }}>Address</th>
-                    <th style={{ width: 150 }}>Contact Person</th>
-                    <th style={{ width: 150 }}>Contact Number</th>
-                    <th style={{ width: 300 }}>Email</th>
-                    <th style={{ width: 100 }}>Currency</th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Supplier Balance
-                    </th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {suppliers.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={13}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && suppliers.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={13}
+                    message={loadError}
+                    onRetry={() => getAllSuppliers(searchTerm)}
+                  />
+                )}
+                {suppliers.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={13}
+                    title="No suppliers found"
+                    description={
+                      searchTerm !== ""
+                        ? "Try adjusting your search."
+                        : "Get started by adding your first supplier."
+                    }
+                  />
+                )}
+                {suppliers.items.map((supplier) => (
+                  <tr
+                    key={supplier.supplier_id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(supplier);
+                    }}
+                  >
+                    <td>{formatToSP(supplier.supplier_id)}</td>
+                    <td>
+                      <TooltipTableCell maxWidth="300px">
+                        {supplier.name}
+                      </TooltipTableCell>
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="400px">
+                        {supplier.address}
+                      </TooltipTableCell>
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="150px">
+                        {supplier.contact_person}
+                      </TooltipTableCell>
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="150px">
+                        {supplier.contact_number}
+                      </TooltipTableCell>
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="300px">
+                        {supplier.email}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{supplier.currency}</td>
+                    <td style={{ textAlign: "right" }}>
+                      {supplier.supplier_balance}
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="200px">
+                        {supplier?.creator?.full_name}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{formatToDate(supplier.date_created)}</td>
+                    <td>
+                      <TooltipTableCell maxWidth="200px">
+                        {supplier?.modifier?.full_name}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{formatToDate(supplier.date_modified ?? undefined)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No suppliers found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {suppliers.items.map((supplier) => (
-                    <tr
-                      key={supplier.supplier_id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(supplier);
-                      }}
-                    >
-                      <td>{formatToSP(supplier.supplier_id)}</td>
-                      <td>
-                        <TooltipTableCell maxWidth="300px">
-                          {supplier.name}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="400px">
-                          {supplier.address}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="150px">
-                          {supplier.contact_person}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="150px">
-                          {supplier.contact_number}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="300px">
-                          {supplier.email}
-                        </TooltipTableCell>
-                      </td>
-                      <td>{supplier.currency}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {supplier.supplier_balance}
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="200px">
-                          {supplier?.creator?.full_name}
-                        </TooltipTableCell>
-                      </td>
-                      <td>{formatToDate(supplier.date_created)}</td>
-                      <td>
-                        <TooltipTableCell maxWidth="200px">
-                          {supplier?.modifier?.full_name}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        {formatToDate(supplier.date_modified ?? undefined)}
-                      </td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(supplier);
                           }}
                         >
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="plain"
-                            color="neutral"
-                            onClick={() => {
-                              setOpenEdit(true);
-                              setSelectedRow(supplier);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(supplier);
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                          Edit
+                        </Button>
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="soft"
+                          color="danger"
+                          className="bg-delete-red"
+                          onClick={() => {
+                            setOpenDelete(true);
+                            setSelectedRow(supplier);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

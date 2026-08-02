@@ -21,6 +21,11 @@ import type {
   User,
 } from "../../interface";
 import { convertToQueryParams, getErrorMessage } from "../../helper";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewUsers = (): JSX.Element => {
   const [users, setUsers] = useState<PaginatedUsers>({
@@ -33,8 +38,9 @@ const ViewUsers = (): JSX.Element => {
   const [isDisabling, setIsDisabling] = useState(false);
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -55,6 +61,7 @@ const ViewUsers = (): JSX.Element => {
     setPage(1);
     setUsers({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -76,6 +83,9 @@ const ViewUsers = (): JSX.Element => {
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load users. Check your connection and try again.",
+        );
       });
   };
 
@@ -119,6 +129,7 @@ const ViewUsers = (): JSX.Element => {
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [isLoadingMore, hasMore, page, searchTerm, limit]);
 
@@ -316,112 +327,95 @@ const ViewUsers = (): JSX.Element => {
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>ID</th>
+                <th style={{ width: 250 }}>Name</th>
+                <th style={{ width: 200 }}>Username</th>
+                <th style={{ width: 250 }}>Email</th>
+                <th style={{ width: 150 }}>Role</th>
+                <th style={{ width: 100, textAlign: "center" }}>Status</th>
+                <th
+                  aria-label="last"
+                  style={{
+                    width: "var(--Table-lastColumnWidth)",
+                    textAlign: "center",
+                  }}
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading users...</Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={7}
+                statusColumns={[5]}
+                actionColumn={6}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      ID
-                    </th>
-                    <th style={{ width: 250 }}>Name</th>
-                    <th style={{ width: 200 }}>Username</th>
-                    <th style={{ width: 250 }}>Email</th>
-                    <th style={{ width: 150 }}>Role</th>
-                    <th style={{ width: 100, textAlign: "center" }}>Status</th>
-                    <th
-                      aria-label="last"
-                      style={{
-                        width: "var(--Table-lastColumnWidth)",
-                        textAlign: "center",
-                      }}
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && users.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={7}
+                    message={loadError}
+                    onRetry={() => getAllUsers(searchTerm)}
+                  />
+                )}
+                {users.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={7}
+                    title="No users found"
+                    description={
+                      searchTerm !== ""
+                        ? "Try adjusting your search."
+                        : "No users have been created yet."
+                    }
+                  />
+                )}
+                {users.items.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.full_name}</td>
+                    <td>{user.username}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      {user.is_admin === true
+                        ? "Admin"
+                        : user.role !== undefined && user.role !== ""
+                          ? user.role.charAt(0).toUpperCase() +
+                            user.role.slice(1)
+                          : "N/A"}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <Chip
+                        color={user.disabled === true ? "danger" : "success"}
+                        variant="soft"
+                        size="sm"
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No users found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {users.items.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.id}</td>
-                      <td>{user.full_name}</td>
-                      <td>{user.username}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        {user.is_admin === true
-                          ? "Admin"
-                          : user.role !== undefined && user.role !== ""
-                            ? user.role.charAt(0).toUpperCase() +
-                              user.role.slice(1)
-                            : "N/A"}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <Chip
-                          color={user.disabled === true ? "danger" : "success"}
+                        {user.disabled === true ? "Disabled" : "Active"}
+                      </Chip>
+                    </td>
+                    <td>
+                      <Box sx={{ display: "flex", justifyContent: "center" }}>
+                        <Button
+                          sx={{ fontSize: "13px" }}
                           variant="soft"
+                          color={user.disabled === true ? "success" : "warning"}
                           size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsDisabling(user.disabled !== true);
+                            setOpenToggleStatus(true);
+                          }}
                         >
-                          {user.disabled === true ? "Disabled" : "Active"}
-                        </Chip>
-                      </td>
-                      <td>
-                        <Box sx={{ display: "flex", justifyContent: "center" }}>
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            variant="soft"
-                            color={
-                              user.disabled === true ? "success" : "warning"
-                            }
-                            size="sm"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsDisabling(user.disabled !== true);
-                              setOpenToggleStatus(true);
-                            }}
-                          >
-                            {user.disabled === true ? "Enable" : "Disable"}
-                          </Button>
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                          {user.disabled === true ? "Enable" : "Disable"}
+                        </Button>
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

@@ -6,7 +6,7 @@ import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
-import CircularProgress from "@mui/joy/CircularProgress";
+import { FormLoadingSkeleton } from "../shared/ContentStates";
 import type {
   SDRFormProps,
   Supplier,
@@ -252,9 +252,7 @@ const DeliveryReceiptForm = ({
         </Button> */}
       </div>
       {isFetching ? (
-        <div className="flex justify-center mt-[20%]">
-          <CircularProgress size="lg" variant="soft" />
-        </div>
+        <FormLoadingSkeleton />
       ) : (
         <>
           <SDRFormDetails

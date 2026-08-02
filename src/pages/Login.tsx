@@ -160,10 +160,10 @@ export default function Login(): JSX.Element {
     <main>
       <Sheet
         sx={{
-          width: 350,
+          width: "min(100%, 350px)",
           mx: "auto",
-          mt: 24,
-          mb: 14,
+          mt: { xs: 6, sm: 14, md: 24 },
+          mb: { xs: 6, sm: 14 },
           py: 4,
           px: 3,
           display: "flex",

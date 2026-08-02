@@ -37,6 +37,11 @@ import DateRangeFilter, {
   getDefaultDateFrom,
   getDefaultDateTo,
 } from "../shared/DateRangeFilter";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../shared/ContentStates";
 
 const ViewReceivingReport = ({
   setOpenCreate,
@@ -56,8 +61,9 @@ const ViewReceivingReport = ({
   const [dateTo, setDateTo] = useState(getDefaultDateTo());
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -78,6 +84,7 @@ const ViewReceivingReport = ({
     setPage(1);
     setReceivingReports({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -107,6 +114,9 @@ const ViewReceivingReport = ({
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load receiving reports. Check your connection and try again.",
+        );
       });
   };
 
@@ -158,6 +168,7 @@ const ViewReceivingReport = ({
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -422,192 +433,169 @@ const ViewReceivingReport = ({
             }}
             borderAxis="both"
           >
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  RR No.
+                </th>
+                <th style={{ width: 120 }}>Tx. Date</th>
+                <th style={{ width: 320 }}>Supplier</th>
+                <th style={{ width: 180 }}>Ref No.</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 130, textAlign: "right" }}>Net Amount</th>
+                <th style={{ width: 130, textAlign: "right" }}>FOB Total</th>
+                <th style={{ width: 130, textAlign: "right" }}>
+                  Landed Total (₱)
+                </th>
+                <th style={{ width: 100 }}>Currency</th>
+                <th style={{ width: 70, textAlign: "right" }}>Rate</th>
+                <th style={{ width: 200 }}>Remarks</th>
+                <th style={{ width: 150 }}>Created By</th>
+                <th style={{ width: 150 }}>Modified By</th>
+                <th style={{ width: 120 }}>Date Created</th>
+                <th style={{ width: 120 }}>Date Modified</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
             {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={16}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">
-                        Loading reports...
-                      </Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
+              <TableLoadingRows
+                columns={16}
+                numericColumns={[5, 6, 7, 9]}
+                statusColumns={[4]}
+                actionColumn={15}
+                actionCount={2}
+              />
             ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      RR No.
-                    </th>
-                    <th style={{ width: 120 }}>Tx. Date</th>
-                    <th style={{ width: 320 }}>Supplier</th>
-                    <th style={{ width: 180 }}>Ref No.</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      Net Amount
-                    </th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      FOB Total
-                    </th>
-                    <th style={{ width: 130, textAlign: "right" }}>
-                      Landed Total (₱)
-                    </th>
-                    <th style={{ width: 100 }}>Currency</th>
-                    <th style={{ width: 70, textAlign: "right" }}>Rate</th>
-                    <th style={{ width: 200 }}>Remarks</th>
-                    <th style={{ width: 150 }}>Created By</th>
-                    <th style={{ width: 150 }}>Modified By</th>
-                    <th style={{ width: 120 }}>Date Created</th>
-                    <th style={{ width: 120 }}>Date Modified</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {receivingReports.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={16}
-                        style={{ textAlign: "center", padding: "24px" }}
+              <tbody>
+                {loadError !== null && receivingReports.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={16}
+                    message={loadError}
+                    onRetry={getAllRR}
+                  />
+                )}
+                {receivingReports.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={16}
+                    title="No receiving reports found"
+                    description={
+                      searchTerm !== "" || status !== "all"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first receiving report."
+                    }
+                  />
+                )}
+                {receivingReports.items.map((receivingReport) => (
+                  <tr
+                    key={receivingReport.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(receivingReport);
+                    }}
+                  >
+                    <td>{receivingReport.id}</td>
+                    <td>{receivingReport.transaction_date}</td>
+                    <td>
+                      {withTooltip(receivingReport.supplier.name, "280px")}
+                    </td>
+                    <td>
+                      {withTooltip(receivingReport.reference_number, "160px")}
+                    </td>
+                    <td>
+                      <StatusChip status={receivingReport.status} />
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(
+                        receivingReport.net_amount,
+                      )}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(receivingReport.fob_total)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithFourPlaces(
+                        receivingReport.landed_total,
+                      )}
+                    </td>
+                    <td>{receivingReport.currency}</td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(receivingReport.rate)}
+                    </td>
+                    <td>{withTooltip(receivingReport.remarks, "180px")}</td>
+                    <td>
+                      {withTooltip(receivingReport?.creator?.username, "130px")}
+                    </td>
+                    <td>
+                      {withTooltip(
+                        receivingReport?.modifier?.username,
+                        "130px",
+                      )}
+                    </td>
+                    <td>{formatToDate(receivingReport.date_created)}</td>
+                    <td>{formatToDate(receivingReport.date_modified)}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No receiving reports found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {receivingReports.items.map((receivingReport) => (
-                    <tr
-                      key={receivingReport.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(receivingReport);
-                      }}
-                    >
-                      <td>{receivingReport.id}</td>
-                      <td>{receivingReport.transaction_date}</td>
-                      <td>
-                        {withTooltip(receivingReport.supplier.name, "280px")}
-                      </td>
-                      <td>
-                        {withTooltip(receivingReport.reference_number, "160px")}
-                      </td>
-                      <td>
-                        <StatusChip status={receivingReport.status} />
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          receivingReport.net_amount,
-                        )}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          receivingReport.fob_total,
-                        )}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithFourPlaces(
-                          receivingReport.landed_total,
-                        )}
-                      </td>
-                      <td>{receivingReport.currency}</td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(receivingReport.rate)}
-                      </td>
-                      <td>{withTooltip(receivingReport.remarks, "180px")}</td>
-                      <td>
-                        {withTooltip(
-                          receivingReport?.creator?.username,
-                          "130px",
-                        )}
-                      </td>
-                      <td>
-                        {withTooltip(
-                          receivingReport?.modifier?.username,
-                          "130px",
-                        )}
-                      </td>
-                      <td>{formatToDate(receivingReport.date_created)}</td>
-                      <td>{formatToDate(receivingReport.date_modified)}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ minWidth: 70, fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(receivingReport);
                           }}
                         >
+                          {receivingReport.status !== "unposted"
+                            ? "View"
+                            : "Edit"}
+                        </Button>
+                        {(receivingReport.status === "posted" ||
+                          receivingReport.status === "archived") && (
                           <Button
-                            sx={{ minWidth: 70, fontSize: "13px" }}
+                            sx={{ fontSize: "13px" }}
                             size="sm"
-                            variant="plain"
-                            color="neutral"
+                            variant="soft"
+                            color="warning"
                             onClick={() => {
-                              setOpenEdit(true);
+                              setOpenArchive(true);
+                              setSelectedRow(receivingReport);
+                            }}
+                            disabled={receivingReport.status === "archived"}
+                          >
+                            Archive
+                          </Button>
+                        )}
+
+                        {receivingReport.status === "unposted" && (
+                          <Button
+                            sx={{ fontSize: "13px" }}
+                            size="sm"
+                            variant="soft"
+                            color="danger"
+                            className="bg-delete-red"
+                            onClick={() => {
+                              setOpenDelete(true);
                               setSelectedRow(receivingReport);
                             }}
                           >
-                            {receivingReport.status !== "unposted"
-                              ? "View"
-                              : "Edit"}
+                            Delete
                           </Button>
-                          {(receivingReport.status === "posted" ||
-                            receivingReport.status === "archived") && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="warning"
-                              onClick={() => {
-                                setOpenArchive(true);
-                                setSelectedRow(receivingReport);
-                              }}
-                              disabled={receivingReport.status === "archived"}
-                            >
-                              Archive
-                            </Button>
-                          )}
-
-                          {receivingReport.status === "unposted" && (
-                            <Button
-                              sx={{ fontSize: "13px" }}
-                              size="sm"
-                              variant="soft"
-                              color="danger"
-                              className="bg-delete-red"
-                              onClick={() => {
-                                setOpenDelete(true);
-                                setSelectedRow(receivingReport);
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                        )}
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

@@ -39,8 +39,8 @@ const AllocFormDetails = ({
     selectedRow !== undefined && selectedRow?.status !== "unposted";
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
+    <Box className="transaction-details">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
@@ -143,7 +143,7 @@ const AllocFormDetails = ({
           </Stack>
         </div>
       </Card>
-      <Card variant="soft" color="neutral" className="w-[40%]">
+      <Card variant="soft" color="neutral">
         <div>
           <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1.7 }}>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>

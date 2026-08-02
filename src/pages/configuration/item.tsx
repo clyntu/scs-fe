@@ -39,6 +39,11 @@ import {
   addCommaToNumberWithTwoPlaces,
 } from "../../helper";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
+import {
+  TableLoadingRows,
+  TableEmptyRow,
+  TableErrorRow,
+} from "../../components/shared/ContentStates";
 
 const ItemForm = (): JSX.Element => {
   const [items, setItems] = useState<PaginatedItems>({
@@ -67,8 +72,9 @@ const ItemForm = (): JSX.Element => {
   const [selectedStatus, setSelectedStatus] = useState("active");
 
   // Infinite scroll states
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const limit = 50;
@@ -89,6 +95,7 @@ const ItemForm = (): JSX.Element => {
     setPage(1);
     setItems({ total: 0, items: [] });
     setHasMore(true);
+    setLoadError(null);
     setIsLoading(true);
     isLoadingRef.current = false;
 
@@ -113,6 +120,9 @@ const ItemForm = (): JSX.Element => {
       .catch((error) => {
         console.error("Error:", error);
         setIsLoading(false);
+        setLoadError(
+          "Could not load items. Check your connection and try again.",
+        );
       });
   };
 
@@ -159,6 +169,7 @@ const ItemForm = (): JSX.Element => {
         console.error("Error:", error);
         setIsLoadingMore(false);
         isLoadingRef.current = false;
+        toast.error("Failed to load more. Please try scrolling again.");
       });
   }, [
     isLoadingMore,
@@ -651,182 +662,162 @@ const ItemForm = (): JSX.Element => {
             }}
             borderAxis="both"
           >
-            {isLoading ? (
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={15}
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CircularProgress size="sm" />
-                      <Typography level="body-sm">Loading items...</Typography>
-                    </Box>
-                  </td>
-                </tr>
-              </tbody>
-            ) : (
-              <>
-                <thead>
-                  <tr>
-                    <th style={{ width: "var(--Table-firstColumnWidth)" }}>
-                      Stock Code
-                    </th>
-                    <th style={{ width: 300 }}>Description</th>
-                    <th style={{ width: 100, textAlign: "right" }}>On Stock</th>
-                    <th style={{ width: 100, textAlign: "right" }}>
-                      Available
-                    </th>
-                    <th style={{ width: 100, textAlign: "right" }}>
-                      Allocated
-                    </th>
+            <thead>
+              <tr>
+                <th style={{ width: "var(--Table-firstColumnWidth)" }}>
+                  Stock Code
+                </th>
+                <th style={{ width: 300 }}>Description</th>
+                <th style={{ width: 100, textAlign: "right" }}>On Stock</th>
+                <th style={{ width: 100, textAlign: "right" }}>Available</th>
+                <th style={{ width: 100, textAlign: "right" }}>Allocated</th>
 
-                    <th style={{ width: 100, textAlign: "right" }}>
-                      Purchased
-                    </th>
-                    <th style={{ width: 100, textAlign: "right" }}>Sold</th>
-                    <th style={{ width: 150, textAlign: "right" }}>SRP (₱)</th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Last Sale Price (₱)
-                    </th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Acqui. Cost (₱)
-                    </th>
-                    <th style={{ width: 150, textAlign: "right" }}>
-                      Net B/F Tax (₱)
-                    </th>
-                    <th style={{ width: 100 }}>Category</th>
-                    <th style={{ width: 100 }}>Brand</th>
-                    <th style={{ width: 110 }}>Status</th>
-                    <th
-                      aria-label="actions"
-                      style={{ width: "var(--Table-lastColumnWidth)" }}
-                    />
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.items.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={15}
-                        style={{ textAlign: "center", padding: "24px" }}
+                <th style={{ width: 100, textAlign: "right" }}>Purchased</th>
+                <th style={{ width: 100, textAlign: "right" }}>Sold</th>
+                <th style={{ width: 150, textAlign: "right" }}>SRP (₱)</th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Last Sale Price (₱)
+                </th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Acqui. Cost (₱)
+                </th>
+                <th style={{ width: 150, textAlign: "right" }}>
+                  Net B/F Tax (₱)
+                </th>
+                <th style={{ width: 100 }}>Category</th>
+                <th style={{ width: 100 }}>Brand</th>
+                <th style={{ width: 110 }}>Status</th>
+                <th
+                  aria-label="actions"
+                  style={{ width: "var(--Table-lastColumnWidth)" }}
+                />
+              </tr>
+            </thead>
+            {isLoading ? (
+              <TableLoadingRows
+                columns={15}
+                numericColumns={[2, 3, 4, 5, 6, 7, 8, 9, 10]}
+                statusColumns={[13]}
+                actionColumn={14}
+                actionCount={2}
+              />
+            ) : (
+              <tbody>
+                {loadError !== null && items.items.length === 0 && (
+                  <TableErrorRow
+                    colSpan={15}
+                    message={loadError}
+                    onRetry={() => getAllStocks(searchTerm)}
+                  />
+                )}
+                {items.items.length === 0 && loadError === null && (
+                  <TableEmptyRow
+                    colSpan={15}
+                    title="No stocks found"
+                    description={
+                      searchTerm !== "" || selectedStatus !== "active"
+                        ? "Try adjusting your search or filters."
+                        : "Get started by adding your first item."
+                    }
+                  />
+                )}
+                {items.items.map((item) => (
+                  <tr
+                    key={item.id}
+                    onDoubleClick={() => {
+                      setOpenEdit(true);
+                      setSelectedRow(item);
+                    }}
+                  >
+                    <td>
+                      <TooltipTableCell maxWidth="150px">
+                        {item.stock_code}
+                      </TooltipTableCell>
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="300px">
+                        {item.name}
+                      </TooltipTableCell>
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {(
+                        item.total_on_stock + item.total_allocated
+                      ).toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {item.total_on_stock.toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {item.total_allocated.toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {item.total_purchased.toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {item.total_sold.toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(item.srp)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(item.last_sale_price)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(item.acquisition_cost)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {addCommaToNumberWithTwoPlaces(item.net_cost_before_tax)}
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="100px">
+                        {item.category}
+                      </TooltipTableCell>
+                    </td>
+                    <td>
+                      <TooltipTableCell maxWidth="100px">
+                        {item.brand}
+                      </TooltipTableCell>
+                    </td>
+                    <td>{item.status}</td>
+                    <td>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 0.5,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
                       >
-                        <Typography
-                          level="body-sm"
-                          sx={{ color: "text.tertiary" }}
-                        >
-                          No stocks found.
-                        </Typography>
-                      </td>
-                    </tr>
-                  )}
-                  {items.items.map((item) => (
-                    <tr
-                      key={item.id}
-                      onDoubleClick={() => {
-                        setOpenEdit(true);
-                        setSelectedRow(item);
-                      }}
-                    >
-                      <td>
-                        <TooltipTableCell maxWidth="150px">
-                          {item.stock_code}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="300px">
-                          {item.name}
-                        </TooltipTableCell>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {(
-                          item.total_on_stock + item.total_allocated
-                        ).toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {item.total_on_stock.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {item.total_allocated.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {item.total_purchased.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {item.total_sold.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(item.srp)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(item.last_sale_price)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(item.acquisition_cost)}
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        {addCommaToNumberWithTwoPlaces(
-                          item.net_cost_before_tax,
-                        )}
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="100px">
-                          {item.category}
-                        </TooltipTableCell>
-                      </td>
-                      <td>
-                        <TooltipTableCell maxWidth="100px">
-                          {item.brand}
-                        </TooltipTableCell>
-                      </td>
-                      <td>{item.status}</td>
-                      <td>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 0.5,
-                            alignItems: "center",
-                            justifyContent: "center",
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="plain"
+                          color="neutral"
+                          onClick={() => {
+                            setOpenEdit(true);
+                            setSelectedRow(item);
                           }}
                         >
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="plain"
-                            color="neutral"
-                            onClick={() => {
-                              setOpenEdit(true);
-                              setSelectedRow(item);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            sx={{ fontSize: "13px" }}
-                            size="sm"
-                            variant="soft"
-                            color="danger"
-                            className="bg-delete-red"
-                            onClick={() => {
-                              setOpenDelete(true);
-                              setSelectedRow(item);
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </Box>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </>
+                          Edit
+                        </Button>
+                        <Button
+                          sx={{ fontSize: "13px" }}
+                          size="sm"
+                          variant="soft"
+                          color="danger"
+                          className="bg-delete-red"
+                          onClick={() => {
+                            setOpenDelete(true);
+                            setSelectedRow(item);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
           </Table>
         </Sheet>

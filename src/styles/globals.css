@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#__next {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
 @layer base {
   h1 {
     @apply text-5xl font-bold;
@@ -22,6 +33,269 @@
   }
   p {
     @apply text-base font-normal;
+  }
+}
+
+.app-shell {
+  --sidebar-width: 15.625rem;
+  min-height: 100dvh;
+  background: var(--joy-palette-background-body, #fff);
+}
+
+.app-main {
+  width: 100%;
+  min-width: 0;
+  padding: 5.25rem clamp(1rem, 4vw, 5rem) 2rem;
+  overflow-x: hidden;
+  container: app-main / inline-size;
+}
+
+.app-main--auth {
+  padding: 2rem clamp(1rem, 4vw, 5rem);
+}
+
+.app-main .MuiFormControl-root {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-main :where(.MuiInput-root, .MuiSelect-root, .MuiAutocomplete-root) {
+  max-width: 100%;
+}
+
+.app-main :where(img, canvas, video) {
+  max-width: 100%;
+  height: auto;
+}
+
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1200;
+  width: min(15.625rem, calc(100vw - 2rem));
+  height: 100dvh;
+  visibility: hidden;
+  transform: translateX(-105%);
+  transition:
+    width 180ms ease,
+    transform 180ms ease,
+    visibility 180ms ease;
+}
+
+.app-sidebar--mobile-open {
+  visibility: visible;
+  transform: translateX(0);
+  box-shadow: 0 1rem 3rem rgb(15 23 42 / 22%);
+}
+
+.sidebar-heading {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sidebar-identity {
+  min-width: 0;
+  flex: 1;
+  padding: 0.125rem 0.5rem 0;
+  overflow-wrap: anywhere;
+}
+
+.sidebar-collapse-button {
+  display: none !important;
+  flex: 0 0 auto;
+}
+
+.sidebar-mobile-close {
+  display: inline-flex !important;
+  flex: 0 0 auto;
+}
+
+.sidebar-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar-section-toggle {
+  justify-content: space-between !important;
+}
+
+.mobile-app-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1100;
+  display: flex;
+  min-height: 4.25rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem clamp(1rem, 4vw, 2rem);
+  border-bottom: 1px solid var(--joy-palette-divider, #dde7ee);
+  background: color-mix(in srgb, white 92%, transparent);
+  backdrop-filter: blur(12px);
+  font-weight: 700;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1150;
+  display: block;
+  visibility: hidden;
+  padding: 0;
+  border: 0;
+  background: rgb(15 23 42 / 42%);
+  opacity: 0;
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
+
+.sidebar-backdrop--visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.content-state {
+  display: flex;
+  min-height: 12rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.content-state > svg {
+  font-size: 2rem;
+}
+
+.form-loading-skeleton,
+.page-loading-skeleton {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form-loading-skeleton__details {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form-loading-skeleton__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  gap: 1rem;
+}
+
+.transaction-details {
+  display: grid;
+  min-width: 0;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.transaction-details > * {
+  min-width: 0;
+  width: 100%;
+}
+
+.transaction-details .MuiStack-root {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.transaction-details .MuiFormControl-root {
+  width: 100% !important;
+  min-width: 0;
+}
+
+.page-loading-skeleton__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+@container app-main (min-width: 36rem) {
+  .transaction-details .MuiFormControl-root {
+    width: auto !important;
+    flex: 1 1 12rem;
+  }
+}
+
+@container app-main (min-width: 56rem) {
+  .form-loading-skeleton__details {
+    grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  }
+
+  .transaction-details {
+    grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  }
+}
+
+@media (min-width: 64rem) {
+  .app-shell {
+    padding-left: var(--sidebar-width);
+    transition: padding-left 180ms ease;
+  }
+
+  .app-shell--sidebar-collapsed {
+    --sidebar-width: 4.75rem;
+  }
+
+  .app-main {
+    padding-top: 2rem;
+  }
+
+  .app-sidebar {
+    width: var(--sidebar-width);
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  .app-sidebar--collapsed .sidebar-identity,
+  .app-sidebar--collapsed .sidebar-company,
+  .app-sidebar--collapsed .sidebar-control-label,
+  .app-sidebar--collapsed .sidebar-section-title {
+    display: none;
+  }
+
+  .app-sidebar--collapsed .sidebar-heading {
+    justify-content: center;
+  }
+
+  .app-sidebar--collapsed .MuiListItemDecorator-root {
+    min-inline-size: auto;
+  }
+
+  .app-sidebar--collapsed .MuiListItemButton-root {
+    justify-content: center;
+  }
+
+  .app-sidebar--collapsed .sidebar-section-toggle {
+    display: none;
+  }
+
+  .sidebar-collapse-button {
+    display: inline-flex !important;
+  }
+
+  .sidebar-mobile-close,
+  .mobile-app-bar,
+  .sidebar-backdrop {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell,
+  .app-sidebar,
+  .sidebar-backdrop {
+    transition: none;
   }
 }
 

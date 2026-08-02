@@ -130,14 +130,14 @@ const RRFormDetails = ({
   }, [selectedSDRs, openEdit]);
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box className="transaction-details">
       <SelectPOModal
         open={isSelectModalOpen}
         setOpen={setIsSelectModalOpen}
         unservedSDRs={unservedSDRs}
         setSelectedSDRs={setSelectedSDRs}
       />
-      <Card variant="soft" color="neutral" className="w-[60%] mr-7">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="flex justify-between items-center mb-2">
             {openEdit && (
@@ -272,7 +272,7 @@ const RRFormDetails = ({
           )}
         </div>
       </Card>
-      <Card variant="soft" color="neutral" className="w-[40%]">
+      <Card variant="soft" color="neutral">
         <div>
           <div className="grid grid-cols-2 place-items-center">
             <FormControl size="sm" sx={{ mb: 1 }}>
