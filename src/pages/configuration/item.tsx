@@ -673,7 +673,8 @@ const ItemForm = (): JSX.Element => {
                 <th style={{ width: 100, textAlign: "right" }}>Allocated</th>
 
                 <th style={{ width: 100, textAlign: "right" }}>Purchased</th>
-                <th style={{ width: 100, textAlign: "right" }}>Sold</th>
+                <th style={{ width: 100, textAlign: "right" }}>Returned</th>
+                <th style={{ width: 100, textAlign: "right" }}>Net Sold</th>
                 <th style={{ width: 150, textAlign: "right" }}>SRP (₱)</th>
                 <th style={{ width: 150, textAlign: "right" }}>
                   Last Sale Price (₱)
@@ -695,24 +696,24 @@ const ItemForm = (): JSX.Element => {
             </thead>
             {isLoading ? (
               <TableLoadingRows
-                columns={15}
-                numericColumns={[2, 3, 4, 5, 6, 7, 8, 9, 10]}
-                statusColumns={[13]}
-                actionColumn={14}
+                columns={16}
+                numericColumns={[2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}
+                statusColumns={[14]}
+                actionColumn={15}
                 actionCount={2}
               />
             ) : (
               <tbody>
                 {loadError !== null && items.items.length === 0 && (
                   <TableErrorRow
-                    colSpan={15}
+                    colSpan={16}
                     message={loadError}
                     onRetry={() => getAllStocks(searchTerm)}
                   />
                 )}
                 {items.items.length === 0 && loadError === null && (
                   <TableEmptyRow
-                    colSpan={15}
+                    colSpan={16}
                     title="No stocks found"
                     description={
                       searchTerm !== "" || selectedStatus !== "active"
@@ -754,7 +755,10 @@ const ItemForm = (): JSX.Element => {
                       {item.total_purchased.toLocaleString()}
                     </td>
                     <td style={{ textAlign: "right" }}>
-                      {item.total_sold.toLocaleString()}
+                      {item.total_returned.toLocaleString()}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      {item.total_net_sold.toLocaleString()}
                     </td>
                     <td style={{ textAlign: "right" }}>
                       {addCommaToNumberWithTwoPlaces(item.srp)}

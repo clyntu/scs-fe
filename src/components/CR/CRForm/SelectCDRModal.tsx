@@ -7,6 +7,7 @@ import { type DRItemsFE } from "../interface";
 import { type CDR } from "../../../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 import { withTooltip } from "../../shared/withTooltip";
+import { buildInitialSourceAllocations } from "./helpers";
 
 const SelectCDRModal = ({
   open,
@@ -55,6 +56,7 @@ const SelectCDRModal = ({
           const itemObj = allocatedItem.customer_purchase_order.items.find(
             (item) => item.item_id === allocatedItem.item_id,
           );
+          const sourceFulfillments = receiptItem.source_fulfillments ?? [];
 
           return {
             id: cdr.id,
@@ -81,6 +83,9 @@ const SelectCDRModal = ({
               allocatedItem.customer_purchase_order.transaction_discount_2,
             transaction_discount_3:
               allocatedItem.customer_purchase_order.transaction_discount_3,
+            source_fulfillments: sourceFulfillments,
+            source_allocations:
+              buildInitialSourceAllocations(sourceFulfillments),
           };
         });
       })
