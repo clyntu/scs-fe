@@ -15,7 +15,7 @@ import {
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import axiosInstance from "../../utils/axiosConfig";
-import DeleteCDPModal from "./DeleteCDPModal";
+import DeleteConfirmModal from "../shared/DeleteConfirmModal";
 import ArchiveConfirmModal from "../shared/ArchiveConfirmModal";
 import { toast } from "react-toastify";
 import type {
@@ -613,10 +613,11 @@ const ViewCDP = ({
           )}
         </Box>
       )}
-      <DeleteCDPModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Delivery Planning"
+        entityLabel="Delivery Plan"
         onDelete={handleDeleteCDP}
       />
 

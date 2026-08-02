@@ -260,7 +260,7 @@ const ViewWHModal = ({
                           )
                           .map((warehouseItem: AggregatedWarehouseItem) => (
                             <tr
-                              key={`${warehouseItem.warehouse_id}-${warehouseItem.stock_code}`}
+                              key={`${warehouseItem.warehouse_id}-${warehouseItem.item_id}`}
                             >
                               {type === "item" && (
                                 <td>{warehouseItem.warehouse_code}</td>
@@ -276,12 +276,14 @@ const ViewWHModal = ({
                                       "200px",
                                     )}
                               </td>
+                              {/* total_on_stock is basically now total_available quantity. Wrong variable naming */}
                               <td style={{ textAlign: "right" }}>
                                 {(
                                   warehouseItem.total_on_stock +
                                   warehouseItem.total_allocated
                                 ).toLocaleString()}
                               </td>
+                              {/* total_on_stock is basically now total_available */}
                               <td style={{ textAlign: "right" }}>
                                 {warehouseItem.total_on_stock.toLocaleString()}
                               </td>

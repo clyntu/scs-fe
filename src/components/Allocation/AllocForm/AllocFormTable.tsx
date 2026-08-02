@@ -4,6 +4,7 @@ import { type AllocFormTableProps } from "../interface";
 import CircularProgress from "@mui/joy/CircularProgress";
 import { withTooltip } from "../../shared/withTooltip";
 import TooltipAutocomplete from "../../shared/TooltipAutocomplete";
+import { RECEIVING_WAREHOUSE_TYPE } from "../../../constants";
 
 const AllocFormTable = ({
   selectedRow,
@@ -155,7 +156,10 @@ const AllocFormTable = ({
             </thead>
             <tbody>
               {CPOItems.filter(
-                (item) => selectedCPO === null || item.id === selectedCPO,
+                (item) =>
+                  !openCreate ||
+                  selectedCPO === null ||
+                  item.id === selectedCPO,
               ).map((item) => {
                 return (
                   ((openCreate && item.volume !== item.alloc_qty) ||
@@ -179,7 +183,8 @@ const AllocFormTable = ({
                       <td>
                         <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
-                            if (warehouse.id === 1) return false;
+                            if (warehouse.type === RECEIVING_WAREHOUSE_TYPE)
+                              return false;
 
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
@@ -314,7 +319,8 @@ const AllocFormTable = ({
                       <td style={{ width: 200 }}>
                         <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
-                            if (warehouse.id === 1) return false;
+                            if (warehouse.type === RECEIVING_WAREHOUSE_TYPE)
+                              return false;
 
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)
@@ -449,7 +455,8 @@ const AllocFormTable = ({
                       <td style={{ width: 200 }}>
                         <TooltipAutocomplete
                           options={warehouses.items.filter((warehouse) => {
-                            if (warehouse.id === 1) return false;
+                            if (warehouse.type === RECEIVING_WAREHOUSE_TYPE)
+                              return false;
 
                             const stockInfo = warehouseStockAvailability[
                               String(item.item_id)

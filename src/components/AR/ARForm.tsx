@@ -290,7 +290,12 @@ const ARForm = ({
     if (isSaving) return;
 
     const receiptItems = outstandingTrans
-      .filter((row) => row.payment !== undefined && row.payment !== "")
+      .filter(
+        (row) =>
+          row.payment !== undefined &&
+          row.payment !== "" &&
+          Number(row.payment) > 0,
+      )
       .map((row) => {
         return {
           source_type: row.source_type,
@@ -355,7 +360,12 @@ const ARForm = ({
     if (isSaving) return;
 
     const receiptItems = outstandingTrans
-      .filter((row) => row.payment !== undefined && row.payment !== "")
+      .filter(
+        (row) =>
+          row.payment !== undefined &&
+          row.payment !== "" &&
+          Number(row.payment) > 0,
+      )
       .map((row) => {
         return {
           source_type: row.source_type,

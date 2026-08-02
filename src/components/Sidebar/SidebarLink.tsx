@@ -8,15 +8,9 @@ interface SidebarLinkProps {
   Icon: any;
   label: string;
   link: string;
-  selected?: boolean;
 }
 
-const SidebarLink = ({
-  Icon,
-  label,
-  link,
-  selected,
-}: SidebarLinkProps): JSX.Element => {
+const SidebarLink = ({ Icon, label, link }: SidebarLinkProps): JSX.Element => {
   const pathName = usePathname();
 
   return (

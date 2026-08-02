@@ -263,11 +263,6 @@ const AllocForm = ({
           ];
           setCPONumbers(cpoNumbers);
 
-          // Auto-select the first CPO when customer changes (except when editing existing allocation)
-          if (cpoNumbers.length > 0 && selectedRow === undefined) {
-            setSelectedCPO(cpoNumbers[0]);
-          }
-
           // Get all CPO items
           if (!noSet) {
             const CPOItems = response.data.items
@@ -313,7 +308,7 @@ const AllocForm = ({
     customer_id: number | undefined;
     remarks: string;
     transaction_date: string;
-    cpo_number_filter: string;
+    cpo_number_filter: string | null;
     allocation_items: Array<{
       customer_purchase_order_id: number;
       item_id: number;
@@ -328,7 +323,7 @@ const AllocForm = ({
       customer_id: selectedCustomer?.customer_id,
       remarks,
       transaction_date: transactionDate,
-      cpo_number_filter: String(selectedCPO),
+      cpo_number_filter: selectedCPO !== null ? String(selectedCPO) : null,
       allocation_items: CPOItems.map((cpoItem: CPOItemFE) => {
         // Construct warehouse_allocations array
         const warehouseAllocations = [];

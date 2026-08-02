@@ -46,7 +46,6 @@ interface StockAdjustmentFormProps {
 
 const StockAdjustmentForm = ({
   setOpen,
-  openCreate,
 }: StockAdjustmentFormProps): JSX.Element => {
   // Selection state
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);

@@ -133,10 +133,7 @@ const CPOForm = ({
     }
   }, [items]);
 
-  const createPayload = (
-    itemPayload: CPOItemValues[],
-    isEdit: boolean,
-  ): CPOPayload => {
+  const createPayload = (itemPayload: CPOItemValues[]): CPOPayload => {
     const payload: CPOPayload = {
       status,
       transaction_date: transactionDate,
@@ -246,7 +243,7 @@ const CPOForm = ({
         total_price: Number(item.volume) * Number(item.price),
       }));
 
-    const payload = createPayload(itemPayload, false);
+    const payload = createPayload(itemPayload);
     try {
       setIsSaving(true);
       await axiosInstance.post("/api/customer_purchase_orders/", payload);
@@ -286,7 +283,7 @@ const CPOForm = ({
         total_price: Number(item.volume) * Number(item.price),
       }));
 
-    const payload = createPayload(itemPayload, true);
+    const payload = createPayload(itemPayload);
     try {
       setIsSaving(true);
       await axiosInstance.put(

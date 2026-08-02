@@ -38,8 +38,6 @@ const SuppliersModal = ({
       email: row?.email ?? "",
       currency: row?.currency ?? "",
       supplier_balance: row?.supplier_balance,
-      created_by: row?.created_by ?? 0,
-      modified_by: row?.modified_by ?? 0,
       date_created: row?.date_created ?? "",
       date_modified: row?.date_modified ?? "",
       notes: row?.notes ?? "",

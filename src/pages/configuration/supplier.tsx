@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import SuppliersModal from "../../components/Suppliers/SuppliersModal";
-import DeleteSuppliersModal from "../../components/Suppliers/DeleteSupplierModal";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 
@@ -498,7 +498,9 @@ const SupplierForm = (): JSX.Element => {
                           {supplier?.modifier?.full_name}
                         </TooltipTableCell>
                       </td>
-                      <td>{formatToDate(supplier.date_modified)}</td>
+                      <td>
+                        {formatToDate(supplier.date_modified ?? undefined)}
+                      </td>
                       <td>
                         <Box
                           sx={{
@@ -586,10 +588,11 @@ const SupplierForm = (): JSX.Element => {
         row={selectedRow}
         onSave={handleSaveSupplier}
       />
-      <DeleteSuppliersModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Supplier"
+        entityLabel="Supplier"
         onDelete={handleDeleteSupplier}
       />
     </>

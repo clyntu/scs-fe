@@ -27,7 +27,6 @@ const CDPFormDetails = ({
   openEdit,
   selectedRow,
   customers,
-  formattedAllocs,
   setFormattedAllocs,
   selectedCustomer,
   setSelectedCustomer,

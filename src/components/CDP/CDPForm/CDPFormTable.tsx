@@ -6,7 +6,6 @@ import { addCommaToNumberWithTwoPlaces } from "../../../helper";
 import { withTooltip } from "../../shared/withTooltip";
 
 const CDPFormTable = ({
-  selectedRow,
   formattedAllocs,
   setFormattedAllocs,
   isEditDisabled,

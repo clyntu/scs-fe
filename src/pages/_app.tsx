@@ -6,16 +6,13 @@ import { CompanyProvider } from "../hooks/useCompanyContext";
 import { useEffect } from "react";
 import axiosInstance, { setupAxiosInterceptors } from "../utils/axiosConfig";
 
-const isInterceptorInitialized =
-  typeof window !== "undefined"
-    ? window.localStorage.getItem("interceptorsInitialized") === "true"
-    : false;
+let interceptorsInitialized = false;
 
 export default function App({ Component, pageProps }: AppProps): JSX.Element {
   useEffect(() => {
-    if (!isInterceptorInitialized && typeof window !== "undefined") {
+    if (!interceptorsInitialized) {
       setupAxiosInterceptors(axiosInstance);
-      window.localStorage.setItem("interceptorsInitialized", "true");
+      interceptorsInitialized = true;
     }
   }, []);
   return (

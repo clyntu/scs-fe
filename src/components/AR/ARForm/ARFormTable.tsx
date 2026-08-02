@@ -21,7 +21,6 @@ const stripCommas = (value: string): string => {
 const ARFormTable = ({
   outstandingTrans,
   setOutstandingTrans,
-  selectedRow,
   isEditDisabled,
   isLoadingItems,
   selectedCDR,

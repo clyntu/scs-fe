@@ -12,14 +12,14 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/joy/IconButton";
 import axios from "axios";
-import axiosInstance, { getCookie } from "../utils/axiosConfig";
+import axiosInstance from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { getSupabase } from "../supabase/supabaseClient";
 import type { CompanyId } from "../supabase/supabaseClient";
 import type { User } from "../interface";
 
 export default function Login(): JSX.Element {
-  const { setCompany } = useSupabase();
+  const { setCompany, session, ready } = useSupabase();
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -30,8 +30,7 @@ export default function Login(): JSX.Element {
 
   // Check if already logged in
   useEffect(() => {
-    const company = getCookie("company_id");
-    if (company === null || company === "") {
+    if (!ready || session === null) {
       return;
     }
 
@@ -49,7 +48,7 @@ export default function Login(): JSX.Element {
 
     // "void" tells TS/ESLint that you purposely are ignoring the Promise
     void checkUser();
-  }, []);
+  }, [ready, session]);
 
   // Check for registration success message
   useEffect(() => {

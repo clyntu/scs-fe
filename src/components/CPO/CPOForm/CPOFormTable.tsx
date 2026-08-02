@@ -23,9 +23,6 @@ const CPOFormTable = ({
   selectedRow,
   selectedItems,
   setSelectedItems,
-  setIndexOfModal,
-  setIsConfirmOpen,
-  selectedCustomer,
 }: CPOFormTableProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";

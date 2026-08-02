@@ -29,7 +29,6 @@ const POFormDetails = ({
   openEdit,
   selectedRow,
   suppliers,
-  setSelectedItems,
 
   // Fields
   selectedSupplier,

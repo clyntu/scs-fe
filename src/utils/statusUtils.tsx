@@ -64,9 +64,7 @@ export const getAdjustmentTypeColor = (
   return adjustmentType === "surplus" ? "success" : "danger";
 };
 
-export const getAdjustmentTypeVariant = (
-  adjustmentType: string,
-): "solid" | "soft" => {
+export const getAdjustmentTypeVariant = (): "solid" | "soft" => {
   return "soft";
 };
 

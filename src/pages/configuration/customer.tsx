@@ -29,7 +29,7 @@ import {
   type MaturityReport,
 } from "../../components/AR/generateMaturityPDF";
 import { type CustomerReceivableResponse } from "../../components/AR/interface";
-import DeleteCustomersModal from "../../components/Customers/DeleteCustomersModal";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import TooltipTableCell from "../../components/shared/TooltipTableCell";
 import PrintCustomerPaymentHistoryModal from "../../components/Customers/PrintCustomerPaymentHistoryModal";
 import PrintCustomerReceivablesModal from "../../components/Customers/PrintCustomerReceivablesModal";
@@ -688,10 +688,11 @@ const CustomerForm = (): JSX.Element => {
         row={selectedRow}
         onSave={handleSaveCustomer}
       />
-      <DeleteCustomersModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Customers"
+        entityLabel="Customer"
         onDelete={handleDeleteCustomer}
       />
       <PrintCustomerPaymentHistoryModal

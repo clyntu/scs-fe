@@ -10,8 +10,6 @@ import { withTooltip } from "../../shared/withTooltip";
 const SDRFormTable = ({
   selectedRow,
   selectedPOs,
-  setSelectedPOs,
-  totalNet,
   servedAmt,
   setServedAmt,
   setTotalNet,

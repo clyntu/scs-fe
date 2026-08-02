@@ -106,6 +106,7 @@ export interface IStockHistory {
 export interface DeleteModalProps {
   open: boolean;
   title: string;
+  entityLabel: string;
   setOpen: (isOpen: boolean) => void;
   onDelete: () => Promise<void>;
 }
@@ -394,9 +395,6 @@ export interface AggregatedWarehouseItem {
   total_allocated: number;
   total_purchased: number;
   total_sold: number;
-  total_reorder_level: number;
-  total_unserved_cpo: number;
-  total_unserved_spo: number;
 }
 
 export interface StockAdjustmentRequest {

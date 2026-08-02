@@ -21,7 +21,6 @@ const stripCommas = (value: string): string => {
 
 const POFormTable = ({
   items,
-  status,
   selectedRow,
   selectedItems,
   setSelectedItems,
@@ -31,7 +30,6 @@ const POFormTable = ({
   setNewPrices,
   isConfirmOpen,
   setIsConfirmOpen,
-  selectedSupplier,
 }: POFormTableProps): JSX.Element => {
   const isEditDisabled =
     selectedRow !== undefined && selectedRow?.status !== "unposted";

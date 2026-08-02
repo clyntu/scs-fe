@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/joy";
 import WarehousesModal from "../../components/Warehouses/WarehousesModal";
-import DeleteWarehousesModal from "../../components/Warehouses/DeleteWarehouseModal";
+import DeleteConfirmModal from "../../components/shared/DeleteConfirmModal";
 import ViewWHModal from "../../components/Items/ViewWHModal";
 import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
@@ -569,10 +569,11 @@ const WarehouseForm = (): JSX.Element => {
         row={selectedRow}
         onSave={handleSaveWarehouse}
       />
-      <DeleteWarehousesModal
+      <DeleteConfirmModal
         open={openDelete}
         setOpen={setOpenDelete}
         title="Delete Warehouse"
+        entityLabel="Warehouse"
         onDelete={handleDeleteWarehouse}
       />
       <ViewWHModal

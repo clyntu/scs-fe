@@ -4,6 +4,7 @@ import JsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type CR } from "../../interface";
 import { addCommaToNumberWithTwoPlaces } from "../../helper";
+import { calculatePercentageDiscountedAmount } from "../../utils/discountCalculations";
 
 const formatDate = (date: Date): string => {
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -18,48 +19,6 @@ const formatDate = (date: Date): string => {
   const formattedHours = hours.toString().padStart(2, "0");
 
   return `${month}/${day}/${year} ${formattedHours}:${minutes} ${ampm}`;
-};
-
-const calculateNetForRow = (
-  newValue: number,
-  price: number,
-  DRItem: any,
-): number => {
-  let result = newValue * price;
-
-  if (DRItem.customer_discount_1.includes("%")) {
-    const cd1 = DRItem.customer_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(cd1) / 100);
-  }
-
-  if (DRItem.customer_discount_2.includes("%")) {
-    const cd2 = DRItem.customer_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(cd2) / 100);
-  }
-
-  if (DRItem.customer_discount_3.includes("%")) {
-    const cd3 = DRItem.customer_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(cd3) / 100);
-  }
-
-  if (DRItem.transaction_discount_1.includes("%")) {
-    const td1 = DRItem.transaction_discount_1.slice(0, -1);
-    result = result - result * (parseFloat(td1) / 100);
-  }
-
-  if (DRItem.transaction_discount_2.includes("%")) {
-    const td2 = DRItem.transaction_discount_2.slice(0, -1);
-    result = result - result * (parseFloat(td2) / 100);
-  }
-
-  if (DRItem.transaction_discount_3.includes("%")) {
-    const td3 = DRItem.transaction_discount_3.slice(0, -1);
-    result = result - result * (parseFloat(td3) / 100);
-  }
-
-  if (isNaN(result)) return 0;
-
-  return result;
 };
 
 export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
@@ -132,7 +91,7 @@ export const generateCRPDF = (selectedRow: CR, companyId: string): void => {
       item.item.name,
       addCommaToNumberWithTwoPlaces(Number(costPerUnit)),
       addCommaToNumberWithTwoPlaces(
-        calculateNetForRow(
+        calculatePercentageDiscountedAmount(
           Number(item.return_qty),
           Number(item.price),
           item.delivery_receipt_item.delivery_plan_item.allocation_item

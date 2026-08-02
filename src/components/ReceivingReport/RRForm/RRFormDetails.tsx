@@ -51,9 +51,7 @@ const RRFormDetails = ({
   setAmountDiscount,
 
   // Summary Amounts
-  fobTotal,
   netAmount,
-  landedTotal,
   totalExpense,
   percentNetCost,
   isEditDisabled,
