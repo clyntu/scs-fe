@@ -47,6 +47,14 @@ blocks frontend production promotion.
 Configure Render to require the backend repository's `backend-release-gate`
 using **After CI Checks Pass**.
 
+## Production build enforcement
+
+`next.config.js` no longer bypasses TypeScript or ESLint failures. This is
+intentional: local, GitHub Actions, and Vercel production builds now fail on
+the same type or lint errors. The feature branch resolves the errors that
+were present when enforcement was enabled, and `frontend-quality` proves
+typecheck, lint, tests, and the production build together.
+
 ## User-visible compatibility note
 
 The type-safety fix changes CDR and Customer Return PDFs to read the current
