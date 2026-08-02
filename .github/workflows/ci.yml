@@ -5,14 +5,15 @@ on:
     branches:
       - dev
       - main
-      - "feature/**"
-      - "fix/**"
-      - "test/**"
   pull_request:
     branches:
       - dev
       - main
   workflow_dispatch:
+
+concurrency:
+  group: frontend-release-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
