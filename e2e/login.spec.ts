@@ -174,3 +174,182 @@ test("company selector options remain clickable above the sidebar", async ({
     )
     .toBe("company-b");
 });
+
+test("authenticated root renders the responsive operations dashboard", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "sb-auth-token",
+      JSON.stringify({
+        access_token: "test-access-token",
+        refresh_token: "test-refresh-token",
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: "bearer",
+        user: {
+          id: "test-user",
+          aud: "authenticated",
+          role: "authenticated",
+          email: "admin@example.com",
+          app_metadata: { provider: "email", providers: ["email"] },
+          user_metadata: { full_name: "Admin User" },
+          identities: [],
+          created_at: new Date().toISOString(),
+        },
+      }),
+    );
+    window.localStorage.setItem("currentCompany", "company-a");
+    window.localStorage.setItem("companyId", "company-a");
+  });
+
+  await page.route("**/api/users/me/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: 1,
+        username: "admin",
+        email: "admin@example.com",
+        full_name: "Admin User",
+        is_admin: true,
+      }),
+    });
+  });
+  await page.route(/\/api\/items\/?(?:\?.*)?$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        total: 3,
+        items: [
+          {
+            id: 1,
+            stock_code: "PUMP-01",
+            name: "Hydraulic pump",
+            status: "active",
+            total_on_stock: 0,
+            total_allocated: 8,
+          },
+          {
+            id: 2,
+            stock_code: "VALVE-14",
+            name: "Control valve",
+            status: "active",
+            total_on_stock: 4,
+            total_allocated: 5,
+          },
+          {
+            id: 3,
+            stock_code: "FILTER-07",
+            name: "Oil filter",
+            status: "active",
+            total_on_stock: 24,
+            total_allocated: 6,
+          },
+        ],
+      }),
+    });
+  });
+
+  const countResponse = (total: number): string =>
+    JSON.stringify({ total, items: [] });
+  await page.route("**/api/purchase_orders/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: countResponse(2),
+    });
+  });
+  await page.route("**/api/receiving-reports/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: countResponse(1),
+    });
+  });
+  await page.route("**/api/allocations/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: countResponse(3),
+    });
+  });
+  await page.route("**/api/delivery-plans/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: countResponse(1),
+    });
+  });
+  await page.route("**/customer-financial/receivables**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        total: 1,
+        items: [
+          {
+            customer_id: 1,
+            customer_name: "Northstar Trading",
+            amount_receivable: "125000",
+            uncleared_payment: "15000",
+            bounced_payment: "0",
+          },
+        ],
+        total_receivable: "125000",
+        total_uncleared: "15000",
+        total_bounced: "0",
+      }),
+    });
+  });
+  await page.route("**/api/ar-receipts/**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: countResponse(2),
+    });
+  });
+
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { name: "Good day, Admin." }),
+  ).toBeVisible();
+  await expect(page.getByText("Work the exceptions first")).toBeVisible();
+  await expect(page.getByText("Available vs. committed units")).toBeVisible();
+  await expect(page.getByText("Northstar Trading")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Operations/ })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+
+  const sidebarBox = await page
+    .getByRole("navigation", { name: "Primary navigation" })
+    .boundingBox();
+  const mainBox = await page.locator("main.app-main").boundingBox();
+  expect(mainBox?.x ?? 0).toBeGreaterThanOrEqual(sidebarBox?.width ?? 0);
+  const layoutMetrics = await page.evaluate(() => {
+    const main = document.querySelector<HTMLElement>("main.app-main");
+    const dashboard = document.querySelector<HTMLElement>(
+      '[aria-label="Inventory position"]',
+    )?.parentElement;
+    return {
+      mainLeft: main?.getBoundingClientRect().left ?? 0,
+      mainPaddingLeft: main
+        ? Number.parseFloat(window.getComputedStyle(main).paddingLeft)
+        : 0,
+      dashboardLeft: dashboard?.getBoundingClientRect().left ?? 0,
+    };
+  });
+  expect(layoutMetrics.dashboardLeft).toBeGreaterThanOrEqual(
+    layoutMetrics.mainLeft + layoutMetrics.mainPaddingLeft - 1,
+  );
+
+  await page.setViewportSize({ width: 320, height: 760 });
+  const dimensions = await page.evaluate(() => ({
+    viewport: window.innerWidth,
+    document: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
+});

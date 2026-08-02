@@ -29,6 +29,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import SpaceDashboardRoundedIcon from "@mui/icons-material/SpaceDashboardRounded";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PeopleIcon from "@mui/icons-material/People";
 import axiosInstance from "../../utils/axiosConfig";
@@ -177,6 +178,12 @@ export default function Sidebar({
           size="sm"
           sx={{ "--ListItem-radius": "8px", "--List-gap": "4px", fontSize: 13 }}
         >
+          <SidebarLink
+            Icon={SpaceDashboardRoundedIcon}
+            label="Operations"
+            link="/"
+            collapsed={collapsed}
+          />
           {/* Configuration */}
           <Section
             title="Configuration"

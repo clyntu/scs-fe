@@ -5,10 +5,12 @@ import Sidebar from "./Sidebar/Sidebar";
 import { useRouter } from "next/router";
 import IconButton from "@mui/joy/IconButton";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import { useSupabase } from "../supabase/SupabaseProvider";
 
 const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
   const router = useRouter();
-  const hideSidebar = router.pathname === "/";
+  const { ready, session } = useSupabase();
+  const hideSidebar = router.pathname === "/" && (!ready || session === null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 

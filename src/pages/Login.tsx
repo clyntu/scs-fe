@@ -16,10 +16,9 @@ import axiosInstance from "../utils/axiosConfig";
 import { useSupabase } from "../supabase/SupabaseProvider";
 import { getSupabase } from "../supabase/supabaseClient";
 import type { CompanyId } from "../supabase/supabaseClient";
-import type { User } from "../interface";
 
 export default function Login(): JSX.Element {
-  const { setCompany, session, ready } = useSupabase();
+  const { setCompany } = useSupabase();
   const [email, setEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -27,28 +26,6 @@ export default function Login(): JSX.Element {
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
-  // Check if already logged in
-  useEffect(() => {
-    if (!ready || session === null) {
-      return;
-    }
-
-    const checkUser = async (): Promise<void> => {
-      try {
-        const response = await axiosInstance.get<User>("/api/users/me/");
-
-        if (response.status === 200) {
-          void router.push("/configuration/item");
-        }
-      } catch (err) {
-        // Not logged in — do nothing, let them stay on login page
-      }
-    };
-
-    // "void" tells TS/ESLint that you purposely are ignoring the Promise
-    void checkUser();
-  }, [ready, session]);
 
   // Check for registration success message
   useEffect(() => {
@@ -126,8 +103,8 @@ export default function Login(): JSX.Element {
         // Set authentication state
         localStorage.setItem("companyId", "company-a");
 
-        // Redirect to main page
-        await router.push("/configuration/item");
+        // Session state swaps the root route from Login to Dashboard.
+        await router.replace("/");
       }
     } catch (error: unknown) {
       console.error("Login error:", error);

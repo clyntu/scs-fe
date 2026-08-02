@@ -1,0 +1,527 @@
+.dashboard {
+  --board-ink: #102a43;
+  --board-muted: #627d98;
+  --board-paper: #f6f8fb;
+  --board-line: #d9e2ec;
+  --board-blue: #0b6bcb;
+  --board-teal: #087f8c;
+  --board-amber: #b45309;
+  --board-red: #b42318;
+  display: grid;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  color: var(--board-ink);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--board-ink);
+}
+
+.eyebrow,
+.sectionIndex {
+  margin: 0 0 0.5rem;
+  color: var(--board-blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--board-ink);
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif !important;
+  font-size: clamp(2.5rem, 7vw, 5.8rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.045em;
+  line-height: 0.94 !important;
+}
+
+.intro {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: var(--board-muted);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+}
+
+.freshness {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+  color: var(--board-muted);
+  font-size: 0.78rem;
+}
+
+.freshness strong {
+  color: var(--board-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sectionHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.sectionHeading h3 {
+  color: var(--board-ink);
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.sectionHeading > svg {
+  color: var(--board-blue);
+  font-size: 2rem;
+}
+
+.sectionNote {
+  color: var(--board-muted);
+  font-size: 0.8rem;
+}
+
+.attentionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+  gap: 0.75rem;
+}
+
+.attentionCard {
+  position: relative;
+  display: grid;
+  min-height: 9.5rem;
+  align-content: space-between;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid var(--board-line);
+  border-top-width: 4px;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.attentionCard:hover {
+  border-color: var(--board-blue);
+  transform: translateY(-2px);
+}
+
+.attentionCard:focus-visible,
+.quickAction:focus-visible,
+.flowRail a:focus-visible,
+.textLink:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--board-blue) 35%, transparent);
+  outline-offset: 3px;
+}
+
+.attentionCard--critical {
+  border-top-color: var(--board-red);
+}
+
+.attentionCard--warning {
+  border-top-color: var(--board-amber);
+}
+
+.attentionCard--clear {
+  border-top-color: var(--board-teal);
+}
+
+.attentionCard strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 2.8rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.attentionCard > svg {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  color: var(--board-muted);
+}
+
+.attentionLabel {
+  font-weight: 700;
+}
+
+.attentionDetail {
+  max-width: 85%;
+  color: var(--board-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.positionGrid,
+.tableGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.positionPanel,
+.flowPanel,
+.tablePanel {
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--board-line);
+  border-radius: 0.55rem;
+  background: #fff;
+}
+
+.metricRow,
+.financeStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  gap: 1rem;
+}
+
+.metric {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.metric span {
+  color: var(--board-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.metric strong {
+  overflow-wrap: anywhere;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.6rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.positionFigure {
+  display: grid;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+}
+
+.positionFigure figcaption {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.positionFigure figcaption span {
+  color: var(--board-muted);
+  font-size: 0.78rem;
+}
+
+.positionBar {
+  display: flex;
+  width: 100%;
+  min-height: 1.15rem;
+  overflow: hidden;
+  border-radius: 0.2rem;
+  background: var(--board-paper);
+}
+
+.availableSegment {
+  background: var(--board-teal);
+}
+
+.allocatedSegment {
+  background: var(--board-amber);
+}
+
+.positionLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: var(--board-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.positionLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.positionLegend i {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 0.15rem;
+}
+
+.availableKey {
+  background: var(--board-teal);
+}
+
+.allocatedKey {
+  background: var(--board-amber);
+}
+
+.flowRail {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flowRail li {
+  position: relative;
+}
+
+.flowRail li:not(:last-child)::after {
+  position: absolute;
+  top: 3.25rem;
+  bottom: -0.75rem;
+  left: 1.35rem;
+  width: 1px;
+  background: var(--board-line);
+  content: "";
+}
+
+.flowRail a {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.flowRail a:hover .flowIcon {
+  border-color: var(--board-blue);
+  color: var(--board-blue);
+}
+
+.flowIcon {
+  z-index: 1;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--board-line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--board-muted);
+}
+
+.flowCopy {
+  display: grid;
+}
+
+.flowCopy small {
+  color: var(--board-muted);
+}
+
+.flowRail b {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 1.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.financeStrip {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--board-paper);
+}
+
+.financeStrip .metric strong {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  white-space: nowrap;
+}
+
+.tableScroller {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.dataTable th {
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid var(--board-line);
+  color: var(--board-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.dataTable td {
+  padding: 0.85rem 0.5rem;
+  border-bottom: 1px solid #edf2f7;
+  font-variant-numeric: tabular-nums;
+}
+
+.dataTable td:first-child {
+  display: grid;
+  min-width: 10rem;
+}
+
+.dataTable td:first-child span {
+  max-width: 22rem;
+  overflow: hidden;
+  color: var(--board-muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  display: inline-flex;
+  padding: 0.22rem 0.45rem;
+  border-radius: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.status--critical {
+  background: #fee4e2;
+  color: #912018;
+}
+
+.status--warning {
+  background: #ffead5;
+  color: #93370d;
+}
+
+.status--clear {
+  background: #dff7f4;
+  color: #075e63;
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--board-blue);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.textLink svg {
+  font-size: 1rem;
+}
+
+.emptyPanel {
+  display: grid;
+  justify-items: start;
+  gap: 0.4rem;
+  padding: 2rem 0;
+  color: var(--board-muted);
+}
+
+.emptyPanel strong {
+  color: var(--board-ink);
+}
+
+.emptyPanel a {
+  margin-top: 0.5rem;
+  color: var(--board-blue);
+  font-weight: 700;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  gap: 0.75rem;
+}
+
+.quickAction {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.3rem 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--board-line);
+  border-radius: 0.45rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.quickAction > span {
+  grid-row: 1 / span 2;
+  color: var(--board-blue);
+}
+
+.quickAction small {
+  grid-column: 2;
+  color: var(--board-muted);
+}
+
+.quickAction > svg {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  color: var(--board-muted);
+}
+
+.quickAction:hover {
+  border-color: var(--board-blue);
+}
+
+.skeletonHeading {
+  width: min(46rem, 100%);
+}
+
+@media (min-width: 58rem) {
+  .positionGrid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(20rem, 0.75fr);
+  }
+
+  .tableGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 36rem) {
+  .freshness {
+    justify-items: start;
+  }
+
+  .attentionCard {
+    min-height: 8.5rem;
+  }
+
+  .financeStrip {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attentionCard {
+    transition: none;
+  }
+
+  .attentionCard:hover {
+    transform: none;
+  }
+}
