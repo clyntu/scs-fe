@@ -382,7 +382,9 @@ const ViewUsers = (): JSX.Element => {
                     <td>
                       {user.is_admin === true
                         ? "Admin"
-                        : user.role !== undefined && user.role !== ""
+                        : user.role !== undefined &&
+                            user.role !== null &&
+                            user.role !== ""
                           ? user.role.charAt(0).toUpperCase() +
                             user.role.slice(1)
                           : "N/A"}
