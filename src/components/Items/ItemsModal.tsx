@@ -217,25 +217,41 @@ const ItemsModal = ({
           setItem(generateItem());
           setOpen(false);
         }}
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+        }}
       >
         <form onSubmit={async (e) => await handleSave(e)}>
           <Sheet
             variant="outlined"
             sx={{
-              width: 800,
+              width: "calc(100vw - 32px)",
+              maxWidth: 800,
+              maxHeight: "calc(100dvh - 32px)",
+              overflowY: "auto",
+              boxSizing: "border-box",
               borderRadius: "md",
-              p: 3,
+              p: { xs: 2, sm: 3 },
               boxShadow: "lg",
             }}
           >
             <ModalClose variant="plain" sx={{ m: 1 }} />
             <Box>
               <h3 className="mb-6">{title}</h3>
-              <Card className="w-[100%] mr-7">
+              <Card sx={{ width: "100%", boxSizing: "border-box" }}>
                 <div>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    sx={{ mb: 1 }}
+                  >
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                    >
                       <FormLabel>Stock Code</FormLabel>
                       <Input
                         name="stock_code"
@@ -246,7 +262,10 @@ const ItemsModal = ({
                         required
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                    >
                       <FormLabel>Status</FormLabel>
                       <Select
                         name="status"
@@ -277,8 +296,15 @@ const ItemsModal = ({
                       />
                     </FormControl>
                   </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    sx={{ mb: 1 }}
+                  >
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                    >
                       <FormLabel>Category</FormLabel>
                       <Input
                         name="category"
@@ -289,7 +315,10 @@ const ItemsModal = ({
                         required
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                    >
                       <FormLabel>Brand</FormLabel>
                       <Input
                         name="brand"
@@ -301,8 +330,15 @@ const ItemsModal = ({
                       />
                     </FormControl>
                   </Stack>
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
+                  <Stack
+                    direction={{ xs: "column", md: "row" }}
+                    spacing={2}
+                    sx={{ mb: 1 }}
+                  >
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", md: "22.9%" } }}
+                    >
                       <FormLabel>Acquisition Cost</FormLabel>
                       <Input
                         sx={{ input: { textAlign: "right" } }}
@@ -314,7 +350,10 @@ const ItemsModal = ({
                         required
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", md: "22.9%" } }}
+                    >
                       <FormLabel>Net Cost B/F Tax (₱)</FormLabel>
                       <Input
                         sx={{ input: { textAlign: "right" } }}
@@ -325,7 +364,10 @@ const ItemsModal = ({
                         onChange={handlePriceChange}
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", md: "22.9%" } }}
+                    >
                       <FormLabel>SRP (₱)</FormLabel>
                       <Input
                         sx={{ input: { textAlign: "right" } }}
@@ -337,7 +379,10 @@ const ItemsModal = ({
                         required
                       />
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "22.9%" }}>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", md: "22.9%" } }}
+                    >
                       <FormLabel>Last Sale Price (₱)</FormLabel>
                       <Input
                         sx={{ input: { textAlign: "right" } }}
@@ -350,8 +395,15 @@ const ItemsModal = ({
                     </FormControl>
                   </Stack>
 
-                  <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    sx={{ mb: 1 }}
+                  >
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                    >
                       <FormLabel>Currency Used</FormLabel>
                       <Select
                         name="currency_id"
@@ -367,7 +419,10 @@ const ItemsModal = ({
                         ))}
                       </Select>
                     </FormControl>
-                    <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                    <FormControl
+                      size="sm"
+                      sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                    >
                       <FormLabel>Philippine Peso Rate (₱)</FormLabel>
                       <Input
                         sx={{ input: { textAlign: "right" } }}
@@ -431,15 +486,19 @@ const ItemsModal = ({
                   )}
                 </div>
               </Card>
-              <div className="flex justify-end mt-5">
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.5}
+                justifyContent="flex-end"
+                sx={{ mt: 2.5 }}
+              >
                 {title === "Edit Stock" && (
                   <Button
                     size="sm"
                     variant="soft"
                     className="bg-button-soft-primary"
                     sx={{
-                      ml: 2,
-                      width: "100px",
+                      width: { xs: "100%", sm: 100 },
                     }}
                     onClick={() => {
                       setOpenWH(true);
@@ -456,8 +515,7 @@ const ItemsModal = ({
                     size="sm"
                     variant="soft"
                     sx={{
-                      ml: 2,
-                      width: "130px",
+                      width: { xs: "100%", sm: 130 },
                     }}
                   >
                     Stock History
@@ -470,13 +528,12 @@ const ItemsModal = ({
                   size="sm"
                   loading={isSaving}
                   sx={{
-                    ml: 2,
-                    width: "130px",
+                    width: { xs: "100%", sm: 130 },
                   }}
                 >
                   Save
                 </Button>
-              </div>
+              </Stack>
             </Box>
           </Sheet>
         </form>
