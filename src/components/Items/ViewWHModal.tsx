@@ -115,21 +115,30 @@ const ViewWHModal = ({
           if (reason === "backdropClick") return;
           setOpen(false);
         }}
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+        }}
       >
         <Sheet
           variant="outlined"
           sx={{
+            width: "calc(100vw - 32px)",
             maxWidth: 1000,
+            maxHeight: "calc(100dvh - 32px)",
+            overflowY: "auto",
+            boxSizing: "border-box",
             borderRadius: "md",
-            p: 3,
+            p: { xs: 2, sm: 3 },
             boxShadow: "lg",
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
-          <Box>
+          <Box sx={{ minWidth: 0 }}>
             <h3 className="mb-6">Stock Location</h3>
-            <Card className="w-[100%] mr-7">
+            <Card sx={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
               <Sheet
                 sx={{
                   "--TableCell-height": "40px",
@@ -141,8 +150,8 @@ const ViewWHModal = ({
                   "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
                   overflow: "auto",
                   borderRadius: "sm",
-                  width: "fit-content",
-                  maxWidth: "100%",
+                  width: "100%",
+                  minWidth: 0,
                   background: (
                     theme,
                   ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -159,7 +168,7 @@ const ViewWHModal = ({
                   backgroundPosition:
                     "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
                   backgroundColor: "background.surface",
-                  maxHeight: "450px",
+                  maxHeight: "min(450px, calc(100dvh - 180px))",
                 }}
               >
                 <Table
@@ -170,6 +179,7 @@ const ViewWHModal = ({
                   sx={{
                     fontSize: "13px",
                     tableLayout: "fixed",
+                    minWidth: type === "item" ? 800 : 680,
                     "& tbody tr > *:first-of-type": {
                       position: "sticky",
                       zIndex: 2,
