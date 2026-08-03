@@ -107,25 +107,41 @@ const SuppliersModal = ({
         setSupplier(generateSupplier());
         setOpen(false);
       }}
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 2,
+      }}
     >
       <form onSubmit={async (e) => await handleSave(e)}>
         <Sheet
           variant="outlined"
           sx={{
-            width: 800,
+            width: "calc(100vw - 32px)",
+            maxWidth: 800,
+            maxHeight: "calc(100dvh - 32px)",
+            overflowY: "auto",
+            boxSizing: "border-box",
             borderRadius: "md",
-            p: 3,
+            p: { xs: 2, sm: 3 },
             boxShadow: "lg",
           }}
         >
           <ModalClose variant="plain" sx={{ m: 1 }} />
           <Box>
             <h3 className="mb-6">{title}</h3>
-            <Card className="w-[100%] mr-7">
+            <Card sx={{ width: "100%", boxSizing: "border-box" }}>
               <div>
-                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  sx={{ mb: 1 }}
+                >
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Code</FormLabel>
                     <Input
                       size="sm"
@@ -138,7 +154,10 @@ const SuppliersModal = ({
                       disabled
                     />
                   </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Name</FormLabel>
                     <Input
                       size="sm"
@@ -163,8 +182,15 @@ const SuppliersModal = ({
                     />
                   </FormControl>
                 </Stack>
-                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  sx={{ mb: 1 }}
+                >
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Contact Person</FormLabel>
                     <Input
                       size="sm"
@@ -175,7 +201,10 @@ const SuppliersModal = ({
                       // required
                     />
                   </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Contact Number</FormLabel>
                     <Input
                       size="sm"
@@ -187,8 +216,15 @@ const SuppliersModal = ({
                     />
                   </FormControl>
                 </Stack>
-                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  sx={{ mb: 1 }}
+                >
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Email (Optional)</FormLabel>
                     <Input
                       size="sm"
@@ -198,7 +234,10 @@ const SuppliersModal = ({
                       onChange={handleChange}
                     />
                   </FormControl>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Currency</FormLabel>
                     <Select
                       name="currency"
@@ -215,8 +254,15 @@ const SuppliersModal = ({
                     </Select>
                   </FormControl>
                 </Stack>
-                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-                  <FormControl size="sm" sx={{ mb: 1, width: "48%" }}>
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  sx={{ mb: 1 }}
+                >
+                  <FormControl
+                    size="sm"
+                    sx={{ mb: 1, width: { xs: "100%", sm: "48%" } }}
+                  >
                     <FormLabel>Supplier Balance</FormLabel>
                     <Input
                       size="sm"
@@ -243,17 +289,21 @@ const SuppliersModal = ({
                 </Stack>
               </div>
             </Card>
-            <div className="flex justify-end mt-5">
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              justifyContent="flex-end"
+              sx={{ mt: 2.5 }}
+            >
               <Button
                 type="submit"
-                sx={{ ml: 2, width: 130 }}
+                sx={{ width: { xs: "100%", sm: 130 } }}
                 className="bg-button-primary"
                 size="sm"
                 loading={isSaving}
               >
                 Save
               </Button>
-            </div>
+            </Stack>
           </Box>
         </Sheet>
       </form>
