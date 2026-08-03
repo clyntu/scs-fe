@@ -169,21 +169,30 @@ const StockHistory = ({
         if (reason === "backdropClick") return;
         setOpen(false);
       }}
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 2,
+      }}
     >
       <Sheet
         variant="outlined"
         sx={{
+          width: "calc(100vw - 32px)",
           maxWidth: 1000,
+          maxHeight: "calc(100dvh - 32px)",
+          overflowY: "auto",
+          boxSizing: "border-box",
           borderRadius: "md",
-          p: 3,
+          p: { xs: 2, sm: 3 },
           boxShadow: "lg",
         }}
       >
         <ModalClose variant="plain" sx={{ m: 1 }} />
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           <h3 className="mb-6">Stock History</h3>
-          <Card className="w-[100%] mr-7">
+          <Card sx={{ width: "100%", minWidth: 0, boxSizing: "border-box" }}>
             <Sheet
               ref={scrollContainerRef}
               onScroll={onScroll}
@@ -196,8 +205,9 @@ const StockHistory = ({
                 // background needs to have transparency to show the scrolling shadows
                 "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
                 overflow: "auto",
-                overflowY: "scroll",
                 borderRadius: "sm",
+                width: "100%",
+                minWidth: 0,
                 background: (
                   theme,
                 ) => `linear-gradient(to right, ${theme.vars.palette.background.surface} 30%, rgba(255, 255, 255, 0)),
@@ -214,7 +224,8 @@ const StockHistory = ({
                 backgroundPosition:
                   "var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height), var(--Table-firstColumnWidth) var(--TableCell-height), calc(100% - var(--Table-lastColumnWidth)) var(--TableCell-height)",
                 backgroundColor: "background.surface",
-                height: "400px",
+                height: "min(400px, calc(100dvh - 220px))",
+                minHeight: 160,
               }}
             >
               <Table
@@ -224,6 +235,7 @@ const StockHistory = ({
                 sx={{
                   fontSize: "13px",
                   tableLayout: "fixed",
+                  minWidth: 1250,
                   "& tbody tr > *:first-child": {
                     position: "sticky",
                     zIndex: 2,
@@ -430,6 +442,8 @@ const StockHistory = ({
                 mt: 2,
                 px: 1,
                 gap: 2,
+                textAlign: "center",
+                flexWrap: "wrap",
               }}
             >
               {isLoadingMore ? (
