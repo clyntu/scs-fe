@@ -3,12 +3,16 @@ import CRFormTable from "./CRForm/CRFormTable";
 import { Button, Divider, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axiosInstance, { getCompanyId } from "../../utils/axiosConfig";
 import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { toast } from "react-toastify";
 import { type DRItemsFE } from "./interface";
-import { calculateTotalWithDiscounts } from "./CRForm/helpers";
+import {
+  calculateTotalWithDiscounts,
+  mergeSourceAllocations,
+  validateSourceAllocations,
+} from "./CRForm/helpers";
 import type {
   CRFormProps,
   PaginatedCustomers,
@@ -50,6 +54,10 @@ const CRForm = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [hasSaved, setHasSaved] = useState(false);
+  const idempotencyRef = useRef<{
+    payload: string;
+    key: string;
+  } | null>(null);
   const companyId = getCompanyId();
 
   const totalItems = formattedDRs.reduce(
@@ -98,6 +106,8 @@ const CRForm = ({
         const itemObj = allocatedItem.customer_purchase_order.items.find(
           (item) => item.item_id === allocatedItem.item_id,
         );
+        const sourceFulfillments =
+          CRItem.delivery_receipt_item.source_fulfillments ?? [];
 
         return {
           id: CRItem.delivery_receipt_item.delivery_receipt_id,
@@ -128,6 +138,17 @@ const CRForm = ({
             allocatedItem.customer_purchase_order.transaction_discount_2,
           transaction_discount_3:
             allocatedItem.customer_purchase_order.transaction_discount_3,
+          source_fulfillments: sourceFulfillments,
+          source_allocations:
+            sourceFulfillments.length > 0
+              ? mergeSourceAllocations(
+                  sourceFulfillments,
+                  CRItem.source_allocations,
+                )
+              : CRItem.source_allocations.map((allocation) => ({
+                  deliver_event_id: allocation.deliver_event_id,
+                  quantity: String(allocation.quantity),
+                })),
         };
       });
       setFormattedDRs(formattedDRs);
@@ -209,6 +230,10 @@ const CRForm = ({
       item_id: number;
       return_qty: string;
       price: string;
+      source_allocations: Array<{
+        deliver_event_id: string;
+        quantity: number;
+      }>;
     }>;
   } => {
     const payload = {
@@ -229,10 +254,45 @@ const CRForm = ({
             item_id: DRItem.item_id,
             return_qty: DRItem.return_qty,
             price: DRItem.price,
+            source_allocations: DRItem.source_allocations
+              .filter((allocation) => Number(allocation.quantity) > 0)
+              .map((allocation) => ({
+                deliver_event_id: allocation.deliver_event_id,
+                quantity: Number(allocation.quantity),
+              })),
           };
         }),
     };
     return payload;
+  };
+
+  const getIdempotencyKey = (
+    payload: ReturnType<typeof createPayload>,
+  ): string => {
+    const serializedPayload = JSON.stringify(payload);
+    if (idempotencyRef.current?.payload === serializedPayload) {
+      return idempotencyRef.current.key;
+    }
+
+    const key = globalThis.crypto.randomUUID();
+    idempotencyRef.current = { payload: serializedPayload, key };
+    return key;
+  };
+
+  const validateReturnSources = (): boolean => {
+    for (const item of formattedDRs) {
+      if (Number(item.return_qty) <= 0) continue;
+      const validationError = validateSourceAllocations(
+        item.return_qty,
+        item.source_allocations,
+        item.source_fulfillments,
+      );
+      if (validationError !== null) {
+        toast.error(`${item.stock_code}: ${validationError}`);
+        return false;
+      }
+    }
+    return true;
   };
 
   const handleCreateDeliveryPlanning = async (): Promise<void> => {
@@ -243,13 +303,17 @@ const CRForm = ({
       );
       return;
     }
+    if (!validateReturnSources()) return;
 
     try {
       setIsSaving(true);
-      await axiosInstance.post("/api/customer-returns/", payload);
+      await axiosInstance.post("/api/customer-returns/", payload, {
+        headers: { "Idempotency-Key": getIdempotencyKey(payload) },
+      });
       setIsSaving(false);
       toast.success("Save successful!");
       setHasSaved(true);
+      idempotencyRef.current = null;
 
       // Handle the response, update state, etc.
     } catch (error: any) {
@@ -268,16 +332,19 @@ const CRForm = ({
       );
       return;
     }
+    if (!validateReturnSources()) return;
 
     try {
       setIsSaving(true);
       await axiosInstance.put(
         `/api/customer-returns/${selectedRow?.id}`,
         payload,
+        { headers: { "Idempotency-Key": getIdempotencyKey(payload) } },
       );
       setIsSaving(false);
       toast.success("Save successful!");
       setHasSaved(true);
+      idempotencyRef.current = null;
 
       // Handle the response, update state, etc.
     } catch (error: any) {

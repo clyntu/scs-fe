@@ -144,7 +144,7 @@ test("stocks loading state preserves the real table structure", async ({
   const loadingRows = page.locator('tbody[aria-label="Loading content"]');
   await expect(loadingRows).toBeVisible();
   await expect(loadingRows.locator("tr")).toHaveCount(7);
-  await expect(loadingRows.locator(".MuiSkeleton-root")).toHaveCount(112);
+  await expect(loadingRows.locator(".MuiSkeleton-root")).toHaveCount(119);
 });
 
 test("company selector options remain clickable above the sidebar", async ({

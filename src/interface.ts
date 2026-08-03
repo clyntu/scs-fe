@@ -35,6 +35,9 @@ export interface Item {
   total_allocated: number;
   total_purchased: number;
   total_sold: number;
+  total_gross_sold: number;
+  total_returned: number;
+  total_net_sold: number;
   created_by: number;
   modified_by: number;
   date_created: string;
@@ -395,6 +398,9 @@ export interface AggregatedWarehouseItem {
   total_allocated: number;
   total_purchased: number;
   total_sold: number;
+  total_gross_sold: number;
+  total_returned: number;
+  total_net_sold: number;
 }
 
 export interface StockAdjustmentRequest {
@@ -963,6 +969,21 @@ export interface CDP {
   modifier: User | null;
 }
 
+export interface ReturnSourceFulfillment {
+  deliver_event_id: string;
+  warehouse_id: number;
+  warehouse_code: string;
+  warehouse_name: string;
+  delivered_qty: number;
+  returned_qty: number;
+  remaining_qty: number;
+}
+
+export interface ReturnSourceAllocation {
+  deliver_event_id: string;
+  quantity: number;
+}
+
 interface DeliveryReceiptItem {
   delivery_plan_item_id: number;
   delivery_receipt_id: number;
@@ -972,6 +993,7 @@ interface DeliveryReceiptItem {
   modified_by: number | null;
   date_created: string;
   date_modified: string | null;
+  source_fulfillments: ReturnSourceFulfillment[];
   delivery_plan_item: {
     id: number;
     allocation_item: {
@@ -1052,6 +1074,7 @@ export interface CRItemDetail {
   delivery_receipt_item: DeliveryReceiptItem;
   warehouse: Warehouse;
   item: Item;
+  source_allocations: ReturnSourceAllocation[];
 }
 
 export interface CR {

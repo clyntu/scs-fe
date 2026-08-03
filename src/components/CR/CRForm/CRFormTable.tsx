@@ -134,6 +134,7 @@ const CRFormTable = ({
             <th style={{ width: 300 }}>Name</th>
             <th style={{ width: 200 }}>Whse</th>
             <th style={{ width: 100, textAlign: "right" }}>Return Qty.</th>
+            <th style={{ width: 220 }}>Original Source Split</th>
             <th style={{ width: 100, textAlign: "right" }}>Price</th>
             <th style={{ width: 100, textAlign: "right" }}>Gross Amount</th>
             <th style={{ width: 130, textAlign: "right" }}>
@@ -153,7 +154,7 @@ const CRFormTable = ({
           </tr>
         </thead>
         <tbody>
-          {formattedDRs.map((item, index) => {
+          {formattedDRs.map((item) => {
             const key = `${item.id}-${item.cpo_id}-${item.stock_code}`;
 
             return (
@@ -216,6 +217,15 @@ const CRFormTable = ({
                             ? {
                                 ...DRItem,
                                 return_qty: raw,
+                                source_allocations:
+                                  DRItem.source_fulfillments.length === 1
+                                    ? DRItem.source_allocations.map(
+                                        (allocation) => ({
+                                          ...allocation,
+                                          quantity: raw,
+                                        }),
+                                      )
+                                    : DRItem.source_allocations,
                                 gross_amount: calculateNetForRow(
                                   Number(raw),
                                   Number(item.price),
@@ -235,6 +245,75 @@ const CRFormTable = ({
                     placeholder="0"
                     disabled={isEditDisabled}
                   />
+                </td>
+                <td>
+                  <div className="flex flex-col gap-1">
+                    {item.source_fulfillments.map((fulfillment) => {
+                      const allocation = item.source_allocations.find(
+                        (source) =>
+                          source.deliver_event_id ===
+                          fulfillment.deliver_event_id,
+                      );
+                      const isSingleSource =
+                        item.source_fulfillments.length === 1;
+
+                      return (
+                        <div
+                          key={fulfillment.deliver_event_id}
+                          className="flex items-center gap-2"
+                        >
+                          <span className="min-w-[55px] text-xs">
+                            {fulfillment.warehouse_code}
+                          </span>
+                          <Input
+                            type="number"
+                            size="sm"
+                            value={allocation?.quantity ?? "0"}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw !== "" && !/^\d+$/.test(raw)) return;
+                              setFormattedDRs((prevDRItems) =>
+                                prevDRItems.map((DRItem) =>
+                                  DRItem.delivery_receipt_item_id ===
+                                  item.delivery_receipt_item_id
+                                    ? {
+                                        ...DRItem,
+                                        source_allocations:
+                                          DRItem.source_allocations.map(
+                                            (source) =>
+                                              source.deliver_event_id ===
+                                              fulfillment.deliver_event_id
+                                                ? {
+                                                    ...source,
+                                                    quantity: raw,
+                                                  }
+                                                : source,
+                                          ),
+                                      }
+                                    : DRItem,
+                                ),
+                              );
+                            }}
+                            slotProps={{
+                              input: {
+                                min: 0,
+                                max: fulfillment.remaining_qty,
+                                step: 1,
+                              },
+                            }}
+                            disabled={isEditDisabled || isSingleSource}
+                            sx={{
+                              width: 75,
+                              input: { textAlign: "right" },
+                            }}
+                          />
+                          <span className="text-xs text-gray-500">
+                            / {fulfillment.remaining_qty}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </td>
                 <td>
                   <Input

@@ -80,4 +80,21 @@ describe("frontend module API contracts", () => {
     expect(axiosSource).toContain('"inactive user"');
     expect(axiosSource).toContain('"disabled"');
   });
+
+  it("uses backend return and net sold quantities", () => {
+    const stockSource = readSourceTree("components/Items");
+    const itemPageSource = readSourceTree("pages/configuration/item.tsx");
+
+    expect(stockSource).toContain("total_returned");
+    expect(stockSource).toContain("total_net_sold");
+    expect(itemPageSource).toContain("total_returned");
+    expect(itemPageSource).toContain("total_net_sold");
+  });
+
+  it("sends source allocations with an idempotency key", () => {
+    const returnSource = readSourceTree("components/CR");
+
+    expect(returnSource).toContain("source_allocations");
+    expect(returnSource).toContain('"Idempotency-Key"');
+  });
 });
