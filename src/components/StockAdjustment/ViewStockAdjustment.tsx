@@ -434,7 +434,11 @@ const ViewStockAdjustment = ({
                           <Tooltip
                             title={`Stock moved after this adjustment. It was ${adjustment.new_on_stock.toLocaleString()} right after posting; available now is ${adjustment.current_on_stock.toLocaleString()}.`}
                           >
-                            <span style={{ color: "var(--joy-palette-warning-plainColor)" }}>
+                            <span
+                              style={{
+                                color: "var(--joy-palette-warning-plainColor)",
+                              }}
+                            >
                               {adjustment.current_on_stock.toLocaleString()}
                             </span>
                           </Tooltip>
