@@ -6,11 +6,11 @@ Next.js frontend for the SCS supply-chain inventory application.
 
 | Branch | Purpose | Deployment |
 |---|---|---|
-| `dev` | Local development and integration | Vercel Git deployment disabled |
-| `main` | Production releases only | `https://scs-fe.vercel.app` |
+| `main` | Production trunk | `https://scs-fe.vercel.app` |
+| Feature/fix branches | Short-lived local development and pull requests | Vercel Git deployment disabled |
 
-Create feature branches from `dev`. Promote `dev` to `main` only through a
-pull request after `frontend-release-gate` passes.
+Create short-lived branches from `main`. Merge them back only through a pull
+request after `frontend-release-gate` passes.
 
 ## First-time setup
 
@@ -30,12 +30,11 @@ GitHub/
 └── scs-fe/
 ```
 
-Clone and select the development branch:
+Clone the repository:
 
 ```bash
-git clone https://github.com/clyntu/scs-fe.git
+git clone https://github.com/scs-ph/scs-fe.git
 cd scs-fe
-git switch dev
 ```
 
 Install exactly the dependencies recorded in `package-lock.json`:
