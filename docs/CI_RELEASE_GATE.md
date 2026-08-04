@@ -2,11 +2,10 @@
 
 ## Branch policy
 
-- Work from feature branches based on `dev`.
+- Work from short-lived feature or fix branches based on current `main`.
 - `main` is the only Vercel Production branch.
-- `dev` is the integration branch and is intentionally disabled from Vercel
-  Git deployments in `vercel.json`; use it for local development.
-- Promote `dev` to `main` only through a pull request after both repositories'
+- All non-`main` Vercel Git deployments are disabled in `vercel.json`.
+- Merge to `main` only through a pull request after both repositories'
   aggregate gates are green.
 
 ## Environment policy
@@ -14,7 +13,7 @@
 | Context | Branch/source | Backend | Supabase |
 |---|---|---|---|
 | Production | Vercel `main` | Production Render service | Production project |
-| Local development | Local `dev` checkout | Local/dev backend | Development project |
+| Local development | Short-lived local branch | Local backend | Development project |
 | GitHub Actions | Any checked branch | CI fixtures and pinned backend evidence | CI placeholders |
 
 For local development, copy `.env.development.example` to
@@ -22,11 +21,9 @@ For local development, copy `.env.development.example` to
 publishable/anon key. This file is ignored by Git. Do not copy Production
 credentials into a development environment file.
 
-Vercel Production variables must target Production only. Preview or
-Development variables must never point to the Production Render or Supabase
-services. Until development values are configured in Vercel, use local
-development rather than a Vercel Preview for workflows that read or mutate
-business data.
+Vercel Production variables must target Production only. Preview deployments
+are disabled; use local development for workflows that read or mutate
+development business data.
 
 ## Required repository secret
 
@@ -36,7 +33,7 @@ Add a fine-grained GitHub token as:
 
 Minimum access:
 
-- repository: `clyntu/scs-be`;
+- repository: `scs-ph/scs-be`;
 - contents: read;
 - checks/statuses: read.
 
@@ -86,9 +83,9 @@ The type-safety fix changes CDR and Customer Return PDFs to read the current
 
 ## Updating the backend pin
 
-1. Merge and verify the backend change on backend `dev`.
-2. Record the exact backend `dev` commit SHA.
+1. Merge and verify the backend change on backend `main`.
+2. Record the exact backend `main` commit SHA.
 3. Generate the deterministic OpenAPI SHA-256 from that commit.
 4. Update `backend-version.json` on the frontend feature branch.
 5. Run all frontend checks.
-6. Review before any frontend `dev` merge.
+6. Review before the frontend `main` merge.
