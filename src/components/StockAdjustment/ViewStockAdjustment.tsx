@@ -10,6 +10,7 @@ import {
   FormControl,
   FormLabel,
   CircularProgress,
+  Tooltip,
   Typography,
 } from "@mui/joy";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
@@ -355,28 +356,33 @@ const ViewStockAdjustment = ({
                 >
                   New
                 </th>
+                <th
+                  style={{ width: 65, padding: "12px 6px", textAlign: "right" }}
+                >
+                  Current
+                </th>
                 <th style={{ width: 130, padding: "12px 6px" }}>Warehouse</th>
                 <th style={{ width: 120, padding: "12px 6px" }}>Created By</th>
               </tr>
             </thead>
             {isLoading ? (
               <TableLoadingRows
-                columns={10}
-                numericColumns={[5, 6, 7]}
+                columns={11}
+                numericColumns={[5, 6, 7, 8]}
                 statusColumns={[4]}
               />
             ) : (
               <tbody>
                 {loadError !== null && adjustments.items.length === 0 && (
                   <TableErrorRow
-                    colSpan={10}
+                    colSpan={11}
                     message={loadError}
                     onRetry={getAllAdjustments}
                   />
                 )}
                 {adjustments.items.length === 0 && loadError === null && (
                   <TableEmptyRow
-                    colSpan={10}
+                    colSpan={11}
                     title="No stock adjustments found"
                     description={
                       searchTerm !== "" || adjustmentType !== "all"
@@ -416,6 +422,23 @@ const ViewStockAdjustment = ({
                       </td>
                       <td style={{ textAlign: "right" }}>
                         {adjustment.new_on_stock.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        {adjustment.current_on_stock === null ||
+                        adjustment.current_on_stock === undefined ? (
+                          "-"
+                        ) : adjustment.current_on_stock ===
+                          adjustment.new_on_stock ? (
+                          adjustment.current_on_stock.toLocaleString()
+                        ) : (
+                          <Tooltip
+                            title={`Stock moved after this adjustment. It was ${adjustment.new_on_stock.toLocaleString()} right after posting; available now is ${adjustment.current_on_stock.toLocaleString()}.`}
+                          >
+                            <span style={{ color: "var(--joy-palette-warning-plainColor)" }}>
+                              {adjustment.current_on_stock.toLocaleString()}
+                            </span>
+                          </Tooltip>
+                        )}
                       </td>
                       <td>{withTooltip(adjustment.warehouse_name, 150)}</td>
                       <td>{adjustment.created_by_name}</td>
