@@ -62,7 +62,7 @@ target, not merely an older commit that passed previously.
 - `frontend-release-gate`
 
 Vercel Deployment Checks require `frontend-release-gate` before assigning the
-production alias. A failed backend module gate causes
+production alias. A stale backend pin or failed `backend-release-gate` causes
 `frontend-backend-contract` to fail and therefore blocks frontend production
 promotion.
 
