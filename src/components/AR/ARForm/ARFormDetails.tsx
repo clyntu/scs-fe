@@ -4,7 +4,6 @@ import {
   Input,
   Textarea,
   Card,
-  Stack,
   Select,
   Option,
   Box,
@@ -125,8 +124,8 @@ const ARFormDetails = ({
           </div>
           {openEdit && <Divider />}
 
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
+            <FormControl size="sm">
               <FormLabel>Customer</FormLabel>
               <div className="flex">
                 <TooltipAutocomplete
@@ -148,7 +147,7 @@ const ARFormDetails = ({
                 />
               </div>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Status</FormLabel>
               <Select
                 onChange={(event, value) => {
@@ -166,7 +165,7 @@ const ARFormDetails = ({
                 )}
               </Select>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Transaction Date</FormLabel>
               <Input
                 type="date"
@@ -176,7 +175,7 @@ const ARFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Payment Mode</FormLabel>
               <Select
                 onChange={(event, value) => {
@@ -191,9 +190,7 @@ const ARFormDetails = ({
                 <Option value="check">Check</Option>
               </Select>
             </FormControl>
-          </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Amount Paid</FormLabel>
               <Input
                 type="number"
@@ -212,7 +209,7 @@ const ARFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Check No.</FormLabel>
               <Input
                 type="text"
@@ -223,7 +220,7 @@ const ARFormDetails = ({
               />
             </FormControl>
             {paymentMode === "check" && (
-              <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+              <FormControl size="sm">
                 <FormLabel>Check Date</FormLabel>
                 <Input
                   type="date"
@@ -234,7 +231,7 @@ const ARFormDetails = ({
               </FormControl>
             )}
 
-            {/* <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            {/* <FormControl size="sm">
               <FormLabel>DR No. Filter</FormLabel>
               <div className="flex">
                 <Autocomplete
@@ -249,24 +246,25 @@ const ARFormDetails = ({
                 />
               </div>
             </FormControl> */}
-          </Stack>
+          </Box>
         </div>
       </Card>
       <Card variant="soft" color="neutral">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Payment Amount</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(paymentAmount)}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Total Applied</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(totalApplied)}</h5>
-            </FormControl>
-          </div>
+          <Box className="summary-figures" sx={{ mb: 1 }}>
+            <Typography level="body-sm">Payment Amount</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(paymentAmount)}
+            </Typography>
+
+            <Typography level="body-sm">Total Applied</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(totalApplied)}
+            </Typography>
+          </Box>
           <Divider />
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "30%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
+            <FormControl size="sm">
               <FormLabel>Less</FormLabel>
               <Input
                 type="number"
@@ -284,7 +282,7 @@ const ARFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "30%" }}>
+            <FormControl size="sm">
               <FormLabel>Add</FormLabel>
               <div className="flex">
                 <Input
@@ -304,7 +302,7 @@ const ARFormDetails = ({
                 />
               </div>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "30%" }}>
+            <FormControl size="sm">
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}
@@ -314,7 +312,7 @@ const ARFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            {/* <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            {/* <FormControl size="sm">
               <FormLabel>Add 2</FormLabel>
               <Input
                 type="number"
@@ -332,7 +330,7 @@ const ARFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Add 3</FormLabel>
               <Input
                 type="number"
@@ -350,35 +348,35 @@ const ARFormDetails = ({
                 required
               />
             </FormControl> */}
-          </Stack>
+          </Box>
 
           <Divider />
-          <Stack direction="row" spacing={2} sx={{ mb: 2, mt: 2 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 2, mt: 2 }}>
+            <FormControl size="sm">
               <FormLabel>Created by</FormLabel>
               <p className="text-sm">
                 {selectedRow?.creator?.full_name ?? "-"}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Date Created</FormLabel>
               <p className="text-sm">
                 {formatToDateTime(selectedRow?.date_created)}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Modified by</FormLabel>
               <p className="text-sm">
                 {selectedRow?.modifier?.full_name ?? "-"}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Date Modified</FormLabel>
               <p className="text-sm">
                 {formatToDateTime(selectedRow?.date_modified)}
               </p>
             </FormControl>
-          </Stack>
+          </Box>
         </div>
       </Card>
     </Box>
