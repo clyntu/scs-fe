@@ -17,10 +17,14 @@ import ReverseARModal from "./ReverseARModal";
 import { addTwoPlaces, getErrorMessage } from "../../helper";
 import { FormLoadingSkeleton } from "../shared/ContentStates";
 
+// Decides whether a row in the table is an amount the user actually applied,
+// and so should be sent to the backend as a receipt item.
 const isAppliedPayment = (payment: string | undefined): boolean => {
   if (payment === undefined || payment === "") return false;
-  const value = Number(payment);
-  return Number.isFinite(value) && value !== 0;
+  const amount = Number(payment);
+  if (!Number.isFinite(amount)) return false;
+
+  return amount !== 0;
 };
 
 const ARForm = ({
