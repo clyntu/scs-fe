@@ -4,7 +4,6 @@ import {
   Input,
   Textarea,
   Card,
-  Stack,
   Button,
   Select,
   Option,
@@ -188,12 +187,6 @@ const SDRFormDetails = ({
               <FormLabel>Amount Disc. Total</FormLabel>
               <Textarea value={amountDiscount} disabled />
             </FormControl>
-          </Box>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ mb: 1, alignItems: "flex-end" }}
-          >
             <FormControl size="sm">
               <FormLabel>Ref No.</FormLabel>
               <Input
@@ -205,7 +198,7 @@ const SDRFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "46%" }}>
+            <FormControl size="sm">
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}
@@ -217,7 +210,7 @@ const SDRFormDetails = ({
             </FormControl>
             {(!openEdit || status === "unposted") && (
               <Button
-                sx={{ mb: 1, width: "22.5%" }}
+                sx={{ gridColumn: "-2 / -1", alignSelf: "end", mt: 2 }}
                 className="bg-button-primary"
                 size="sm"
                 onClick={() => setIsSelectModalOpen(true)}
@@ -226,41 +219,44 @@ const SDRFormDetails = ({
                 Fill Table
               </Button>
             )}
-          </Stack>
+          </Box>
         </div>
       </Card>
       <Card variant="soft" color="neutral">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>FOB Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(fobTotal)}`}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>LANDED Total</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(Number.isNaN(landedTotal / pesoRate) ? 0 : landedTotal / pesoRate)}`}</h5>
-            </FormControl>
-          </div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>FOB Total</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithTwoPlaces(fobTotal * pesoRate)}
-              </h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>₱{addCommaToNumberWithTwoPlaces(netAmount * pesoRate)}</h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>LANDED Total</FormLabel>
-              <h5>₱{addCommaToNumberWithFourPlaces(landedTotal)}</h5>
-            </FormControl>
-          </div>
+          <Box className="order-summary__totals" sx={{ mb: 1 }}>
+            <span />
+            <Typography level="body-xs">{currencyUsed}</Typography>
+            <Typography level="body-xs">PHP</Typography>
+
+            <Typography level="body-sm">FOB Total</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(fobTotal)}
+            </Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(fobTotal * pesoRate)}
+            </Typography>
+
+            <Typography level="body-sm">NET Amount</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(netAmount)}
+            </Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(netAmount * pesoRate)}
+            </Typography>
+
+            <Typography level="body-sm">LANDED Total</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(
+                Number.isNaN(landedTotal / pesoRate)
+                  ? 0
+                  : landedTotal / pesoRate,
+              )}
+            </Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithFourPlaces(landedTotal)}
+            </Typography>
+          </Box>
           <Divider />
           <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm">

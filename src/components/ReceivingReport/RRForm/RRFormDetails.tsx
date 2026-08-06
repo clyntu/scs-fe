@@ -4,7 +4,6 @@ import {
   Input,
   Textarea,
   Card,
-  Stack,
   Button,
   Select,
   Option,
@@ -197,8 +196,6 @@ const RRFormDetails = ({
               <FormLabel>Amount Disc. Total</FormLabel>
               <Textarea value={amountDiscount} disabled />
             </FormControl>
-          </Box>
-          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm">
               <FormLabel>Currency Used</FormLabel>
               <Select
@@ -257,45 +254,43 @@ const RRFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-          </Box>
-          {(!openEdit || status === "unposted") && (
-            <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 3 }}>
+            {(!openEdit || status === "unposted") && (
               <Button
-                className="ml-4 bg-button-primary"
+                sx={{ gridColumn: "-2 / -1", alignSelf: "end", mt: 2 }}
+                className="bg-button-primary"
                 size="sm"
                 onClick={() => setIsSelectModalOpen(true)}
                 disabled={selectedSupplier === null || isEditDisabled}
               >
                 Fill Up SDR Table
               </Button>
-            </Stack>
-          )}
+            )}
+          </Box>
         </div>
       </Card>
       <Card variant="soft" color="neutral">
         <div>
-          <div className="grid grid-cols-2 place-items-center">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Invoice Amount</FormLabel>
-              <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Landed Total</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithFourPlaces(netAmount * Number(pesoRate))}
-              </h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>% NET Cost</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(percentNetCost)}</h5>
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Total Expense</FormLabel>
-              <h5>
-                ₱{addCommaToNumberWithTwoPlaces(Number(totalExpense))}
-              </h5>{" "}
-            </FormControl>
-          </div>
+          <Box className="summary-figures" sx={{ mb: 1 }}>
+            <Typography level="body-sm">Invoice Amount</Typography>
+            <Typography level="title-sm">
+              {`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}
+            </Typography>
+
+            <Typography level="body-sm">Landed Total</Typography>
+            <Typography level="title-sm">
+              ₱{addCommaToNumberWithFourPlaces(netAmount * Number(pesoRate))}
+            </Typography>
+
+            <Typography level="body-sm">% NET Cost</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(percentNetCost)}
+            </Typography>
+
+            <Typography level="body-sm">Total Expense</Typography>
+            <Typography level="title-sm">
+              ₱{addCommaToNumberWithTwoPlaces(Number(totalExpense))}
+            </Typography>
+          </Box>
           <Divider />
           <Box className="transaction-details__fields" sx={{ mb: 1, mt: 2.5 }}>
             <FormControl size="sm">

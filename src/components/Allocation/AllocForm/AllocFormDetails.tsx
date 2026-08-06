@@ -127,9 +127,7 @@ const AllocFormDetails = ({
                 />
               </div>
             </FormControl>
-          </Box>
-          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "96%" }}>
+            <FormControl size="sm">
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}

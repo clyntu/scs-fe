@@ -186,8 +186,6 @@ const ARFormDetails = ({
                 <Option value="check">Check</Option>
               </Select>
             </FormControl>
-          </Box>
-          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm">
               <FormLabel>Amount Paid</FormLabel>
               <Input
@@ -249,19 +247,20 @@ const ARFormDetails = ({
       </Card>
       <Card variant="soft" color="neutral">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Payment Amount</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(paymentAmount)}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Total Applied</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(totalApplied)}</h5>
-            </FormControl>
-          </div>
+          <Box className="summary-figures" sx={{ mb: 1 }}>
+            <Typography level="body-sm">Payment Amount</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(paymentAmount)}
+            </Typography>
+
+            <Typography level="body-sm">Total Applied</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(totalApplied)}
+            </Typography>
+          </Box>
           <Divider />
           <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "30%" }}>
+            <FormControl size="sm">
               <FormLabel>Less</FormLabel>
               <Input
                 type="number"
@@ -279,7 +278,7 @@ const ARFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "30%" }}>
+            <FormControl size="sm">
               <FormLabel>Add</FormLabel>
               <div className="flex">
                 <Input
@@ -299,7 +298,7 @@ const ARFormDetails = ({
                 />
               </div>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "30%" }}>
+            <FormControl size="sm">
               <FormLabel>Remarks</FormLabel>
               <Textarea
                 minRows={1}

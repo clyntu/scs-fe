@@ -176,16 +176,17 @@ const CPOFormDetails = ({
       </Card>
       <Card variant="soft" color="neutral">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Gross Total</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(grossTotal)}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>NET Amount</FormLabel>
-              <h5>{addCommaToNumberWithTwoPlaces(netTotal)}</h5>
-            </FormControl>
-          </div>
+          <Box className="summary-figures" sx={{ mb: 1 }}>
+            <Typography level="body-sm">Gross Total</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(grossTotal)}
+            </Typography>
+
+            <Typography level="body-sm">NET Amount</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(netTotal)}
+            </Typography>
+          </Box>
           <Divider />
           <Box className="transaction-details__fields" sx={{ mb: 1, mt: 3.5 }}>
             <FormControl size="sm">

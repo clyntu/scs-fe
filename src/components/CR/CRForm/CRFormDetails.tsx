@@ -4,7 +4,6 @@ import {
   Input,
   Textarea,
   Card,
-  Stack,
   Select,
   Option,
   Box,
@@ -148,12 +147,6 @@ const CRFormDetails = ({
                 required
               />
             </FormControl>
-          </Box>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ mb: 1, alignItems: "flex-end" }}
-          >
             <FormControl size="sm">
               <FormLabel>Remarks</FormLabel>
               <Textarea
@@ -166,7 +159,7 @@ const CRFormDetails = ({
             </FormControl>
             {(!openEdit || status === "unposted") && (
               <Button
-                sx={{ mb: 1, width: "22.5%" }}
+                sx={{ gridColumn: "-2 / -1", alignSelf: "end", mt: 2 }}
                 className="bg-button-primary"
                 size="sm"
                 onClick={() => setIsSelectModalOpen(true)}
@@ -175,21 +168,20 @@ const CRFormDetails = ({
                 Fill Table
               </Button>
             )}
-          </Stack>
+          </Box>
         </div>
       </Card>
       <Card variant="soft" color="neutral">
         <div>
-          <div className="flex justify-around">
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Total Qty</FormLabel>
-              <h5>{totalItems}</h5>{" "}
-            </FormControl>
-            <FormControl size="sm" sx={{ mb: 1 }}>
-              <FormLabel>Total Gross</FormLabel>
-              <h5>{`${addCommaToNumberWithTwoPlaces(totalGross)}`}</h5>
-            </FormControl>
-          </div>
+          <Box className="summary-figures" sx={{ mb: 1 }}>
+            <Typography level="body-sm">Total Qty</Typography>
+            <Typography level="title-sm">{totalItems}</Typography>
+
+            <Typography level="body-sm">Total Gross</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(totalGross)}
+            </Typography>
+          </Box>
           <Divider />
           <Box className="transaction-details__fields" sx={{ mb: 2, mt: 2 }}>
             <FormControl size="sm">
