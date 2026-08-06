@@ -91,8 +91,8 @@ const CDPFormDetails = ({
           </div>
           {openEdit && <Divider />}
 
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, mt: 1, width: "22%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
+            <FormControl size="sm">
               <FormLabel>Customer</FormLabel>
               <div className="flex">
                 <TooltipAutocomplete
@@ -111,7 +111,7 @@ const CDPFormDetails = ({
                 />
               </div>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Status</FormLabel>
               <Select
                 onChange={(event, value) => {
@@ -125,7 +125,7 @@ const CDPFormDetails = ({
                 <Option value="unposted">Unposted</Option>
               </Select>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Transaction Date</FormLabel>
               <Input
                 type="date"
@@ -135,7 +135,7 @@ const CDPFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Ref No.</FormLabel>
               <TooltipInput
                 size="sm"
@@ -146,7 +146,7 @@ const CDPFormDetails = ({
                 required
               />
             </FormControl>
-          </Stack>
+          </Box>
           <Stack
             direction="row"
             spacing={2}
@@ -193,32 +193,32 @@ const CDPFormDetails = ({
             </FormControl>
           </div>
           <Divider />
-          <Stack direction="row" spacing={2} sx={{ mb: 2, mt: 2 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 2, mt: 2 }}>
+            <FormControl size="sm">
               <FormLabel>Created by</FormLabel>
               <p className="text-sm">
                 {selectedRow?.creator?.full_name ?? "-"}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Date Created</FormLabel>
               <p className="text-sm">
                 {formatToDateTime(selectedRow?.date_created)}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Modified by</FormLabel>
               <p className="text-sm">
                 {selectedRow?.modifier?.full_name ?? "-"}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Date Modified</FormLabel>
               <p className="text-sm">
                 {formatToDateTime(selectedRow?.date_modified)}
               </p>
             </FormControl>
-          </Stack>
+          </Box>
         </div>
       </Card>
     </Box>

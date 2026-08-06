@@ -283,44 +283,35 @@ const POFormDetails = ({
             </Button>
           </div>
           {showTotals === true && (
-            <>
-              <Box className="transaction-details__fields" sx={{ mb: 1 }}>
-                <FormControl size="sm">
-                  <FormLabel>FOB Total</FormLabel>
-                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(fobTotal)}`}</h5>
-                </FormControl>
-                <FormControl size="sm">
-                  <FormLabel>NET Amount</FormLabel>
-                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(netAmount)}`}</h5>
-                </FormControl>
-                <FormControl size="sm">
-                  <FormLabel>LANDED Total</FormLabel>
-                  <h5>{`${currencyUsed} ${addCommaToNumberWithTwoPlaces(landedTotal / Number(pesoRate))}`}</h5>
-                </FormControl>
-              </Box>
-              <Box className="transaction-details__fields" sx={{ mb: 1 }}>
-                <FormControl size="sm">
-                  <FormLabel>FOB Total</FormLabel>
-                  <h5>
-                    ₱
-                    {addCommaToNumberWithTwoPlaces(fobTotal * Number(pesoRate))}
-                  </h5>
-                </FormControl>
-                <FormControl size="sm">
-                  <FormLabel>NET Amount</FormLabel>
-                  <h5>
-                    ₱
-                    {addCommaToNumberWithTwoPlaces(
-                      netAmount * Number(pesoRate),
-                    )}
-                  </h5>
-                </FormControl>
-                <FormControl size="sm">
-                  <FormLabel>LANDED Total</FormLabel>
-                  <h5>₱{addCommaToNumberWithFourPlaces(landedTotal)}</h5>
-                </FormControl>
-              </Box>
-            </>
+            <Box className="order-summary__totals" sx={{ mb: 1 }}>
+              <span />
+              <Typography level="body-xs">{currencyUsed}</Typography>
+              <Typography level="body-xs">PHP</Typography>
+
+              <Typography level="body-sm">FOB Total</Typography>
+              <Typography level="title-sm">
+                {addCommaToNumberWithTwoPlaces(fobTotal)}
+              </Typography>
+              <Typography level="title-sm">
+                {addCommaToNumberWithTwoPlaces(fobTotal * Number(pesoRate))}
+              </Typography>
+
+              <Typography level="body-sm">NET Amount</Typography>
+              <Typography level="title-sm">
+                {addCommaToNumberWithTwoPlaces(netAmount)}
+              </Typography>
+              <Typography level="title-sm">
+                {addCommaToNumberWithTwoPlaces(netAmount * Number(pesoRate))}
+              </Typography>
+
+              <Typography level="body-sm">LANDED Total</Typography>
+              <Typography level="title-sm">
+                {addCommaToNumberWithTwoPlaces(landedTotal / Number(pesoRate))}
+              </Typography>
+              <Typography level="title-sm">
+                {addCommaToNumberWithFourPlaces(landedTotal)}
+              </Typography>
+            </Box>
           )}
           <Divider />
           <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>

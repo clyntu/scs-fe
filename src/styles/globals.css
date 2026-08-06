@@ -235,13 +235,33 @@ body {
  */
 .transaction-details__fields {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  /* auto-fill, not auto-fit: empty tracks must stay, otherwise a group with
+     fewer fields than columns stretches them out of line with its neighbours. */
+  grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
   align-items: start;
   gap: 1rem;
 }
 
 .transaction-details__fields .MuiFormControl-root {
   width: 100% !important;
+}
+
+/*
+ * Totals matrix: one row per amount, one column per currency, so each label is
+ * written once instead of once per currency.
+ */
+.order-summary__totals {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  column-gap: 1.5rem;
+  row-gap: 0.5rem;
+}
+
+.order-summary__totals > :nth-child(3n + 2),
+.order-summary__totals > :nth-child(3n) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 @container app-main (min-width: 56rem) {

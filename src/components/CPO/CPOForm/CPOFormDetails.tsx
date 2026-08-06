@@ -4,7 +4,6 @@ import {
   Input,
   Textarea,
   Card,
-  Stack,
   Select,
   Option,
   Box,
@@ -70,8 +69,8 @@ const CPOFormDetails = ({
             )}
           </div>
           {openEdit && <Divider />}
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 1 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
+            <FormControl size="sm">
               <FormLabel>Customer</FormLabel>
               <div className="flex">
                 <TooltipAutocomplete
@@ -91,7 +90,7 @@ const CPOFormDetails = ({
                 />
               </div>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Status</FormLabel>
               <Select
                 onChange={(event, value) => {
@@ -106,7 +105,7 @@ const CPOFormDetails = ({
               </Select>
             </FormControl>
 
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Transaction Date</FormLabel>
               <Input
                 type="date"
@@ -116,7 +115,7 @@ const CPOFormDetails = ({
                 required
               />
             </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Ref No.</FormLabel>
               <Input
                 size="sm"
@@ -126,9 +125,9 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-          </Stack>
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 2 }}>
-            <FormControl size="sm" sx={{ width: "22%" }}>
+          </Box>
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 2 }}>
+            <FormControl size="sm">
               <FormLabel>Cust Disc. 1 (%)</FormLabel>
               <Input
                 value={discounts.customer[0]}
@@ -139,7 +138,7 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Trans Disc. 1 (%)</FormLabel>
               <Input
                 value={discounts.transaction[0]}
@@ -150,7 +149,7 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Cust Disc. 2 (%)</FormLabel>
               <Input
                 value={discounts.customer[1]}
@@ -161,7 +160,7 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-            <FormControl size="sm" sx={{ width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Trans Disc. 2 (%)</FormLabel>
               <Input
                 value={discounts.transaction[1]}
@@ -172,7 +171,7 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-          </Stack>
+          </Box>
         </div>
       </Card>
       <Card variant="soft" color="neutral">
@@ -188,32 +187,32 @@ const CPOFormDetails = ({
             </FormControl>
           </div>
           <Divider />
-          <Stack direction="row" spacing={2} sx={{ mb: 1, mt: 3.5 }}>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 3.5 }}>
+            <FormControl size="sm">
               <FormLabel>Created by</FormLabel>
               <p className="text-sm">
                 {selectedRow?.creator?.full_name ?? "-"}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Date Created</FormLabel>
               <p className="text-sm">
                 {formatToDateTime(selectedRow?.date_created)}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Modified by</FormLabel>
               <p className="text-sm">
                 {selectedRow?.modifier?.full_name ?? "-"}
               </p>
             </FormControl>
-            <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>
+            <FormControl size="sm">
               <FormLabel>Date Modified</FormLabel>
               <p className="text-sm">
                 {formatToDateTime(selectedRow?.date_modified)}
               </p>
             </FormControl>
-          </Stack>
+          </Box>
           <FormControl size="sm" sx={{ mb: 3, mt: 3 }}>
             <FormLabel>Remarks</FormLabel>
             <Textarea
