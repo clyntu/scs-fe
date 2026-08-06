@@ -172,6 +172,10 @@ const SDRFormDetails = ({
               >
                 <Option value="posted">Posted</Option>
                 <Option value="unposted">Unposted</Option>
+                {/* Display only - an archived record must never be created as one */}
+                {status === "archived" && (
+                  <Option value="archived">Archived</Option>
+                )}
               </Select>
             </FormControl>
             <FormControl size="sm" sx={{ mb: 1, width: "22%" }}>

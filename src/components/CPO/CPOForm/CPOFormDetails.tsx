@@ -103,6 +103,10 @@ const CPOFormDetails = ({
               >
                 <Option value="unposted">Unposted</Option>
                 <Option value="posted">Posted</Option>
+                {/* Display only - an archived record must never be created as one */}
+                {status === "archived" && (
+                  <Option value="archived">Archived</Option>
+                )}
               </Select>
             </FormControl>
 
