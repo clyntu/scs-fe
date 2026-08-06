@@ -17,6 +17,12 @@ import ReverseARModal from "./ReverseARModal";
 import { addTwoPlaces, getErrorMessage } from "../../helper";
 import { FormLoadingSkeleton } from "../shared/ContentStates";
 
+const isAppliedPayment = (payment: string | undefined): boolean => {
+  if (payment === undefined || payment === "") return false;
+  const value = Number(payment);
+  return Number.isFinite(value) && value !== 0;
+};
+
 const ARForm = ({
   setOpen,
   openCreate,
@@ -290,12 +296,7 @@ const ARForm = ({
     if (isSaving) return;
 
     const receiptItems = outstandingTrans
-      .filter(
-        (row) =>
-          row.payment !== undefined &&
-          row.payment !== "" &&
-          Number(row.payment) > 0,
-      )
+      .filter((row) => isAppliedPayment(row.payment))
       .map((row) => {
         return {
           source_type: row.source_type,
@@ -360,12 +361,7 @@ const ARForm = ({
     if (isSaving) return;
 
     const receiptItems = outstandingTrans
-      .filter(
-        (row) =>
-          row.payment !== undefined &&
-          row.payment !== "" &&
-          Number(row.payment) > 0,
-      )
+      .filter((row) => isAppliedPayment(row.payment))
       .map((row) => {
         return {
           source_type: row.source_type,
