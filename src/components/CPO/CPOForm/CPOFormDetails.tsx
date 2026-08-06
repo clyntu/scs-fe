@@ -125,8 +125,6 @@ const CPOFormDetails = ({
                 disabled={isEditDisabled}
               />
             </FormControl>
-          </Box>
-          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 2 }}>
             <FormControl size="sm">
               <FormLabel>Cust Disc. 1 (%)</FormLabel>
               <Input
