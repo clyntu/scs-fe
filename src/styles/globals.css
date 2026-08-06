@@ -227,6 +227,23 @@ body {
   }
 }
 
+/*
+ * Even field grid. The flex rules above let a wrapped row's leftovers grow to
+ * fill the line, so rows end up with different column widths. Here every field
+ * gets an equal column instead, and a short last row keeps its column width.
+ * Declared after the rules above so it wins on source order at equal specificity.
+ */
+.transaction-details__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  align-items: start;
+  gap: 1rem;
+}
+
+.transaction-details__fields .MuiFormControl-root {
+  width: 100% !important;
+}
+
 @container app-main (min-width: 56rem) {
   .form-loading-skeleton__details {
     grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
