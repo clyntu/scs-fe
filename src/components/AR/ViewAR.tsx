@@ -502,7 +502,7 @@ const ViewAR = ({
               <TableLoadingRows
                 columns={14}
                 numericColumns={[5]}
-                statusColumns={[4, 6]}
+                statusColumns={[4, 6, 7]}
                 actionColumn={13}
                 actionCount={2}
               />
