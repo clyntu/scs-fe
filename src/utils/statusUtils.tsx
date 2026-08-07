@@ -83,6 +83,32 @@ export const getPaymentStatusColor = (
   }
 };
 
+/**
+ * Colour for an AR receipt's payment method.
+ *
+ * Not a state - just a category. Cash settles immediately, a check has to
+ * clear first, so the two are worth telling apart at a glance.
+ */
+export const getPaymentMethodColor = (
+  paymentMethod: string,
+): "primary" | "success" | "warning" | "danger" | "neutral" => {
+  return paymentMethod.toLowerCase() === "cash" ? "success" : "primary";
+};
+
+interface PaymentMethodChipProps {
+  paymentMethod: string;
+}
+
+export const PaymentMethodChip: React.FC<PaymentMethodChipProps> = ({
+  paymentMethod,
+}) => {
+  return (
+    <Chip color={getPaymentMethodColor(paymentMethod)} variant="soft" size="sm">
+      {paymentMethod.toUpperCase()}
+    </Chip>
+  );
+};
+
 interface PaymentStatusChipProps {
   paymentStatus: string;
 }
