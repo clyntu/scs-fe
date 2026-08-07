@@ -271,23 +271,21 @@ const ARFormDetails = ({
             </FormControl>
             <FormControl size="sm">
               <FormLabel>Add</FormLabel>
-              <div className="flex">
-                <Input
-                  type="number"
-                  name="addAmount1"
-                  size="sm"
-                  placeholder="0"
-                  value={addAmount1}
-                  slotProps={{
-                    input: {
-                      min: 0,
-                      step: 0.01,
-                    },
-                  }}
-                  onChange={(e) => setAddAmount1(String(e.target.value))}
-                  disabled={isEditDisabled}
-                />
-              </div>
+              <Input
+                type="number"
+                name="addAmount1"
+                size="sm"
+                placeholder="0"
+                value={addAmount1}
+                slotProps={{
+                  input: {
+                    min: 0,
+                    step: 0.01,
+                  },
+                }}
+                onChange={(e) => setAddAmount1(String(e.target.value))}
+                disabled={isEditDisabled}
+              />
             </FormControl>
           </Box>
         </div>
