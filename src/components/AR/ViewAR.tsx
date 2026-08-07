@@ -29,7 +29,7 @@ import {
   addCommaToNumberWithTwoPlaces,
   getErrorMessage,
 } from "../../helper";
-import { StatusChip } from "../../utils/statusUtils";
+import { PaymentStatusChip, StatusChip } from "../../utils/statusUtils";
 import { withTooltip } from "../shared/withTooltip";
 import DateRangeFilter, {
   getDefaultDateFrom,
@@ -479,7 +479,7 @@ const ViewAR = ({
                 <th style={{ width: 150, textAlign: "right" }}>
                   Payment Amount
                 </th>
-                <th style={{ width: 150 }}>Payment Status</th>
+                <th style={{ width: 150, textAlign: "center" }}>Payment Status</th>
                 <th style={{ width: 100 }}>Method</th>
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
@@ -542,7 +542,9 @@ const ViewAR = ({
                         ? addCommaToNumberWithTwoPlaces(AR.payment_amount)
                         : "N/A"}
                     </td>
-                    <td className="capitalize">{AR.payment_status}</td>
+                    <td style={{ textAlign: "center" }}>
+                      <PaymentStatusChip paymentStatus={AR.payment_status} />
+                    </td>
                     <td className="capitalize">{AR.payment_method}</td>
                     <td>{withTooltip(AR.remarks, "180px")}</td>
                     <td>{withTooltip(AR?.creator?.username, "130px")}</td>
