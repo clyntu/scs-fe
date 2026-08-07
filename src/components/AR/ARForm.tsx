@@ -2,6 +2,7 @@ import ARFormDetails from "./ARForm/ARFormDetails";
 import ARFormTable from "./ARForm/ARFormTable";
 import { Button, Typography } from "@mui/joy";
 import SaveIcon from "@mui/icons-material/Save";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DoDisturbIcon from "@mui/icons-material/DoDisturb";
 import { useEffect, useState, useCallback } from "react";
 import axiosInstance from "../../utils/axiosConfig";
@@ -34,6 +35,7 @@ const ARForm = ({
   selectedRow,
   title,
   isAdmin: isAdminProp,
+  onStartNew,
 }: ARFormProps): JSX.Element => {
   const currentDate = new Date().toISOString().split("T")[0];
   const [isAdmin, setIsAdmin] = useState(isAdminProp ?? false);
@@ -457,9 +459,19 @@ const ARForm = ({
           {title}
         </Typography>
         <div className="flex">
-          {isEditDisabled && paymentStatus === "cleared" && isAdmin && (
+          {(hasSaved || isEditDisabled) && onStartNew !== undefined && (
             <Button
               className="w-[130px] h-[35px] bg-button-primary"
+              size="sm"
+              onClick={onStartNew}
+              startDecorator={<AddRoundedIcon />}
+            >
+              Add A/R
+            </Button>
+          )}
+          {isEditDisabled && paymentStatus === "cleared" && isAdmin && (
+            <Button
+              className="w-[130px] h-[35px] bg-button-primary ml-3"
               size="sm"
               onClick={() => setOpenReverse(true)}
             >
