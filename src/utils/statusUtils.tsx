@@ -17,10 +17,23 @@ export const getStatusColor = (
     case "cancelled":
       return "danger";
     case "archived":
-      return "warning";
+      // Archiving only hides a posted record - it never undoes what the record
+      // did. It reads as a variant of Posted, so it shares Posted's colour.
+      return "success";
     default:
       return "primary";
   }
+};
+
+/**
+ * Display name for a status value.
+ *
+ * "archived" is shown as "Posted (Hidden)" because the record is still posted -
+ * archiving only hides it from the default list, it does not unpost or reverse
+ * anything. Labelling it plain "Archived" made users read it as a cancellation.
+ */
+export const getStatusLabel = (status: string): string => {
+  return status.toLowerCase() === "archived" ? "Posted (Hidden)" : status;
 };
 
 export const getStatusVariant = (
@@ -36,13 +49,13 @@ export const StatusChip: React.FC<StatusChipProps> = ({ status, label }) => {
       variant={getStatusVariant(status)}
       size="sm"
     >
-      {(label ?? status).toUpperCase()}
+      {(label ?? getStatusLabel(status)).toUpperCase()}
     </Chip>
   );
 };
 
 export const formatStatusText = (status: string): string => {
-  return status.toUpperCase();
+  return getStatusLabel(status).toUpperCase();
 };
 
 export const isTransactionCancelled = (status: string): boolean => {
