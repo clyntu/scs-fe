@@ -144,7 +144,11 @@ const ViewWHModal = ({
                   "--TableCell-height": "40px",
                   // the number is the amount of the header rows.
                   "--TableHeader-height": "calc(1 * var(--TableCell-height))",
-                  "--Table-firstColumnWidth": "300px",
+                  // Must match the real first column: WH Code for an item,
+                  // the name column for a warehouse. The scroll shadow is
+                  // positioned from this, so a mismatch puts it mid-column.
+                  "--Table-firstColumnWidth":
+                    type === "item" ? "120px" : "300px",
                   "--Table-lastColumnWidth": "80px",
                   // background needs to have transparency to show the scrolling shadows
                   "--TableRow-hoverBackground": "rgba(0 0 0 / 0.04)",
@@ -231,7 +235,11 @@ const ViewWHModal = ({
                       <thead>
                         <tr>
                           {type === "item" && (
-                            <th style={{ width: 120 }}>WH Code</th>
+                            <th
+                              style={{ width: "var(--Table-firstColumnWidth)" }}
+                            >
+                              WH Code
+                            </th>
                           )}
                           <th
                             style={{
@@ -281,7 +289,12 @@ const ViewWHModal = ({
                               key={`${warehouseItem.warehouse_id}-${warehouseItem.item_id}`}
                             >
                               {type === "item" && (
-                                <td>{warehouseItem.warehouse_code}</td>
+                                <td>
+                                  {withTooltip(
+                                    warehouseItem.warehouse_code,
+                                    "110px",
+                                  )}
+                                </td>
                               )}
                               <td>
                                 {type === "warehouse"

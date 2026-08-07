@@ -64,7 +64,7 @@ const CDRFormTable = ({ formattedAllocs }: CDRFormTableProps): JSX.Element => {
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.level1",
           },
-          "& tr > *:not(:first-child)": {
+          "& tbody tr > *:not(:first-child)": {
             position: "relative",
             zIndex: 0,
           },
