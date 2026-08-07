@@ -232,46 +232,35 @@ const ViewWHModal = ({
                         warehouseItem.total_returned > 0,
                     ).length > 0 ? (
                     <>
+                      <colgroup>
+                        {/* One definition of the column widths, used by both
+                            the header and the body. With a sticky first column
+                            the two can otherwise disagree, which offsets the
+                            whole header against the rows. */}
+                        {type === "item" && <col style={{ width: 120 }} />}
+                        <col style={{ width: 300 }} />
+                        <col style={{ width: 100 }} />
+                        <col style={{ width: 100 }} />
+                        <col style={{ width: 100 }} />
+                        <col style={{ width: 100 }} />
+                        <col style={{ width: 100 }} />
+                        {isAdmin && <col style={{ width: 80 }} />}
+                      </colgroup>
                       <thead>
                         <tr>
-                          {type === "item" && (
-                            <th
-                              style={{ width: "var(--Table-firstColumnWidth)" }}
-                            >
-                              WH Code
-                            </th>
-                          )}
-                          <th
-                            style={{
-                              width:
-                                type === "item"
-                                  ? 300
-                                  : "var(--Table-firstColumnWidth)",
-                            }}
-                          >
+                          {type === "item" && <th>WH Code</th>}
+                          <th>
                             {type === "warehouse"
                               ? "Stock Name"
                               : "Warehouse Name"}
                           </th>
-                          <th style={{ width: 100, textAlign: "right" }}>
-                            On Stock
-                          </th>
-                          <th style={{ width: 100, textAlign: "right" }}>
-                            Available
-                          </th>
-                          <th style={{ width: 100, textAlign: "right" }}>
-                            Allocated
-                          </th>
-                          <th style={{ width: 100, textAlign: "right" }}>
-                            Returned
-                          </th>
-                          <th style={{ width: 100, textAlign: "right" }}>
-                            Net Sold
-                          </th>
+                          <th style={{ textAlign: "right" }}>On Stock</th>
+                          <th style={{ textAlign: "right" }}>Available</th>
+                          <th style={{ textAlign: "right" }}>Allocated</th>
+                          <th style={{ textAlign: "right" }}>Returned</th>
+                          <th style={{ textAlign: "right" }}>Net Sold</th>
                           {isAdmin && (
-                            <th style={{ width: 80, textAlign: "center" }}>
-                              Actions
-                            </th>
+                            <th style={{ textAlign: "center" }}>Actions</th>
                           )}
                         </tr>
                       </thead>
