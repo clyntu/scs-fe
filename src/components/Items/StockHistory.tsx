@@ -256,6 +256,9 @@ const StockHistory = ({
                     zIndex: 0,
                   },
                   "& thead th": {
+                    // Below the sticky first column, so columns
+                    // scrolling sideways pass underneath it.
+                    zIndex: 1,
                     backgroundColor: "background.level1",
                   },
                 }}

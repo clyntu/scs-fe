@@ -176,7 +176,7 @@ const RRFormTable = ({
             boxShadow: "1px 0 var(--TableCell-borderColor)",
             bgcolor: "background.level1",
           },
-          "& tbody tr > *:not(:first-child)": {
+          "& tr > *:not(:first-child)": {
             position: "relative",
             zIndex: 0,
           },
