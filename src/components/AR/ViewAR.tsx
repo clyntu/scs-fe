@@ -479,7 +479,9 @@ const ViewAR = ({
                 <th style={{ width: 150, textAlign: "right" }}>
                   Payment Amount
                 </th>
-                <th style={{ width: 150, textAlign: "center" }}>Payment Status</th>
+                <th style={{ width: 150, textAlign: "center" }}>
+                  Payment Status
+                </th>
                 <th style={{ width: 100 }}>Method</th>
                 <th style={{ width: 200 }}>Remarks</th>
                 <th style={{ width: 150 }}>Created By</th>
