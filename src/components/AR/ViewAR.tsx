@@ -263,7 +263,7 @@ const ViewAR = ({
       const url = `/api/ar-receipts/${selectedRow.id}`;
       try {
         const response = await axiosInstance.delete(url);
-        toast.success("Archive successful!");
+        toast.success("Hide successful!");
         const archivedAR = response.data;
         setARs((prevAR) => ({
           ...prevAR,
@@ -273,7 +273,7 @@ const ViewAR = ({
         }));
       } catch (error: any) {
         toast.error(
-          `Error message: ${getErrorMessage(error, "Archive unsuccessful")}`,
+          `Error message: ${getErrorMessage(error, "Hide unsuccessful")}`,
         );
       }
     }
@@ -343,9 +343,9 @@ const ViewAR = ({
               value={status}
             >
               <Option value="all">Active</Option>
-              <Option value="posted">Posted</Option>
               <Option value="unposted">Unposted</Option>
-              <Option value="archived">Archived</Option>
+              <Option value="posted">Posted</Option>
+              <Option value="archived">Posted (Hidden)</Option>
             </Select>
           </FormControl>
           <FormControl>
@@ -475,7 +475,7 @@ const ViewAR = ({
                 <th style={{ width: 120 }}>Tx. Date</th>
                 <th style={{ width: 250 }}>Customer</th>
                 <th style={{ width: 150 }}>Check No.</th>
-                <th style={{ width: 110 }}>Status</th>
+                <th style={{ width: 150, textAlign: "center" }}>Status</th>
                 <th style={{ width: 150, textAlign: "right" }}>
                   Payment Amount
                 </th>
@@ -534,7 +534,7 @@ const ViewAR = ({
                     <td>{AR.transaction_date}</td>
                     <td>{withTooltip(AR.customer.name, "280px")}</td>
                     <td>{withTooltip(AR.reference_number, "160px")}</td>
-                    <td>
+                    <td style={{ textAlign: "center" }}>
                       <StatusChip status={AR.status} />
                     </td>
                     <td style={{ textAlign: "right" }}>
@@ -586,7 +586,7 @@ const ViewAR = ({
                               }}
                               disabled={AR.status === "archived"}
                             >
-                              Archive
+                              Hide
                             </Button>
                           )}
                         {isAdmin && AR.status === "unposted" && (
