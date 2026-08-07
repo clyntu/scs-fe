@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   FormControl,
   FormLabel,
@@ -7,9 +8,12 @@ import {
   Select,
   Option,
   Box,
+  Button,
   Divider,
   Typography,
 } from "@mui/joy";
+import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
+import ExpandLessRoundedIcon from "@mui/icons-material/ExpandLessRounded";
 import type { ARFormDetailsProps } from "../interface";
 import {
   formatToDateTime,
@@ -59,6 +63,7 @@ const ARFormDetails = ({
   outstandingTrans,
   setOutstandingTrans,
 }: ARFormDetailsProps): JSX.Element => {
+  const [showAuditDetails, setShowAuditDetails] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDRFilter = (
     event: React.SyntheticEvent,
@@ -246,24 +251,6 @@ const ARFormDetails = ({
                 />
               </div>
             </FormControl> */}
-          </Box>
-        </div>
-      </Card>
-      <Card variant="soft" color="neutral">
-        <div>
-          <Box className="summary-figures" sx={{ mb: 1 }}>
-            <Typography level="body-sm">Payment Amount</Typography>
-            <Typography level="title-sm">
-              {addCommaToNumberWithTwoPlaces(paymentAmount)}
-            </Typography>
-
-            <Typography level="body-sm">Total Applied</Typography>
-            <Typography level="title-sm">
-              {addCommaToNumberWithTwoPlaces(totalApplied)}
-            </Typography>
-          </Box>
-          <Divider />
-          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
             <FormControl size="sm">
               <FormLabel>Less</FormLabel>
               <Input
@@ -302,10 +289,28 @@ const ARFormDetails = ({
                 />
               </div>
             </FormControl>
-            <FormControl size="sm">
+          </Box>
+        </div>
+      </Card>
+      <Card variant="soft" color="neutral">
+        <div>
+          <Box className="summary-figures" sx={{ mb: 1 }}>
+            <Typography level="body-sm">Payment Amount</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(paymentAmount)}
+            </Typography>
+
+            <Typography level="body-sm">Total Applied</Typography>
+            <Typography level="title-sm">
+              {addCommaToNumberWithTwoPlaces(totalApplied)}
+            </Typography>
+          </Box>
+          <Divider />
+          <Box className="transaction-details__fields" sx={{ mb: 1, mt: 1 }}>
+            <FormControl size="sm" sx={{ gridColumn: "1 / -1" }}>
               <FormLabel>Remarks</FormLabel>
               <Textarea
-                minRows={1}
+                minRows={2}
                 placeholder="Remarks"
                 onChange={(e) => setRemarks(e.target.value)}
                 value={remarks}
@@ -350,33 +355,58 @@ const ARFormDetails = ({
             </FormControl> */}
           </Box>
 
-          <Divider />
-          <Box className="transaction-details__fields" sx={{ mb: 2, mt: 2 }}>
-            <FormControl size="sm">
-              <FormLabel>Created by</FormLabel>
-              <p className="text-sm">
-                {selectedRow?.creator?.full_name ?? "-"}
-              </p>
-            </FormControl>
-            <FormControl size="sm">
-              <FormLabel>Date Created</FormLabel>
-              <p className="text-sm">
-                {formatToDateTime(selectedRow?.date_created)}
-              </p>
-            </FormControl>
-            <FormControl size="sm">
-              <FormLabel>Modified by</FormLabel>
-              <p className="text-sm">
-                {selectedRow?.modifier?.full_name ?? "-"}
-              </p>
-            </FormControl>
-            <FormControl size="sm">
-              <FormLabel>Date Modified</FormLabel>
-              <p className="text-sm">
-                {formatToDateTime(selectedRow?.date_modified)}
-              </p>
-            </FormControl>
-          </Box>
+          {selectedRow !== undefined && (
+            <>
+              <Divider />
+              <Button
+                size="sm"
+                variant="plain"
+                color="neutral"
+                onClick={() => setShowAuditDetails((prev) => !prev)}
+                startDecorator={
+                  showAuditDetails ? (
+                    <ExpandLessRoundedIcon />
+                  ) : (
+                    <ExpandMoreRoundedIcon />
+                  )
+                }
+                sx={{ mt: 1, alignSelf: "flex-start", px: 0.5 }}
+              >
+                {showAuditDetails ? "Hide record details" : "Record details"}
+              </Button>
+              {showAuditDetails && (
+                <Box
+                  className="transaction-details__fields"
+                  sx={{ mb: 2, mt: 1 }}
+                >
+                  <FormControl size="sm">
+                    <FormLabel>Created by</FormLabel>
+                    <p className="text-sm">
+                      {selectedRow?.creator?.full_name ?? "-"}
+                    </p>
+                  </FormControl>
+                  <FormControl size="sm">
+                    <FormLabel>Date Created</FormLabel>
+                    <p className="text-sm">
+                      {formatToDateTime(selectedRow?.date_created)}
+                    </p>
+                  </FormControl>
+                  <FormControl size="sm">
+                    <FormLabel>Modified by</FormLabel>
+                    <p className="text-sm">
+                      {selectedRow?.modifier?.full_name ?? "-"}
+                    </p>
+                  </FormControl>
+                  <FormControl size="sm">
+                    <FormLabel>Date Modified</FormLabel>
+                    <p className="text-sm">
+                      {formatToDateTime(selectedRow?.date_modified)}
+                    </p>
+                  </FormControl>
+                </Box>
+              )}
+            </>
+          )}
         </div>
       </Card>
     </Box>
