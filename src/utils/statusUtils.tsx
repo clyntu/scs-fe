@@ -58,6 +58,49 @@ export const formatStatusText = (status: string): string => {
   return getStatusLabel(status).toUpperCase();
 };
 
+/**
+ * Colour for an AR receipt's payment status.
+ *
+ * This is the money axis, separate from the record's own posted/hidden status:
+ *   pending   - posted, but the check has not cleared yet
+ *   cleared   - the money is in
+ *   reversed  - the check bounced after clearing
+ *   cancelled - the payment was voided before clearing
+ */
+export const getPaymentStatusColor = (
+  paymentStatus: string,
+): "primary" | "success" | "warning" | "danger" | "neutral" => {
+  switch (paymentStatus.toLowerCase()) {
+    case "cleared":
+      return "success";
+    case "pending":
+      return "warning";
+    case "reversed":
+    case "cancelled":
+      return "danger";
+    default:
+      return "primary";
+  }
+};
+
+interface PaymentStatusChipProps {
+  paymentStatus: string;
+}
+
+export const PaymentStatusChip: React.FC<PaymentStatusChipProps> = ({
+  paymentStatus,
+}) => {
+  return (
+    <Chip
+      color={getPaymentStatusColor(paymentStatus)}
+      variant={getStatusVariant(paymentStatus)}
+      size="sm"
+    >
+      {paymentStatus.toUpperCase()}
+    </Chip>
+  );
+};
+
 export const isTransactionCancelled = (status: string): boolean => {
   return status.toLowerCase() === "cancelled";
 };

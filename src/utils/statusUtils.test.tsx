@@ -5,6 +5,7 @@ import {
   formatStatusText,
   getAdjustmentTypeColor,
   getStatusColor,
+  getPaymentStatusColor,
   getStatusLabel,
   getStatusVariant,
   isTransactionCancelled,
@@ -21,6 +22,16 @@ describe("status contracts", () => {
     ["unknown", "primary"],
   ] as const)("maps %s to %s", (status, color) => {
     expect(getStatusColor(status)).toBe(color);
+  });
+
+  it.each([
+    ["cleared", "success"],
+    ["pending", "warning"],
+    ["reversed", "danger"],
+    ["cancelled", "danger"],
+    ["unknown", "primary"],
+  ] as const)("maps payment status %s to %s", (paymentStatus, color) => {
+    expect(getPaymentStatusColor(paymentStatus)).toBe(color);
   });
 
   it("labels archived records as still posted", () => {
